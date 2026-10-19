@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>自己操纵皮影 · ShadowPlay</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#1a1210;color:#f3dfbd;font-family:system-ui,"Microsoft YaHei",sans-serif}
+    body{display:flex;flex-direction:column;overflow:hidden}.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:10px 18px;background:#251813;border-bottom:1px solid #7e5738;font-size:13px}.toolbar strong{font-family:SimSun,serif;font-size:19px}.toolbar p{margin:0;color:#d9b993}.toolbar button{border:1px solid #c79a5f;border-radius:20px;background:#4a2d1e;color:#fff0d0;padding:7px 13px;cursor:pointer}.toolbar button:disabled{opacity:.5;cursor:wait}.toolbar small{margin-left:auto;color:#b69775}.stage{position:relative;flex:1;min-height:0;display:grid;place-items:center;overflow:auto;background:#16100e}#canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;cursor:grab;touch-action:none}#canvas:active{cursor:grabbing}#video{display:none}#handCanvas{position:absolute;right:12px;bottom:12px;width:160px;height:120px;border:1px solid #a98156;background:#100d0b}#status{position:absolute;left:14px;bottom:14px;max-width:calc(100% - 200px);padding:7px 10px;background:#241711df;font-size:12px;color:#fff0d0}.note{margin:0;padding:7px 18px;background:#251813;color:#bea486;font-size:11px}a{color:#f4c184}@media(max-width:680px){.toolbar{gap:6px;padding:8px 10px;font-size:11px}.toolbar strong{font-size:16px}.toolbar small{width:100%;margin:0}.toolbar p{width:100%}#handCanvas{width:96px;height:72px}#status{max-width:calc(100% - 125px);font-size:10px}.note{font-size:10px;padding:6px 10px}}
+  </style>
+</head>
+<body>
+  <header class="toolbar"><strong>自己操纵皮影</strong><p>鼠标拖动影人的双手；也可开启摄像头，用双手食指操纵。</p><button id="enable-camera" type="button">启用手势操纵</button><small>基于 <a href="https://github.com/FlameAIStudio/ShadowPlay" target="_blank" rel="noopener noreferrer">ShadowPlay</a> · MIT</small></header>
+  <main class="stage"><canvas id="canvas" aria-label="可用鼠标拖动双手的皮影舞台"></canvas><video id="video" autoplay playsinline muted></video><canvas id="handCanvas" width="240" height="180" aria-label="手势追踪预览"></canvas><div id="status" role="status">正在加载皮影素材…</div></main>
+  <p class="note">此页为数字操纵体验，影人素材来自开源项目，不作为华阴老腔实物或表演复原。摄像头仅在点击后请求；手势识别依赖在线加载 MediaPipe。</p>
+  <script src="./puppet.js"></script>
+</body>
+</html>
