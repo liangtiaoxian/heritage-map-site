@@ -67,7 +67,259 @@ body::after {
 }
 #boot.error h1 { font-size: 18px; color: #ffb4a0; margin: 0 0 12px; }
 #boot.error pre { white-space: pre-wrap; font-size: 13px; color: #c9d2d6; max-width: 760px; }
-</style>
+
+/* ============================================================================
+ * 场景导览 UI 样式（可复用）
+ * 由 tour.js 自动注入的 DOM 使用；宿主只需把这份 CSS 打进页面即可。
+ * 想改配色，覆盖这几个变量就行：--tour-bg / --tour-ink / --tour-line / --tour-accent
+ * ==========================================================================*/
+
+#tour {
+  --tour-bg: rgba(250, 245, 232, 0.92);
+  --tour-bg-solid: rgba(252, 248, 238, 0.97);
+  --tour-ink: #3d3222;
+  --tour-ink-strong: #2f2a22;
+  --tour-ink-soft: #6a5a40;
+  --tour-line: rgba(120, 96, 60, 0.32);
+  --tour-accent: #a06a1e;
+
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;            /* 整层不吃鼠标，拖动照常传到 canvas */
+  font: 400 13px/1.62 "Songti SC", "SimSun", "Microsoft YaHei", serif;
+  color: var(--tour-ink);
+}
+
+.tour-side {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 330px;
+  max-height: calc(100% - 90px);
+  overflow: auto;
+  pointer-events: none;            /* 只有卡片本身可点 */
+}
+
+/* ---------- 左上角标题：墨色斜切底 + 楷体米白大字 ---------- */
+.tour-masthead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 17px 64px 16px 24px;
+  /* 右缘斜切：上宽下窄，像一道墨迹扫过去 */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%);
+  background: linear-gradient(100deg, rgba(12, 14, 18, 0.95) 0%, rgba(18, 22, 28, 0.92) 62%, rgba(20, 25, 32, 0.8) 100%);
+  color: #f4ecda;
+  pointer-events: none;
+}
+
+.tour-masthead-index {
+  display: block;
+  margin-bottom: 7px;
+  color: #d9b071;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.36em;
+}
+
+.tour-masthead h1 {
+  margin: 0;
+  font-family: "KaiTi", "STKaiti", "Kaiti SC", "楷体", "Noto Serif SC", "Songti SC", "STSong", serif;
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.17em;
+  text-indent: 0.06em;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 245, 226, 0.18);
+}
+
+.tour-intro,
+.tour-card {
+  padding: 15px 17px;
+  background: var(--tour-bg);
+  border: 1px solid var(--tour-line);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 8px 26px rgba(80, 60, 30, 0.15);
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.tour-intro { pointer-events: auto; }
+.tour-intro[hidden] { display: none; }
+
+.tour-kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: #8a7250;
+  margin-bottom: 5px;
+}
+
+.tour-intro h1 {
+  margin: 0 0 9px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tour-ink-strong);
+}
+
+.tour-lead { margin: 0 0 11px; }
+
+.tour-legend {
+  margin: 0 0 11px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+.tour-legend li { display: flex; align-items: baseline; gap: 7px; }
+.tour-legend i {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  border: 1px solid rgba(60, 45, 25, 0.45);
+  transform: translateY(1px);
+}
+.tour-legend b { flex: none; color: var(--tour-ink-strong); }
+.tour-legend span { color: var(--tour-ink-soft); font-size: 12px; }
+
+.tour-tip {
+  margin: 0;
+  font-size: 12px;
+  color: var(--tour-ink-soft);
+  border-top: 1px dashed var(--tour-line);
+  padding-top: 9px;
+}
+
+/* 热点卡片：跟着光点跑，位置由 tour.js 每帧按屏幕投影算 */
+.tour-card {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 296px;
+  max-width: calc(100vw - 28px);
+  margin: 0;
+  pointer-events: auto;
+  will-change: transform;
+}
+.tour-card[hidden] { display: none; }
+
+/* 指向光点的小箭头：卡片在光点右侧就朝左，反之朝右 */
+.tour-card::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  width: 13px;
+  height: 13px;
+  background: var(--tour-bg-solid);
+  border: 1px solid var(--tour-line);
+  transform: rotate(45deg);
+}
+.tour-card.right-of-dot::after { left: -7px; border-right: 0; border-top: 0; }
+.tour-card.left-of-dot::after { right: -7px; border-left: 0; border-bottom: 0; }
+
+.tour-close {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--tour-ink-soft);
+  background: var(--tour-bg-solid);
+  border: 1px solid var(--tour-line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.tour-close:hover { background: #fff; color: var(--tour-ink-strong); }
+
+.tour-card-kicker {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: #a08a5e;
+  margin-bottom: 4px;
+}
+
+.tour-card h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--tour-ink-strong);
+  letter-spacing: 0.06em;
+}
+
+.tour-card p { margin: 0 0 10px; }
+
+.tour-back {
+  display: block;
+  font-size: 11px;
+  color: #9a8763;
+  border-top: 1px dashed var(--tour-line);
+  padding-top: 8px;
+}
+
+/* 操作提示条：左下角 */
+.tour-keys {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 12px;
+  max-width: min(56vw, 620px);
+  font-size: 12px;
+  color: #5a4a33;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.tour-keys kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font: inherit;
+  font-size: 11px;
+  background: var(--tour-bg);
+  border: 1px solid rgba(120, 96, 60, 0.4);
+  border-radius: 4px;
+}
+
+/* 鼠标悬停到热点上时变成手型 */
+canvas.tour-hover { cursor: pointer; }
+canvas.tour-hover.grabbing { cursor: grabbing; }
+
+/* 竖屏 / 窄屏：面板靠下；卡片放不下「旁边」，退回底部整条 */
+@media (max-width: 780px) {
+  .tour-masthead {
+    padding: 11px 42px 10px 15px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
+  }
+  .tour-masthead-index { margin-bottom: 4px; font-size: 8px; letter-spacing: 0.28em; }
+  .tour-masthead h1 { font-size: 23px; letter-spacing: 0.13em; }
+  .tour-side { width: auto; left: 12px; right: 12px; bottom: 52px; }
+  .tour-intro, .tour-card { padding: 13px 14px; }
+  .tour-intro h1 { font-size: 16px; }
+  .tour-legend span { display: none; }
+  .tour-keys {
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+    font-size: 11px;
+    gap: 4px 9px;
+    max-width: none;
+  }
+  .tour-card { left: 12px; right: 12px; top: auto; bottom: 52px; width: auto; }
+  .tour-card::after { display: none; }
+}</style>
 </head>
 <body>
 <canvas id="scene"></canvas>
@@ -110,7 +362,315 @@ body::after {
     show('画面没有出现（9 秒超时）', '打开控制台看第一条红色报错。' + diag);
   }, 9000);
 })();</script>
-<script type="module">import * as THREE from './vendor/three/build/three.module.js';
+<script type="module">/* ============================================================================
+ * 场景导览（可复用）—— 热点 + 跟随卡片 + 介绍面板
+ * ----------------------------------------------------------------------------
+ * 与具体场景无关：任何 three.js 场景传进 canvas / camera / 热点表就能用。
+ * 自带 DOM 与样式（样式在 tour.css），不需要宿主写任何标签。
+ *
+ *   const tour = createSceneTour(THREE, {
+ *     canvas, camera,
+ *     ui:   { kicker, title, lead, legend:[{color,label,note}], tip, keys:[...] },
+ *     spots:[{ id, name, en, marker:[x,y,z], view:{az,pol,dist,tx,ty,tz}, text }],
+ *     onFlyTo(view) { ... },     // 宿主把镜头目标设过去（做插值）
+ *     onReset()     { ... },     // 宿主把镜头复位
+ *   });
+ *   tour.open('id') / tour.close() / tour.update() 由内部 rAF 自己驱动，无需宿主调用
+ * ==========================================================================*/
+
+function createSceneTour(THREE, opts) {
+  const {
+    canvas, camera,
+    ui = {},
+    spots = [],
+    onFlyTo = () => {},
+    onReset = () => {},
+    ringScale = 1.15,
+    gap = 30,
+    narrowWidth = 780,
+    hover = true,
+    tapSlop = 6,
+    /* 可选：返回 false 时热点先不显示。
+       微缩场景的零件是入场时在顶点着色器里「长」出来的，热点是直接 add 上去的、
+       不受那套变形影响，所以模型还没成形时金环会浮在半空——用它挡一下。 */
+    ready = null,
+  } = opts;
+  if (!canvas || !camera || !spots.length) {
+    return { open() {}, close() {}, spots: () => [], screenOf: () => null };
+  }
+
+  const QS = new URLSearchParams(location.search);
+
+  /* ---------- 1. 页面结构（自动注入） ---------- */
+  const root = document.createElement('div');
+  root.id = 'tour';
+  root.innerHTML = `
+    <div class="tour-masthead">
+      <b class="tour-masthead-index"></b>
+      <h1></h1>
+    </div>
+    <section class="tour-side">
+      <div class="tour-intro" id="tour-intro">
+        <span class="tour-kicker"></span>
+        <h1></h1>
+        <p class="tour-lead"></p>
+        <ul class="tour-legend"></ul>
+        <p class="tour-tip"></p>
+      </div>
+      <article class="tour-card" id="tour-card" hidden>
+        <button class="tour-close" type="button" aria-label="关闭">×</button>
+        <span class="tour-card-kicker"></span>
+        <h2></h2>
+        <p></p>
+        <span class="tour-back">点空白处或 × 返回总览</span>
+      </article>
+    </section>
+    <footer class="tour-keys"></footer>`;
+  document.body.appendChild(root);
+
+  const introEl = root.querySelector('#tour-intro');
+  const cardEl = root.querySelector('#tour-card');
+
+  /* 左上角标题：墨色斜切底 + 楷体大字（不传 ui.masthead 就不出现） */
+  const mastheadEl = root.querySelector('.tour-masthead');
+  if (ui.masthead) {
+    root.querySelector('.tour-masthead-index').textContent = ui.mastheadIndex || '';
+    root.querySelector('.tour-masthead h1').textContent = ui.masthead;
+    if (!ui.mastheadIndex) root.querySelector('.tour-masthead-index').remove();
+  } else {
+    mastheadEl.remove();
+  }
+
+  root.querySelector('.tour-kicker').textContent = ui.kicker || '';
+  root.querySelector('.tour-intro h1').textContent = ui.title || '';
+  root.querySelector('.tour-lead').textContent = ui.lead || '';
+  const tipEl = root.querySelector('.tour-tip');
+  if (ui.tip) tipEl.textContent = ui.tip; else tipEl.remove();
+  const legendEl = root.querySelector('.tour-legend');
+  for (const item of (ui.legend || [])) {
+    const li = document.createElement('li');
+    li.innerHTML = `<i></i><b></b><span></span>`;
+    li.querySelector('i').style.background = item.color;
+    li.querySelector('b').textContent = item.label;
+    li.querySelector('span').textContent = item.note || '';
+    legendEl.appendChild(li);
+  }
+  if (!(ui.legend || []).length) legendEl.remove();
+  const keysEl = root.querySelector('.tour-keys');
+  for (const k of (ui.keys || [])) {
+    const span = document.createElement('span');
+    for (const part of k) {
+      if (typeof part === 'string') { span.appendChild(document.createTextNode(part)); continue; }
+      const kbd = document.createElement('kbd');
+      kbd.textContent = part.kbd;
+      span.appendChild(kbd);
+    }
+    keysEl.appendChild(span);
+  }
+
+  if (QS.has('nohud')) root.style.display = 'none';
+
+  /* ---------- 2. 热点标记：金环 sprite + 不可见命中球 ---------- */
+  function ringTexture(size = 128) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    const g = cv.getContext('2d');
+    const c = size / 2;
+    g.strokeStyle = 'rgba(255,236,190,1)';
+    g.lineWidth = 7;
+    g.beginPath(); g.arc(c, c, c - 16, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(90,66,30,0.95)';
+    g.lineWidth = 3.4;
+    g.beginPath(); g.arc(c, c, c - 16, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = 'rgba(255,232,176,1)';
+    g.beginPath(); g.arc(c, c, 7, 0, Math.PI * 2); g.fill();
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+  const tex = ringTexture(128);
+  const hits = [];
+  /* 热点要加进宿主的场景：给 opts.scene（Object3D）或 opts.addTo（函数）即可 */
+  const addTo = opts.addTo || (opts.scene ? (o) => opts.scene.add(o) : null);
+  if (!addTo) console.warn('[tour] 缺少 opts.scene / opts.addTo，热点不会出现在场景里');
+  spots.forEach((s, i) => {
+    const grp = new THREE.Group();
+    grp.position.set(s.marker[0], s.marker[1], s.marker[2]);
+    const ring = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthWrite: false, depthTest: false, fog: false,
+    }));
+    ring.scale.set(ringScale, ringScale, 1);
+    ring.renderOrder = 6;
+    grp.add(ring);
+    const hitBall = new THREE.Mesh(
+      new THREE.SphereGeometry(s.hitR || 0.52, 10, 8),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+    );
+    hitBall.userData.spot = s;
+    grp.add(hitBall);
+    if (addTo) addTo(grp);
+    s.group = grp; s.ring = ring; s.hit = hitBall;
+    s.phase = i * 1.7;
+    hits.push(hitBall);
+  });
+
+  /* ---------- 3. 状态 ---------- */
+  let active = null;
+  let hovered = null;
+  let side = '';
+  const size = { w: 300, h: 200 };
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let downX = 0, downY = 0, moved = 0, downId = null;
+
+  function measure() {
+    if (cardEl.hidden) return;
+    size.w = cardEl.offsetWidth || 300;
+    size.h = cardEl.offsetHeight || 200;
+  }
+
+  function screenOfWorld(p) {
+    const v = new THREE.Vector3(p[0], p[1], p[2]).project(camera);
+    const r = canvas.getBoundingClientRect();
+    return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height];
+  }
+
+  function spotAt(clientX, clientY) {
+    if (ready && !ready()) return null;
+    const r = canvas.getBoundingClientRect();
+    ndc.x = ((clientX - r.left) / r.width) * 2 - 1;
+    ndc.y = -((clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(ndc, camera);
+    const found = ray.intersectObjects(hits, false);
+    return found.length ? found[0].object.userData.spot : null;
+  }
+
+  function positionCard() {
+    if (cardEl.hidden || !active) return;
+    if (window.innerWidth < narrowWidth) { cardEl.style.transform = ''; return; }
+    const [sx, sy] = screenOfWorld(active.marker);
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const pad = 14;
+    let x = sx + gap;
+    let want = 'right-of-dot';
+    if (x + size.w + pad > vw) { x = sx - gap - size.w; want = 'left-of-dot'; }
+    x = Math.max(pad, Math.min(x, vw - size.w - pad));
+    let y = Math.max(pad, Math.min(sy - 26, vh - size.h - pad));
+    cardEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    if (want !== side) {
+      cardEl.classList.toggle('right-of-dot', want === 'right-of-dot');
+      cardEl.classList.toggle('left-of-dot', want === 'left-of-dot');
+      side = want;
+    }
+  }
+
+  function showCard(s) {
+    active = s;
+    cardEl.querySelector('.tour-card-kicker').textContent = s.en || '';
+    cardEl.querySelector('h2').textContent = s.name || '';
+    cardEl.querySelector('p').textContent = s.text || '';
+    cardEl.hidden = false;
+    introEl.hidden = true;
+    measure();
+    positionCard();
+  }
+  function showIntro() {
+    active = null;
+    cardEl.hidden = true;
+    introEl.hidden = false;
+  }
+  function open(id) {
+    const s = typeof id === 'string' ? spots.find((x) => x.id === id) : id;
+    if (!s) return false;
+    onFlyTo(s.view || {}, s);
+    showCard(s);
+    return true;
+  }
+  function close() {
+    showIntro();
+    onReset();
+  }
+  cardEl.querySelector('.tour-close').addEventListener('click', close);
+
+  /* ---------- 4. 指针：悬停高亮 + 轻点命中（不干扰宿主拖动） ---------- */
+  canvas.addEventListener('pointerdown', (e) => {
+    downX = e.clientX; downY = e.clientY; moved = 0; downId = e.pointerId;
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (downId !== null && e.pointerId === downId) {
+      moved = Math.max(moved, Math.hypot(e.clientX - downX, e.clientY - downY));
+      return;
+    }
+    if (!hover) return;
+    const s = spotAt(e.clientX, e.clientY);
+    hovered = s;
+    canvas.classList.toggle('tour-hover', !!s);
+  });
+  const finish = (e) => {
+    const isTap = downId === e.pointerId && moved < tapSlop && e.button !== 2;
+    downId = null;
+    if (!isTap) return;
+    const s = spotAt(e.clientX, e.clientY);
+    if (s) open(s);
+    else if (active) close();
+  };
+  window.addEventListener('pointerup', finish);
+  window.addEventListener('pointercancel', () => { downId = null; });
+  window.addEventListener('resize', () => { measure(); positionCard(); });
+
+  /* ---------- 5. 自己的 rAF：金环呼吸 + 卡片跟住光点 ---------- */
+  function loop() {
+    const t = performance.now() / 1000;
+    const shown = ready ? ready() : true;
+    for (const s of spots) {
+      s.group.visible = shown;
+      if (!shown) continue;
+      const pulse = 1 + Math.sin(t * 2.6 + s.phase) * 0.1;
+      const big = (s === hovered || s === active) ? 1.5 : 1;
+      const sc = ringScale * pulse * big;
+      s.ring.scale.set(sc, sc, 1);
+      s.ring.material.opacity = (s === active || s === hovered)
+        ? 1 : 0.78 + 0.14 * Math.sin(t * 2.6 + s.phase);
+    }
+    positionCard();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  /* ---------- 6. ?spot=id 直接打开 ---------- */
+  const initial = QS.get('spot');
+  if (initial) setTimeout(() => open(initial), 0);
+
+  /* ---------- 7. 调试接口 ---------- */
+  const api = {
+    spots: () => spots.map((s) => ({ id: s.id, name: s.name })),
+    open,
+    close,
+    active: () => (active ? active.id : null),
+    cardOpen: () => !cardEl.hidden,
+    screenOf: (id) => {
+      const s = spots.find((x) => x.id === id || x === id);
+      return s ? screenOfWorld(s.marker) : null;
+    },
+    reposition: () => { measure(); positionCard(); },
+  };
+  if (QS.has('debug')) {
+    setTimeout(() => {
+      const r = cardEl.getBoundingClientRect();
+      const p = cardEl.querySelector('p');
+      const pr = p.getBoundingClientRect();
+      const cs = getComputedStyle(cardEl);
+      document.title = JSON.stringify({
+        vw: window.innerWidth,
+        card: [Math.round(r.left), Math.round(r.right), Math.round(r.width)],
+        para: [Math.round(pr.left), Math.round(pr.right), Math.round(pr.width)],
+        cssWidth: cs.width, active: active ? active.id : null,
+      });
+    }, 3000);
+  }
+  return api;
+}
+import * as THREE from './vendor/three/build/three.module.js';
 
 /* 民俗老街 · 白天 —— 三渲二微缩街景
  * 全部程序化建模：没有外部模型与贴图，招牌文字用 canvas 现画。
@@ -280,7 +840,7 @@ const depthMat = withAssemble(new THREE.MeshDepthMaterial({ depthPacking: THREE.
 
 /* ---------- 招牌图集：一块 canvas 画完所有文字，一次绘制 ---------- */
 const ATLAS = (() => {
-  const W = 1024, H = 2048;
+  const W = 1024, H = 3072;
   const cv = document.createElement('canvas');
   cv.width = W;
   cv.height = H;
@@ -294,6 +854,7 @@ const ATLAS = (() => {
     const r = [cursorX, cursorY, w, h];
     cursorX += w + 4;
     rowH = Math.max(rowH, h);
+    if (r[1] + h > H) console.warn('[10-kit] 招牌图块超出画布，会渲染成黑块：' + name + ' y=' + r[1] + ' h=' + h);
     rects[name] = [r[0] / W, 1 - (r[1] + h) / H, (r[0] + w) / W, 1 - r[1] / H];
     return r;
   }
@@ -396,6 +957,30 @@ const ATLAS = (() => {
   plaque('pGate', '民 俗 老 街');
   plaque('pKe', '客 栈');
 
+  /* ---- 坎儿井剖面标注：剖面图那种引线标签 ---- */
+  function klabel(name, text, en) {
+    panel(name, 260, 74, '#2f2a22', (c, w, h) => {
+      c.strokeStyle = '#c8a75e'; c.lineWidth = 2;
+      c.strokeRect(5, 5, w - 10, h - 10);
+      c.fillStyle = '#e8c987';
+      c.font = `bold 30px ${KAI}`;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(text, w / 2, en ? h / 2 - 6 : h / 2 + 1);
+      if (en) {
+        c.font = `11px ${HEI}`; c.fillStyle = '#a8916a';
+        c.fillText(en, w / 2, h / 2 + 21);
+      }
+    });
+  }
+  klabel('kShaft', '竖井', 'SHAFT');
+  klabel('kQan', '暗渠', 'QANAT');
+  klabel('kMing', '明渠', 'OPEN CHANNEL');
+  klabel('kSeep', '雪水渗入', 'SEEPAGE');
+  klabel('kAqua', '含水层', 'AQUIFER');
+  klabel('kGe', '戈壁表层', 'GOBI SURFACE');
+  klabel('kWell', '母井', 'MOTHER WELL');
+  klabel('kWo', '涝坝', 'RESERVOIR');
+
   /* ---- 坎儿井剖面沙盘用的几块牌子 ---- */
   plaque('pKarez', '坎 儿 井');
   plaque('pLaoba', '涝 坝');
@@ -484,6 +1069,30 @@ const ATLAS = (() => {
     han(c, '拾遗老街', w / 2, h / 2 - 6, 40, '#f2f6f8', KAI, 4);
     c.font = `13px ${HEI}`; c.fillStyle = '#b9d2e4'; c.textAlign = 'center';
     c.fillText('SHIYI  OLD  STREET', w / 2, h - 20);
+  });
+
+  /* ---- 水乡社戏用的几块牌子（只做追加，前面已有图块的位置不变） ---- */
+  plaque('pShe', '社 戏 台');
+  plaque('pShemiao', '社 庙');
+  banner('bGao', '糕团', '水磨');
+  banner('bLing', '菱角', '河鲜');
+  banner('bZong', '粽子', '箬叶');
+  banner('bYu', '鱼鲜', '河捕');
+  panel('plateShexi', 460, 92, '#22323a', (c, w, h) => {
+    c.strokeStyle = '#8fb6c4'; c.lineWidth = 2; c.strokeRect(6, 6, w - 12, h - 12);
+    han(c, '水 乡 社 戏', w / 2, 34, 30, '#d7ecf2', KAI, 4);
+    c.font = `12px ${HEI}`; c.fillStyle = '#8fb6c4'; c.textAlign = 'center';
+    c.fillText('WATER-TOWN  SHE-DRAMA', w / 2, 66);
+  });
+  panel('noticeShexi', 250, 200, '#e2dcc8', (c, w, h) => {
+    c.fillStyle = '#33403c'; c.font = `bold 21px ${KAI}`; c.textAlign = 'center';
+    c.fillText('戏 单', w / 2, 32);
+    c.font = `13px ${HEI}`; c.fillStyle = '#5a655e';
+    c.fillText('示意 · 不排具体剧目', w / 2, 56);
+    c.strokeStyle = 'rgba(60,72,66,.4)'; c.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      c.beginPath(); c.moveTo(24, 84 + i * 22); c.lineTo(w - 24, 84 + i * 22); c.stroke();
+    }
   });
 
   const tex = new THREE.CanvasTexture(cv);
@@ -2857,6 +3466,29 @@ let NOW = 0;
 const pointers = new Map();
 let pinchDist = 0;
 
+/* ---------- 相机适配：供共用导览组件（tools/shared/tour.js）调用 ---------- */
+const camTargetGoal = cam.target.clone();
+function flyTo(v) {
+  if (Number.isFinite(v.az)) cam.goalAz = v.az;
+  if (Number.isFinite(v.pol)) cam.goalPol = v.pol;
+  if (Number.isFinite(v.dist)) cam.goalDist = v.dist;
+  if (Number.isFinite(v.tx) || Number.isFinite(v.ty) || Number.isFinite(v.tz)) {
+    camTargetGoal.set(
+      Number.isFinite(v.tx) ? v.tx : cam.target.x,
+      Number.isFinite(v.ty) ? v.ty : cam.target.y,
+      Number.isFinite(v.tz) ? v.tz : cam.target.z
+    );
+  }
+  lastInput = NOW;                 // 别让闲置自转马上把镜头带走
+}
+const HOME_VIEW = { az: -0.9, pol: 1.18, dist: 74, tx: 0, ty: 2.2, tz: 0 };
+function resetView() { flyTo(HOME_VIEW); }
+/* 手动平移/走动时同步目标点，免得和插值互相拽 */
+function syncTargetGoal() {
+  clampTarget();
+  camTargetGoal.copy(cam.target);
+}
+
 /* 把看点限制在底座范围内，别一拖就拖到天边 */
 function clampTarget() {
   cam.target.x = THREE.MathUtils.clamp(cam.target.x, -32, 32);
@@ -2870,7 +3502,7 @@ function panBy(dx, dy) {
   const fx = -Math.sin(cam.az), fz = -Math.cos(cam.az);
   cam.target.x += -rx * dx * k + fx * dy * k;
   cam.target.z += -rz * dx * k + fz * dy * k;
-  clampTarget();
+  syncTargetGoal();
   lastInput = NOW;
 }
 
@@ -2906,7 +3538,7 @@ function moveByKeys(dt) {
   if (len > 0) {
     cam.target.x += (mx / len) * speed * dt;
     cam.target.z += (mz / len) * speed * dt;
-    clampTarget();
+    syncTargetGoal();
     lastInput = NOW;
   }
 }
@@ -2992,6 +3624,9 @@ function updateCamera(dt, now) {
     cam.az += (cam.goalAz - cam.az) * k;
     cam.pol += (cam.goalPol - cam.pol) * k;
     cam.dist += (cam.goalDist - cam.dist) * k;
+    /* 看点也插值，点热点飞过去才顺 */
+    cam.target.lerp(camTargetGoal, Math.min(1, dt * 3.2));
+    clampTarget();
   }
   const sp = Math.sin(cam.pol), cp = Math.cos(cam.pol);
   const d = cam.dist * fitK;
@@ -3110,12 +3745,124 @@ window.__MINS = {
     cam.goalAz = cam.az = az;
     cam.goalPol = cam.pol = pol;
     cam.goalDist = cam.dist = dist;
+    camTargetGoal.copy(cam.target);   // 同步插值目标，否则看点会被拽回去
     updateCamera(0, timeState.elapsed);
   },
   finish() { U.assemble.value = 1; },
 };
 
 animate();
-</script>
+
+/* ---------- 60 · 场景导览配置（庙会长街） ----------
+ * 逻辑全在 tools/shared/tour.js；这里只描述「这条街要讲什么」。
+ */
+
+const streetTour = createSceneTour(THREE, {
+  scene,
+  canvas,
+  camera,
+
+  ui: {
+    masthead: '庙会长街',
+    mastheadIndex: '民俗长街 · 六十八米',
+    kicker: '庙会长街 · 微缩沙盘',
+    title: '一条街，从牌楼走到戏台',
+    lead: '六十八米长街：西头是牌楼，北侧一排店铺与院落，南侧穿插着绿植、电线杆、水井与各种摊子，路的尽头是大戏台。',
+    legend: [
+      { color: '#b8452f', label: '店铺', note: '北侧九间，前店后坊' },
+      { color: '#d9b45a', label: '戏台', note: '长街尽头的中心' },
+      { color: '#4f7a3a', label: '绿植', note: '街边树木与花坛' },
+      { color: '#8a6a44', label: '摊位', note: '小吃、糖葫芦、茶、篆刻' },
+    ],
+    tip: '点亮金环，镜头会飞过去并展开说明；共 11 处。本模型为原创民俗示意，非特定地区复原。',
+    keys: [
+      [{ kbd: '左键拖动' }, ' 旋转'],
+      [{ kbd: '滚轮' }, '／', { kbd: '双指' }, ' 缩放'],
+      [{ kbd: '右键' }, '／', { kbd: 'Shift' }, '+拖动 平移'],
+      [{ kbd: 'W' }, { kbd: 'A' }, { kbd: 'S' }, { kbd: 'D' }, ' 走动'],
+      [{ kbd: '点金环' }, ' 看说明'],
+    ],
+  },
+
+  spots: [
+    {
+      id: 'gate', name: '牌楼', en: 'PAIFANG',
+      marker: [-27.0, 5.0, 1.2],
+      view: { az: -1.05, pol: 1.20, dist: 19, tx: -27, ty: 3.2, tz: 1.2 },
+      text: '长街西口的牌楼，横跨整条街——四根柱子落在街两边，匾额双面都刻着字。它是这条街的门面，也是庙会的起点。',
+    },
+    {
+      id: 'inn', name: '客栈', en: 'INN',
+      marker: [-30.4, 4.0, -5.0],
+      view: { az: -0.5, pol: 1.20, dist: 17, tx: -30.2, ty: 3.4, tz: -5.0 },
+      text: '牌楼旁的二层客栈，马头墙、木挑檐。赶庙会的外乡人多半住这儿，楼下是通铺，楼上临街。',
+    },
+    {
+      id: 'shrine', name: '土地庙', en: 'SHRINE',
+      marker: [-15.0, 2.6, -5.4],
+      view: { az: -0.14, pol: 1.20, dist: 13, tx: -15, ty: 2.5, tz: -5.0 },
+      text: '街边的小土地庙。庙会再热闹，这一间总是最安静的——香烛摊就摆在斜对面，买香的人顺手就进去了。',
+    },
+    {
+      id: 'teahouse', name: '茶楼', en: 'TEAHOUSE',
+      marker: [-9.6, 3.0, -5.4],
+      view: { az: -0.10, pol: 1.20, dist: 14, tx: -9.6, ty: 2.8, tz: -5.0 },
+      text: '两层茶楼，挑檐下挂着幌子。楼上靠窗的位置最好——能看见整条街，也看得见戏台。',
+    },
+    {
+      id: 'lantern', name: '灯棚', en: 'LANTERN SHED',
+      marker: [-24.2, 2.8, -5.3],
+      view: { az: -0.12, pol: 1.18, dist: 12, tx: -24.2, ty: 2.4, tz: -5.0 },
+      text: '灯笼铺门前搭的灯棚，挂着走马灯。晚上这一片最亮，灯影会转着走。',
+    },
+    {
+      id: 'well', name: '水井', en: 'WELL',
+      marker: [3.2, 1.7, 1.4],
+      view: { az: 0.12, pol: 1.12, dist: 10, tx: 3.2, ty: 1.2, tz: 1.4 },
+      text: '街心的两口井，井台铺石、架着辘轳。整条街的吃水都从这儿来，挑水的、洗菜的、歇脚的都在这儿碰头。',
+    },
+    {
+      id: 'shadow', name: '皮影戏棚', en: 'SHADOW PLAY',
+      marker: [6.5, 2.6, -5.4],
+      view: { az: -0.10, pol: 1.22, dist: 12, tx: 6.5, ty: 2.4, tz: -5.0 },
+      text: '皮影戏棚。白天在后台刻皮影，晚上挂起幕布点灯开演——棚子做得不深，就是要让人从街上就能看见亮着的幕。',
+    },
+    {
+      id: 'sugar', name: '糖葫芦摊', en: 'CANDY SKEWERS',
+      marker: [0.4, 1.9, 4.8],
+      view: { az: 0.06, pol: 1.16, dist: 9, tx: 0.4, ty: 1.5, tz: 4.8 },
+      text: '糖葫芦摊，草靶子上插满一串串红果。庙会上最经不住小孩看的就是这一个。',
+    },
+    {
+      id: 'lion', name: '舞狮', en: 'LION DANCE',
+      marker: [26.0, 1.6, 3.3],
+      view: { az: -0.55, pol: 1.16, dist: 12, tx: 26, ty: 1.4, tz: 3.3 },
+      text: '街心舞狮：两个人一前一后撑起狮头狮被，随着鼓点一路点头向前，后面跟着看热闹的人群。',
+    },
+    {
+      id: 'stage', name: '大戏台', en: 'OPERA STAGE',
+      marker: [31.4, 5.0, 0],
+      view: { az: -1.42, pol: 1.18, dist: 21, tx: 31, ty: 3.4, tz: 0 },
+      text: '长街尽头的大戏台，飞檐翘角、台上正唱着戏。整条街的动线都是为了它——一路走来，越靠近越热闹。',
+    },
+    {
+      id: 'crowd', name: '赶会的人', en: 'CROWD',
+      marker: [-4.0, 1.6, 3.6],
+      view: { az: -0.05, pol: 1.10, dist: 12, tx: -4, ty: 1.4, tz: 3.0 },
+      text: '散在街面与摊前的赶会人。有挑担的、抱孩子的、蹲着挑东西的——人不是背景，人就是庙会本身。',
+    },
+  ],
+
+  onFlyTo(view) {
+    intro.done = true;
+    intro.t = 1;
+    flyTo(view);
+  },
+  onReset() {
+    resetView();
+  },
+});
+
+window.__TOUR = streetTour;</script>
 </body>
 </html>

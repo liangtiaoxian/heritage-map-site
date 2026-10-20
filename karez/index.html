@@ -66,10 +66,474 @@ body::after {
   color: #dfe7ea;
 }
 #boot.error h1 { font-size: 18px; color: #ffb4a0; margin: 0 0 12px; }
-#boot.error pre { white-space: pre-wrap; font-size: 13px; color: #c9d2d6; max-width: 760px; }</style>
+#boot.error pre { white-space: pre-wrap; font-size: 13px; color: #c9d2d6; max-width: 760px; }
+
+/* ---------- UI：总介绍 / 热点卡片放右下角，按键条放左下角 ---------- */
+#hud {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;            /* 整层不吃鼠标，拖动照常传到 canvas */
+  font: 400 13px/1.62 "Songti SC", "SimSun", "Microsoft YaHei", serif;
+  color: #3d3222;
+}
+
+.hud-side {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 330px;
+  max-height: calc(100% - 90px);
+  overflow: auto;
+  pointer-events: none;            /* 只有卡片本身可点，空的时候不挡拖动 */
+}
+
+.hud-body,
+.hud-card {
+  padding: 15px 17px;
+  background: rgba(250, 245, 232, 0.9);
+  border: 1px solid rgba(120, 96, 60, 0.32);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 8px 26px rgba(80, 60, 30, 0.15);
+  /* 中文长句必须能断行，任何宽度下都不许横向溢出 */
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.hud-body p,
+.hud-card p,
+.hud-card h2,
+.hud-legend li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.hud-body { pointer-events: auto; }
+
+.hud-kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: #8a7250;
+  margin-bottom: 5px;
+}
+
+.hud-body h1 {
+  margin: 0 0 9px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #2f2a22;
+}
+
+.hud-lead { margin: 0 0 11px; }
+.hud-lead b { color: #8a4a22; }
+
+.hud-legend {
+  margin: 0 0 11px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+.hud-legend li { display: flex; align-items: baseline; gap: 7px; }
+.hud-legend i {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  border: 1px solid rgba(60, 45, 25, 0.45);
+  transform: translateY(1px);
+}
+.hud-legend b { flex: none; color: #2f2a22; }
+.hud-legend span { color: #6a5a40; font-size: 12px; }
+
+.hud-tip {
+  margin: 0;
+  font-size: 12px;
+  color: #6a5a40;
+  border-top: 1px dashed rgba(120, 96, 60, 0.35);
+  padding-top: 9px;
+}
+.hud-tip b { color: #a06a1e; }
+
+/* 热点卡片：跟着光点跑，位置每帧由 JS 按屏幕投影算 */
+.hud-card {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 296px;
+  max-width: calc(100vw - 28px);
+  margin: 0;
+  pointer-events: auto;
+  will-change: transform;
+}
+.hud-card[hidden] { display: none; }
+
+/* 指向光点的小箭头：卡片在光点右侧就朝左，反之朝右 */
+.hud-card::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  width: 13px;
+  height: 13px;
+  background: rgba(252, 248, 238, 0.97);
+  border: 1px solid rgba(120, 96, 60, 0.34);
+  transform: rotate(45deg);
+}
+.hud-card.right-of-dot::after { left: -7px; border-right: 0; border-top: 0; }
+.hud-card.left-of-dot::after { right: -7px; border-left: 0; border-bottom: 0; }
+
+.card-close {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  color: #6a5a40;
+  background: rgba(255, 252, 244, 0.9);
+  border: 1px solid rgba(120, 96, 60, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.card-close:hover { background: #fff; color: #2f2a22; }
+
+.card-kicker {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: #a08a5e;
+  margin-bottom: 4px;
+}
+
+.hud-card h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 600;
+  color: #2f2a22;
+  letter-spacing: 0.06em;
+}
+
+.hud-card p { margin: 0 0 10px; }
+
+.card-back {
+  display: block;
+  font-size: 11px;
+  color: #9a8763;
+  border-top: 1px dashed rgba(120, 96, 60, 0.32);
+  padding-top: 8px;
+}
+
+/* 按键条：左下角 */
+.hud-keys {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 12px;
+  max-width: min(56vw, 620px);
+  font-size: 12px;
+  color: #5a4a33;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.hud-keys kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font: inherit;
+  font-size: 11px;
+  background: rgba(250, 245, 232, 0.9);
+  border: 1px solid rgba(120, 96, 60, 0.4);
+  border-radius: 4px;
+}
+
+/* 鼠标悬停到热点上时变成手型 */
+canvas.hovering { cursor: pointer; }
+canvas.hovering.grabbing { cursor: grabbing; }
+
+/* 竖屏 / 窄屏：面板靠下收窄；卡片放不下「旁边」，退回底部整条 */
+@media (max-width: 780px) {
+  .hud-side { width: auto; left: 12px; right: 12px; bottom: 52px; }
+  .hud-body, .hud-card { padding: 13px 14px; }
+  .hud-body h1 { font-size: 16px; }
+  .hud-legend span { display: none; }
+  .hud-keys { left: 12px; right: 12px; bottom: 10px; font-size: 11px; gap: 4px 9px; max-width: none; }
+  .hud-card {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 52px;
+    width: auto;
+  }
+  .hud-card::after { display: none; }
+}
+/* ============================================================================
+ * 场景导览 UI 样式（可复用）
+ * 由 tour.js 自动注入的 DOM 使用；宿主只需把这份 CSS 打进页面即可。
+ * 想改配色，覆盖这几个变量就行：--tour-bg / --tour-ink / --tour-line / --tour-accent
+ * ==========================================================================*/
+
+#tour {
+  --tour-bg: rgba(250, 245, 232, 0.92);
+  --tour-bg-solid: rgba(252, 248, 238, 0.97);
+  --tour-ink: #3d3222;
+  --tour-ink-strong: #2f2a22;
+  --tour-ink-soft: #6a5a40;
+  --tour-line: rgba(120, 96, 60, 0.32);
+  --tour-accent: #a06a1e;
+
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;            /* 整层不吃鼠标，拖动照常传到 canvas */
+  font: 400 13px/1.62 "Songti SC", "SimSun", "Microsoft YaHei", serif;
+  color: var(--tour-ink);
+}
+
+.tour-side {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 330px;
+  max-height: calc(100% - 90px);
+  overflow: auto;
+  pointer-events: none;            /* 只有卡片本身可点 */
+}
+
+/* ---------- 左上角标题：墨色斜切底 + 楷体米白大字 ---------- */
+.tour-masthead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 17px 64px 16px 24px;
+  /* 右缘斜切：上宽下窄，像一道墨迹扫过去 */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 36px) 100%, 0 100%);
+  background: linear-gradient(100deg, rgba(12, 14, 18, 0.95) 0%, rgba(18, 22, 28, 0.92) 62%, rgba(20, 25, 32, 0.8) 100%);
+  color: #f4ecda;
+  pointer-events: none;
+}
+
+.tour-masthead-index {
+  display: block;
+  margin-bottom: 7px;
+  color: #d9b071;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.36em;
+}
+
+.tour-masthead h1 {
+  margin: 0;
+  font-family: "KaiTi", "STKaiti", "Kaiti SC", "楷体", "Noto Serif SC", "Songti SC", "STSong", serif;
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.17em;
+  text-indent: 0.06em;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 245, 226, 0.18);
+}
+
+.tour-intro,
+.tour-card {
+  padding: 15px 17px;
+  background: var(--tour-bg);
+  border: 1px solid var(--tour-line);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 8px 26px rgba(80, 60, 30, 0.15);
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.tour-intro { pointer-events: auto; }
+.tour-intro[hidden] { display: none; }
+
+.tour-kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: #8a7250;
+  margin-bottom: 5px;
+}
+
+.tour-intro h1 {
+  margin: 0 0 9px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tour-ink-strong);
+}
+
+.tour-lead { margin: 0 0 11px; }
+
+.tour-legend {
+  margin: 0 0 11px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+.tour-legend li { display: flex; align-items: baseline; gap: 7px; }
+.tour-legend i {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  border: 1px solid rgba(60, 45, 25, 0.45);
+  transform: translateY(1px);
+}
+.tour-legend b { flex: none; color: var(--tour-ink-strong); }
+.tour-legend span { color: var(--tour-ink-soft); font-size: 12px; }
+
+.tour-tip {
+  margin: 0;
+  font-size: 12px;
+  color: var(--tour-ink-soft);
+  border-top: 1px dashed var(--tour-line);
+  padding-top: 9px;
+}
+
+/* 热点卡片：跟着光点跑，位置由 tour.js 每帧按屏幕投影算 */
+.tour-card {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 296px;
+  max-width: calc(100vw - 28px);
+  margin: 0;
+  pointer-events: auto;
+  will-change: transform;
+}
+.tour-card[hidden] { display: none; }
+
+/* 指向光点的小箭头：卡片在光点右侧就朝左，反之朝右 */
+.tour-card::after {
+  content: '';
+  position: absolute;
+  top: 26px;
+  width: 13px;
+  height: 13px;
+  background: var(--tour-bg-solid);
+  border: 1px solid var(--tour-line);
+  transform: rotate(45deg);
+}
+.tour-card.right-of-dot::after { left: -7px; border-right: 0; border-top: 0; }
+.tour-card.left-of-dot::after { right: -7px; border-left: 0; border-bottom: 0; }
+
+.tour-close {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--tour-ink-soft);
+  background: var(--tour-bg-solid);
+  border: 1px solid var(--tour-line);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.tour-close:hover { background: #fff; color: var(--tour-ink-strong); }
+
+.tour-card-kicker {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: #a08a5e;
+  margin-bottom: 4px;
+}
+
+.tour-card h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--tour-ink-strong);
+  letter-spacing: 0.06em;
+}
+
+.tour-card p { margin: 0 0 10px; }
+
+.tour-back {
+  display: block;
+  font-size: 11px;
+  color: #9a8763;
+  border-top: 1px dashed var(--tour-line);
+  padding-top: 8px;
+}
+
+/* 操作提示条：左下角 */
+.tour-keys {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  pointer-events: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 12px;
+  max-width: min(56vw, 620px);
+  font-size: 12px;
+  color: #5a4a33;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.tour-keys kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font: inherit;
+  font-size: 11px;
+  background: var(--tour-bg);
+  border: 1px solid rgba(120, 96, 60, 0.4);
+  border-radius: 4px;
+}
+
+/* 鼠标悬停到热点上时变成手型 */
+canvas.tour-hover { cursor: pointer; }
+canvas.tour-hover.grabbing { cursor: grabbing; }
+
+/* 竖屏 / 窄屏：面板靠下；卡片放不下「旁边」，退回底部整条 */
+@media (max-width: 780px) {
+  .tour-masthead {
+    padding: 11px 42px 10px 15px;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
+  }
+  .tour-masthead-index { margin-bottom: 4px; font-size: 8px; letter-spacing: 0.28em; }
+  .tour-masthead h1 { font-size: 23px; letter-spacing: 0.13em; }
+  .tour-side { width: auto; left: 12px; right: 12px; bottom: 52px; }
+  .tour-intro, .tour-card { padding: 13px 14px; }
+  .tour-intro h1 { font-size: 16px; }
+  .tour-legend span { display: none; }
+  .tour-keys {
+    left: 12px;
+    right: 12px;
+    bottom: 10px;
+    font-size: 11px;
+    gap: 4px 9px;
+    max-width: none;
+  }
+  .tour-card { left: 12px; right: 12px; top: auto; bottom: 52px; width: auto; }
+  .tour-card::after { display: none; }
+}</style>
 </head>
 <body>
 <canvas id="scene"></canvas>
+<!-- 介绍面板 / 热点卡片由 tools/shared/tour.js 自动注入 -->
 <div id="boot"><span>坎 儿 井</span><i>正在挖开地层</i></div>
 <script>(function () {
   var panel = document.getElementById('boot');
@@ -83,6 +547,11 @@ body::after {
     panel.querySelector('pre').textContent = detail || '';
   }
   window.__MINS_FAIL = show;
+  /* 无 UI 模式（截图用） */
+  if (location.search.indexOf('nohud') >= 0) {
+    var t = document.getElementById('tour');
+    if (t) t.style.display = 'none';
+  }
   if (location.protocol === 'file:') {
     show('请通过本地服务器打开', '浏览器会拦截 file:// 下的 ES 模块。\n运行 npm run dev 后访问 http://127.0.0.1:5173/karez/index.html');
     return;
@@ -109,7 +578,315 @@ body::after {
     show('画面没有出现（9 秒超时）', '打开控制台看第一条红色报错。' + diag);
   }, 9000);
 })();</script>
-<script type="module">import * as THREE from './vendor/three/build/three.module.js';
+<script type="module">/* ============================================================================
+ * 场景导览（可复用）—— 热点 + 跟随卡片 + 介绍面板
+ * ----------------------------------------------------------------------------
+ * 与具体场景无关：任何 three.js 场景传进 canvas / camera / 热点表就能用。
+ * 自带 DOM 与样式（样式在 tour.css），不需要宿主写任何标签。
+ *
+ *   const tour = createSceneTour(THREE, {
+ *     canvas, camera,
+ *     ui:   { kicker, title, lead, legend:[{color,label,note}], tip, keys:[...] },
+ *     spots:[{ id, name, en, marker:[x,y,z], view:{az,pol,dist,tx,ty,tz}, text }],
+ *     onFlyTo(view) { ... },     // 宿主把镜头目标设过去（做插值）
+ *     onReset()     { ... },     // 宿主把镜头复位
+ *   });
+ *   tour.open('id') / tour.close() / tour.update() 由内部 rAF 自己驱动，无需宿主调用
+ * ==========================================================================*/
+
+function createSceneTour(THREE, opts) {
+  const {
+    canvas, camera,
+    ui = {},
+    spots = [],
+    onFlyTo = () => {},
+    onReset = () => {},
+    ringScale = 1.15,
+    gap = 30,
+    narrowWidth = 780,
+    hover = true,
+    tapSlop = 6,
+    /* 可选：返回 false 时热点先不显示。
+       微缩场景的零件是入场时在顶点着色器里「长」出来的，热点是直接 add 上去的、
+       不受那套变形影响，所以模型还没成形时金环会浮在半空——用它挡一下。 */
+    ready = null,
+  } = opts;
+  if (!canvas || !camera || !spots.length) {
+    return { open() {}, close() {}, spots: () => [], screenOf: () => null };
+  }
+
+  const QS = new URLSearchParams(location.search);
+
+  /* ---------- 1. 页面结构（自动注入） ---------- */
+  const root = document.createElement('div');
+  root.id = 'tour';
+  root.innerHTML = `
+    <div class="tour-masthead">
+      <b class="tour-masthead-index"></b>
+      <h1></h1>
+    </div>
+    <section class="tour-side">
+      <div class="tour-intro" id="tour-intro">
+        <span class="tour-kicker"></span>
+        <h1></h1>
+        <p class="tour-lead"></p>
+        <ul class="tour-legend"></ul>
+        <p class="tour-tip"></p>
+      </div>
+      <article class="tour-card" id="tour-card" hidden>
+        <button class="tour-close" type="button" aria-label="关闭">×</button>
+        <span class="tour-card-kicker"></span>
+        <h2></h2>
+        <p></p>
+        <span class="tour-back">点空白处或 × 返回总览</span>
+      </article>
+    </section>
+    <footer class="tour-keys"></footer>`;
+  document.body.appendChild(root);
+
+  const introEl = root.querySelector('#tour-intro');
+  const cardEl = root.querySelector('#tour-card');
+
+  /* 左上角标题：墨色斜切底 + 楷体大字（不传 ui.masthead 就不出现） */
+  const mastheadEl = root.querySelector('.tour-masthead');
+  if (ui.masthead) {
+    root.querySelector('.tour-masthead-index').textContent = ui.mastheadIndex || '';
+    root.querySelector('.tour-masthead h1').textContent = ui.masthead;
+    if (!ui.mastheadIndex) root.querySelector('.tour-masthead-index').remove();
+  } else {
+    mastheadEl.remove();
+  }
+
+  root.querySelector('.tour-kicker').textContent = ui.kicker || '';
+  root.querySelector('.tour-intro h1').textContent = ui.title || '';
+  root.querySelector('.tour-lead').textContent = ui.lead || '';
+  const tipEl = root.querySelector('.tour-tip');
+  if (ui.tip) tipEl.textContent = ui.tip; else tipEl.remove();
+  const legendEl = root.querySelector('.tour-legend');
+  for (const item of (ui.legend || [])) {
+    const li = document.createElement('li');
+    li.innerHTML = `<i></i><b></b><span></span>`;
+    li.querySelector('i').style.background = item.color;
+    li.querySelector('b').textContent = item.label;
+    li.querySelector('span').textContent = item.note || '';
+    legendEl.appendChild(li);
+  }
+  if (!(ui.legend || []).length) legendEl.remove();
+  const keysEl = root.querySelector('.tour-keys');
+  for (const k of (ui.keys || [])) {
+    const span = document.createElement('span');
+    for (const part of k) {
+      if (typeof part === 'string') { span.appendChild(document.createTextNode(part)); continue; }
+      const kbd = document.createElement('kbd');
+      kbd.textContent = part.kbd;
+      span.appendChild(kbd);
+    }
+    keysEl.appendChild(span);
+  }
+
+  if (QS.has('nohud')) root.style.display = 'none';
+
+  /* ---------- 2. 热点标记：金环 sprite + 不可见命中球 ---------- */
+  function ringTexture(size = 128) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    const g = cv.getContext('2d');
+    const c = size / 2;
+    g.strokeStyle = 'rgba(255,236,190,1)';
+    g.lineWidth = 7;
+    g.beginPath(); g.arc(c, c, c - 16, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(90,66,30,0.95)';
+    g.lineWidth = 3.4;
+    g.beginPath(); g.arc(c, c, c - 16, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = 'rgba(255,232,176,1)';
+    g.beginPath(); g.arc(c, c, 7, 0, Math.PI * 2); g.fill();
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+  const tex = ringTexture(128);
+  const hits = [];
+  /* 热点要加进宿主的场景：给 opts.scene（Object3D）或 opts.addTo（函数）即可 */
+  const addTo = opts.addTo || (opts.scene ? (o) => opts.scene.add(o) : null);
+  if (!addTo) console.warn('[tour] 缺少 opts.scene / opts.addTo，热点不会出现在场景里');
+  spots.forEach((s, i) => {
+    const grp = new THREE.Group();
+    grp.position.set(s.marker[0], s.marker[1], s.marker[2]);
+    const ring = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthWrite: false, depthTest: false, fog: false,
+    }));
+    ring.scale.set(ringScale, ringScale, 1);
+    ring.renderOrder = 6;
+    grp.add(ring);
+    const hitBall = new THREE.Mesh(
+      new THREE.SphereGeometry(s.hitR || 0.52, 10, 8),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
+    );
+    hitBall.userData.spot = s;
+    grp.add(hitBall);
+    if (addTo) addTo(grp);
+    s.group = grp; s.ring = ring; s.hit = hitBall;
+    s.phase = i * 1.7;
+    hits.push(hitBall);
+  });
+
+  /* ---------- 3. 状态 ---------- */
+  let active = null;
+  let hovered = null;
+  let side = '';
+  const size = { w: 300, h: 200 };
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let downX = 0, downY = 0, moved = 0, downId = null;
+
+  function measure() {
+    if (cardEl.hidden) return;
+    size.w = cardEl.offsetWidth || 300;
+    size.h = cardEl.offsetHeight || 200;
+  }
+
+  function screenOfWorld(p) {
+    const v = new THREE.Vector3(p[0], p[1], p[2]).project(camera);
+    const r = canvas.getBoundingClientRect();
+    return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height];
+  }
+
+  function spotAt(clientX, clientY) {
+    if (ready && !ready()) return null;
+    const r = canvas.getBoundingClientRect();
+    ndc.x = ((clientX - r.left) / r.width) * 2 - 1;
+    ndc.y = -((clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(ndc, camera);
+    const found = ray.intersectObjects(hits, false);
+    return found.length ? found[0].object.userData.spot : null;
+  }
+
+  function positionCard() {
+    if (cardEl.hidden || !active) return;
+    if (window.innerWidth < narrowWidth) { cardEl.style.transform = ''; return; }
+    const [sx, sy] = screenOfWorld(active.marker);
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const pad = 14;
+    let x = sx + gap;
+    let want = 'right-of-dot';
+    if (x + size.w + pad > vw) { x = sx - gap - size.w; want = 'left-of-dot'; }
+    x = Math.max(pad, Math.min(x, vw - size.w - pad));
+    let y = Math.max(pad, Math.min(sy - 26, vh - size.h - pad));
+    cardEl.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    if (want !== side) {
+      cardEl.classList.toggle('right-of-dot', want === 'right-of-dot');
+      cardEl.classList.toggle('left-of-dot', want === 'left-of-dot');
+      side = want;
+    }
+  }
+
+  function showCard(s) {
+    active = s;
+    cardEl.querySelector('.tour-card-kicker').textContent = s.en || '';
+    cardEl.querySelector('h2').textContent = s.name || '';
+    cardEl.querySelector('p').textContent = s.text || '';
+    cardEl.hidden = false;
+    introEl.hidden = true;
+    measure();
+    positionCard();
+  }
+  function showIntro() {
+    active = null;
+    cardEl.hidden = true;
+    introEl.hidden = false;
+  }
+  function open(id) {
+    const s = typeof id === 'string' ? spots.find((x) => x.id === id) : id;
+    if (!s) return false;
+    onFlyTo(s.view || {}, s);
+    showCard(s);
+    return true;
+  }
+  function close() {
+    showIntro();
+    onReset();
+  }
+  cardEl.querySelector('.tour-close').addEventListener('click', close);
+
+  /* ---------- 4. 指针：悬停高亮 + 轻点命中（不干扰宿主拖动） ---------- */
+  canvas.addEventListener('pointerdown', (e) => {
+    downX = e.clientX; downY = e.clientY; moved = 0; downId = e.pointerId;
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (downId !== null && e.pointerId === downId) {
+      moved = Math.max(moved, Math.hypot(e.clientX - downX, e.clientY - downY));
+      return;
+    }
+    if (!hover) return;
+    const s = spotAt(e.clientX, e.clientY);
+    hovered = s;
+    canvas.classList.toggle('tour-hover', !!s);
+  });
+  const finish = (e) => {
+    const isTap = downId === e.pointerId && moved < tapSlop && e.button !== 2;
+    downId = null;
+    if (!isTap) return;
+    const s = spotAt(e.clientX, e.clientY);
+    if (s) open(s);
+    else if (active) close();
+  };
+  window.addEventListener('pointerup', finish);
+  window.addEventListener('pointercancel', () => { downId = null; });
+  window.addEventListener('resize', () => { measure(); positionCard(); });
+
+  /* ---------- 5. 自己的 rAF：金环呼吸 + 卡片跟住光点 ---------- */
+  function loop() {
+    const t = performance.now() / 1000;
+    const shown = ready ? ready() : true;
+    for (const s of spots) {
+      s.group.visible = shown;
+      if (!shown) continue;
+      const pulse = 1 + Math.sin(t * 2.6 + s.phase) * 0.1;
+      const big = (s === hovered || s === active) ? 1.5 : 1;
+      const sc = ringScale * pulse * big;
+      s.ring.scale.set(sc, sc, 1);
+      s.ring.material.opacity = (s === active || s === hovered)
+        ? 1 : 0.78 + 0.14 * Math.sin(t * 2.6 + s.phase);
+    }
+    positionCard();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  /* ---------- 6. ?spot=id 直接打开 ---------- */
+  const initial = QS.get('spot');
+  if (initial) setTimeout(() => open(initial), 0);
+
+  /* ---------- 7. 调试接口 ---------- */
+  const api = {
+    spots: () => spots.map((s) => ({ id: s.id, name: s.name })),
+    open,
+    close,
+    active: () => (active ? active.id : null),
+    cardOpen: () => !cardEl.hidden,
+    screenOf: (id) => {
+      const s = spots.find((x) => x.id === id || x === id);
+      return s ? screenOfWorld(s.marker) : null;
+    },
+    reposition: () => { measure(); positionCard(); },
+  };
+  if (QS.has('debug')) {
+    setTimeout(() => {
+      const r = cardEl.getBoundingClientRect();
+      const p = cardEl.querySelector('p');
+      const pr = p.getBoundingClientRect();
+      const cs = getComputedStyle(cardEl);
+      document.title = JSON.stringify({
+        vw: window.innerWidth,
+        card: [Math.round(r.left), Math.round(r.right), Math.round(r.width)],
+        para: [Math.round(pr.left), Math.round(pr.right), Math.round(pr.width)],
+        cssWidth: cs.width, active: active ? active.id : null,
+      });
+    }, 3000);
+  }
+  return api;
+}
+import * as THREE from './vendor/three/build/three.module.js';
 
 /* 坎儿井 · 剖面沙盘 —— 三渲二微缩模型
  * 把一条坎儿井从「洪积扇渗水」到「涝坝出水」整段切开给你看：
@@ -276,7 +1053,7 @@ const depthMat = withAssemble(new THREE.MeshDepthMaterial({ depthPacking: THREE.
 
 /* ---------- 招牌图集：一块 canvas 画完所有文字，一次绘制 ---------- */
 const ATLAS = (() => {
-  const W = 1024, H = 2048;
+  const W = 1024, H = 3072;
   const cv = document.createElement('canvas');
   cv.width = W;
   cv.height = H;
@@ -290,6 +1067,7 @@ const ATLAS = (() => {
     const r = [cursorX, cursorY, w, h];
     cursorX += w + 4;
     rowH = Math.max(rowH, h);
+    if (r[1] + h > H) console.warn('[10-kit] 招牌图块超出画布，会渲染成黑块：' + name + ' y=' + r[1] + ' h=' + h);
     rects[name] = [r[0] / W, 1 - (r[1] + h) / H, (r[0] + w) / W, 1 - r[1] / H];
     return r;
   }
@@ -392,6 +1170,30 @@ const ATLAS = (() => {
   plaque('pGate', '民 俗 老 街');
   plaque('pKe', '客 栈');
 
+  /* ---- 坎儿井剖面标注：剖面图那种引线标签 ---- */
+  function klabel(name, text, en) {
+    panel(name, 260, 74, '#2f2a22', (c, w, h) => {
+      c.strokeStyle = '#c8a75e'; c.lineWidth = 2;
+      c.strokeRect(5, 5, w - 10, h - 10);
+      c.fillStyle = '#e8c987';
+      c.font = `bold 30px ${KAI}`;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(text, w / 2, en ? h / 2 - 6 : h / 2 + 1);
+      if (en) {
+        c.font = `11px ${HEI}`; c.fillStyle = '#a8916a';
+        c.fillText(en, w / 2, h / 2 + 21);
+      }
+    });
+  }
+  klabel('kShaft', '竖井', 'SHAFT');
+  klabel('kQan', '暗渠', 'QANAT');
+  klabel('kMing', '明渠', 'OPEN CHANNEL');
+  klabel('kSeep', '雪水渗入', 'SEEPAGE');
+  klabel('kAqua', '含水层', 'AQUIFER');
+  klabel('kGe', '戈壁表层', 'GOBI SURFACE');
+  klabel('kWell', '母井', 'MOTHER WELL');
+  klabel('kWo', '涝坝', 'RESERVOIR');
+
   /* ---- 坎儿井剖面沙盘用的几块牌子 ---- */
   plaque('pKarez', '坎 儿 井');
   plaque('pLaoba', '涝 坝');
@@ -480,6 +1282,30 @@ const ATLAS = (() => {
     han(c, '拾遗老街', w / 2, h / 2 - 6, 40, '#f2f6f8', KAI, 4);
     c.font = `13px ${HEI}`; c.fillStyle = '#b9d2e4'; c.textAlign = 'center';
     c.fillText('SHIYI  OLD  STREET', w / 2, h - 20);
+  });
+
+  /* ---- 水乡社戏用的几块牌子（只做追加，前面已有图块的位置不变） ---- */
+  plaque('pShe', '社 戏 台');
+  plaque('pShemiao', '社 庙');
+  banner('bGao', '糕团', '水磨');
+  banner('bLing', '菱角', '河鲜');
+  banner('bZong', '粽子', '箬叶');
+  banner('bYu', '鱼鲜', '河捕');
+  panel('plateShexi', 460, 92, '#22323a', (c, w, h) => {
+    c.strokeStyle = '#8fb6c4'; c.lineWidth = 2; c.strokeRect(6, 6, w - 12, h - 12);
+    han(c, '水 乡 社 戏', w / 2, 34, 30, '#d7ecf2', KAI, 4);
+    c.font = `12px ${HEI}`; c.fillStyle = '#8fb6c4'; c.textAlign = 'center';
+    c.fillText('WATER-TOWN  SHE-DRAMA', w / 2, 66);
+  });
+  panel('noticeShexi', 250, 200, '#e2dcc8', (c, w, h) => {
+    c.fillStyle = '#33403c'; c.font = `bold 21px ${KAI}`; c.textAlign = 'center';
+    c.fillText('戏 单', w / 2, 32);
+    c.font = `13px ${HEI}`; c.fillStyle = '#5a655e';
+    c.fillText('示意 · 不排具体剧目', w / 2, 56);
+    c.strokeStyle = 'rgba(60,72,66,.4)'; c.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      c.beginPath(); c.moveTo(24, 84 + i * 22); c.lineTo(w - 24, 84 + i * 22); c.stroke();
+    }
   });
 
   const tex = new THREE.CanvasTexture(cv);
@@ -653,13 +1479,20 @@ const KA = {
   tunnelX1: 15.0,
   tunnelY0: -4.55,      // 西端渠底
   tunnelY1: -0.78,      // 东端渠底（此处出地面）
-  tunnelW: 0.72,        // 渠宽
+  tunnelW: 0.72,        // 渠宽（净宽，两帮内侧之间）
   tunnelH: 0.98,        // 渠高
   waterH: 0.3,          // 水深
+  /* 渠内几何统一由这几条推出来，避免水比渠还宽 / 比渠还窄 */
+  wallT: 0.18,          // 渠帮厚度
+  floorT: 0.16,         // 渠底厚度
+  get tunnelClearW() { return this.tunnelW; },
+  /* 暗渠在剖面上凹进段的中心线（z） */
+  get tunnelCz() { return this.cutZ - this.tunnelDepthZ / 2; },
   /* 竖井：从西到东，越往东越浅 */
   shaftXs: [-17.6, -13.6, -9.6, -5.6, -1.6, 2.4, 6.4, 10.4, 13.4],
   shaftW: 0.92,
-  shaftDepthZ: 2.4,     // 竖井与暗渠在剖面上凹进去的深度（凹深一点才像洞）
+  shaftDepthZ: 2.4,     // 竖井挖进去的深度（要深，才像一口井）
+  tunnelDepthZ: 1.2,    // 暗渠只需要挖到能看见管子；挖太深水会像浮在壕沟里
 };
 
 /* 地层：从上到下的色带（对比拉开，剖面上要一眼分清） */
@@ -735,6 +1568,7 @@ layer(0.02);
   const strataOpt = { jitter: false, bucket: 'fine' };
   const depthAll = faceZ - KA.backZ;
   const midAll = (faceZ + KA.backZ) / 2;
+  const tz = KA.tunnelDepthZ;      // 暗渠凹进深度
 
   /* 每条地层都被暗渠切成几段：先找出被切的范围，整段用长条，切口用平直段 */
   for (const s of STRATA) {
@@ -799,30 +1633,37 @@ layer(0.02);
       x, rnd(-0.6, -1.5), faceZ + 0.03, { rz: rnd(0, 3), jitter: false, bucket: 'fine' });
   }
 
-  /* 暗渠：渠后土体 + 渠底 + 两帮（每段一整条） */
+  /* 暗渠：渠后土体 + 渠底 + 两帮（每段一整条；凹进深度用 tz，跟竖井分开） */
   for (const r of TUN_RUNS) {
     const w = r.x1 - r.x0;
     const cxr = (r.x0 + r.x1) / 2;
     const ty = r.y;
-    /* 渠后的土体：颜色跟周围地层拉开一点就够，不要做成大色块 */
-    P.box(w, KA.tunnelH + 0.1, faceZ - KA.shaftDepthZ - KA.backZ, 0x8f7d61,
-      cxr, ty + KA.tunnelH / 2, (faceZ - KA.shaftDepthZ + KA.backZ) / 2, strataOpt);
+    const cz = KA.tunnelCz;
+    const backFaceZ = faceZ - tz;
+    /* 渠后的土体：只挖 tz 深，剩下的全填实 */
+    P.box(w, KA.tunnelH + 0.1, backFaceZ - KA.backZ, 0x8f7d61,
+      cxr, ty + KA.tunnelH / 2, (backFaceZ + KA.backZ) / 2, strataOpt);
     /* 渠底：铺满整个凹进深度 */
-    P.box(w, 0.16, KA.shaftDepthZ + 0.1, 0x7d6844, cxr, ty - 0.08, KA.cutZ - KA.shaftDepthZ / 2, strataOpt);
-    /* 两帮：沿 z 方向的两道窄墙（窄在 x，长在 z），不能挡住洞口 */
+    P.box(w, KA.floorT, tz + 0.1, 0x7d6844, cxr, ty - KA.floorT / 2, cz, strataOpt);
+    /* 两帮：沿 z 的两道窄墙，内侧净距正好是 tunnelW */
     for (const sgn of [-1, 1]) {
-      P.box(0.18, KA.tunnelH, KA.shaftDepthZ + 0.06, 0x8a7550,
-        cxr + sgn * (KA.tunnelW / 2 + 0.09), ty + KA.tunnelH / 2, KA.cutZ - KA.shaftDepthZ / 2, strataOpt);
+      P.box(KA.wallT, KA.tunnelH, tz + 0.06, 0x8a7550,
+        cxr + sgn * (KA.tunnelW / 2 + KA.wallT / 2), ty + KA.tunnelH / 2, cz, strataOpt);
     }
   }
 
-  /* 支撑木架：每 6 米一副，细一点 */
+  /* 支撑木架：每 6 米一副，柱子贴着渠帮内侧，不插在水中间 */
   for (let x = t0 + 3; x < t1; x += 6.2) {
     const ty = runOf(x) ? runOf(x).y : tunnelY(x);
+    const cz = KA.tunnelCz;
+    /* 柱子做在渠帮里（跟帮同宽），只露出一点点边 */
     for (const sgn of [-1, 1]) {
-      P.box(0.08, KA.tunnelH - 0.06, 0.08, KAC.woodDark, x, ty + KA.tunnelH / 2, KA.cutZ - 0.12 + sgn * (KA.tunnelW / 2 + 0.12), { jitter: false });
+      P.box(0.09, KA.tunnelH - 0.02, 0.09, KAC.woodDark,
+        x, ty + KA.tunnelH / 2, cz + sgn * (KA.tunnelW / 2 + KA.wallT / 2), { jitter: false });
     }
-    P.box(0.08, 0.1, KA.tunnelW + 0.4, KAC.woodDark, x, ty + KA.tunnelH - 0.04, KA.cutZ - 0.12, { jitter: false });
+    /* 横梁架在渠顶，水面之上 */
+    P.box(0.09, 0.09, KA.tunnelW + KA.wallT * 2 + 0.02, KAC.woodDark,
+      x, ty + KA.tunnelH + 0.02, cz, { jitter: false });
   }
 }
 
@@ -831,10 +1672,10 @@ layer(0.06);
 {
   for (const sx of KA.shaftXs) {
     const ty = tunnelY(sx);
-    /* 井筒后壁与两侧 */
-    P.box(KA.shaftW, -ty, 0.14, 0x8d7a5e, sx, ty / 2, KA.cutZ - KA.shaftDepthZ + 0.07, { jitter: false });
+    /* 井筒后壁与两侧（颜色压暗一点，别做成一面发亮的大板子） */
+    P.box(KA.shaftW, -ty, 0.14, 0x6f5f48, sx, ty / 2, KA.cutZ - KA.shaftDepthZ + 0.07, { jitter: false });
     for (const sgn of [-1, 1]) {
-      P.box(0.12, -ty, KA.shaftDepthZ, 0x8a7150, sx + sgn * (KA.shaftW / 2 + 0.06), ty / 2, KA.cutZ - KA.shaftDepthZ / 2, { jitter: false });
+      P.box(0.12, -ty, KA.shaftDepthZ, 0x7a6648, sx + sgn * (KA.shaftW / 2 + 0.06), ty / 2, KA.cutZ - KA.shaftDepthZ / 2, { jitter: false });
     }
     /* 井壁上偶尔露出的卵石 */
     for (let i = 0; i < 5; i++) {
@@ -861,18 +1702,25 @@ layer(0.06);
 }
 /* ---------- 30 · 渠水、渗水段、明渠、涝坝 ---------- */
 
-/* 暗渠里的水：每段一整条，贴着渠底（进 fine 桶，别描边） */
+/* 暗渠里的水：几乎铺满渠内净宽，段与段之间接上（进 fine 桶，别描边） */
 layer(0.08);
 {
-  const wz = KA.cutZ - KA.shaftDepthZ + 0.12;
+  const cz = KA.tunnelCz;
+  /* 比净宽只小一点点：太窄会露出两侧土色，看起来像水没摆正 */
+  const wWater = KA.tunnelW - 0.02;
+  const wMid = KA.tunnelW - 0.08;
+  const wHi = KA.tunnelW - 0.16;
   for (const r of TUN_RUNS) {
-    const w = r.x1 - r.x0;
-    const cxr = (r.x0 + r.x1) / 2;
+    /* 前后各多给 0.02，让相邻两段接上，不在中间露缝 */
+    const x0 = Math.max(KA.tunnelX0, r.x0 - 0.02);
+    const x1 = Math.min(KA.tunnelX1, r.x1 + 0.02);
+    const w = x1 - x0;
+    const cxr = (x0 + x1) / 2;
     const ty = r.y;
     const o = { jitter: false, bucket: 'fine' };
-    P.box(w, 0.36, KA.tunnelW + 0.1, 0x2f6f96, cxr, ty + 0.18, wz, o);
-    P.box(w, 0.32, KA.tunnelW - 0.06, 0x4f93b8, cxr, ty + 0.26, wz + 0.04, o);
-    P.box(w, 0.06, KA.tunnelW - 0.16, 0x9ed8ec, cxr, ty + 0.44, wz + 0.04, { jitter: false, bucket: 'glow' });
+    P.box(w, KA.waterH, wWater, 0x2f6f96, cxr, ty + KA.waterH / 2, cz, o);
+    P.box(w, KA.waterH * 0.7, wMid, 0x4f93b8, cxr, ty + KA.waterH * 0.6, cz, o);
+    P.box(w, 0.05, wHi, 0x9ed8ec, cxr, ty + KA.waterH - 0.01, cz, { jitter: false, bucket: 'glow' });
   }
 }
 
@@ -956,10 +1804,10 @@ layer(0.13);
 {
   for (let i = 0; i < 14; i++) {
     const x = rnd(KA.tunnelX0 + 0.5, KA.tunnelX1 - 0.5);
-    const ty = tunnelY(x);
-    addGeo(new THREE.PlaneGeometry(0.5, 0.24), KAC.waterHi, {
+    const ty = runOf(x) ? runOf(x).y : tunnelY(x);
+    addGeo(new THREE.PlaneGeometry(0.5, 0.2), KAC.waterHi, {
       bucket: 'flow',
-      x, y: ty + KA.waterH - 0.01, z: KA.cutZ - 0.12,
+      x, y: ty + KA.waterH + 0.005, z: KA.tunnelCz,
       rx: -Math.PI / 2,
       jitter: false,
     });
@@ -1113,8 +1961,8 @@ function grapeRow(x, z, len, ry) {
     P.cyl(0.07, 0.1, 1.9, 0x6b4f2c, px + rnd(-0.1, 0.1), 0.95, pz + rnd(-0.1, 0.1), { rz: rnd(-0.06, 0.06), jitter: false }, 6);
   }
 }
-grapeRow(-4.4, -3.2, 6.4, 0);
-grapeRow(-4.4, -1.2, 6.4, 0);
+grapeRow(-3.4, -3.2, 6.4, 0);
+grapeRow(-3.4, -1.2, 6.4, 0);
 grapeRow(5.0, -2.6, 4.6, 0);
 
 /* ---------- 白杨：新疆那种瘦高的树 ---------- */
@@ -1229,6 +2077,324 @@ layer(0.32);
   /* 车上装的土 */
   P.sph(0.5, 0xa88a5e, x - 0.1, 0.92, z, { sy: 0.55, sx: 1.6 }, 10, 6);
 }
+/* ---------- 45 · 渠内施工、地面生活、地层细节 ---------- */
+/* 剖面标注不在这里做了：改成可点击的热点，见 50-life.js 的 HOTSPOTS */
+
+/* ---------- 渠内施工：两个挖渠的人 + 一盏定向油灯 ---------- */
+layer(0.42);
+{
+  const cz = KA.tunnelCz;
+  /* 坎儿井挖暗渠时在渠里点油灯定向，这是这门技艺最有名的一个细节 */
+  function channelLamp(x) {
+    const ty = (runOf(x) ? runOf(x).y : tunnelY(x));
+    P.cyl(0.05, 0.07, 0.12, 0x8a6a44, x, ty + 0.06, cz + KA.tunnelW / 2 + 0.03, {}, 8);
+    P.sph(0.05, 0xffd9a0, x, ty + 0.16, cz + KA.tunnelW / 2 + 0.03, { jitter: false, bucket: 'glow' }, 6, 4);
+    glowPts.push([x, ty + 0.16, KA.cutZ + 0.02, 0.9, 0xffc98a, 0.62]);
+  }
+  channelLamp(-5.2);
+  channelLamp(1.6);
+  channelLamp(8.4);
+
+  /* 蹲着挖土的两个人：低模，蹲姿，手里一把坎土曼 */
+  function digger(x, flip) {
+    const ty = (runOf(x) ? runOf(x).y : tunnelY(x));
+    const s = 0.74;                      // 渠里只有 0.98 高，只能蹲着
+    const bz = cz - flip * 0.06;
+    const coat = flip ? 0x8a6a44 : 0x5f6f8a;
+    P.box(0.34, 0.3, 0.24, coat, x, ty + 0.16, bz, { jitter: false });          // 身
+    P.box(0.3, 0.16, 0.26, 0x4a3a2a, x - 0.02, ty + 0.05, bz + 0.04, { jitter: false }); // 蹲着的腿
+    P.sph(0.13, 0xe0c39a, x + 0.02, ty + 0.44, bz, { jitter: false }, 8, 6);    // 头
+    P.box(0.16, 0.1, 0.16, 0xd9c39a, x + 0.02, ty + 0.55, bz, { jitter: false }); // 小帽
+    P.box(0.08, 0.3, 0.08, coat, x + 0.2, ty + 0.3, bz, { rz: -0.5 * flip, jitter: false }); // 手臂
+    /* 坎土曼：木柄 + 铁头 */
+    P.box(0.03, 0.5, 0.03, 0x6b4f2c, x + 0.34, ty + 0.3, bz, { rz: 0.9 * flip, jitter: false });
+    P.box(0.16, 0.12, 0.03, 0x4a4a50, x + 0.52, ty + 0.14, bz, { rz: 0.3, jitter: false });
+  }
+  digger(-3.4, 1);
+  digger(4.8, -1);
+
+  /* 渠底堆的一小堆碎土与土筐 */
+  const t1 = runOf(-3.4) ? runOf(-3.4).y : tunnelY(-3.4);
+  P.sph(0.24, 0xa88a5e, -2.9, t1 + 0.08, cz + 0.1, { sy: 0.45, sx: 1.4 }, 9, 6);
+  P.cyl(0.16, 0.13, 0.2, KAC.wood, 5.4, t1 + 0.1, cz - 0.08, {}, 9);
+}
+
+/* ---------- 井口三脚吊架 + 吊土筐（另选两口井） ---------- */
+layer(0.43);
+{
+  function headframe(x) {
+    const z = KA.cutZ - 0.85;
+    const top = 2.55;
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2 + 0.5;
+      const bx = x + Math.cos(a) * 0.62, bz = z + Math.sin(a) * 0.5;
+      const dx = x - bx, dz = z - bz, dy = top;
+      const len = Math.hypot(dx, dy, dz);
+      P.box(0.09, len, 0.09, KAC.woodDark, (x + bx) / 2, dy / 2, (z + bz) / 2, {
+        rx: Math.atan2(dz, dy), rz: -Math.atan2(dx, dy), jitter: false,
+      });
+    }
+    /* 顶上挂的滑轮与绳 */
+    P.cyl(0.11, 0.11, 0.07, 0x6a6f75, x, top, z, { rz: Math.PI / 2 }, 10);
+    P.box(0.03, 0.5, 0.03, KAC.rope, x, top - 0.3, z, { jitter: false });
+    /* 吊着的土筐 */
+    P.cyl(0.18, 0.15, 0.24, KAC.wood, x, top - 0.68, z, {}, 10);
+    P.torus(0.18, 0.02, KAC.rope, x, top - 0.55, z, { rx: Math.PI / 2 }, 4, 10);
+    P.sph(0.2, 0xa88a5e, x, top - 0.8, z, { sy: 0.5 }, 8, 5);
+  }
+  headframe(KA.shaftXs[1]);
+  headframe(KA.shaftXs[6]);
+}
+
+/* ---------- 涝坝边的生活：水槽、饮水的驴、取水的人 ---------- */
+layer(0.44);
+{
+  const px = 18.0, pz = KA.cutZ - 3.6;
+  /* 木水槽 */
+  P.box(1.5, 0.16, 0.42, KAC.wood, px - 2.5, 0.42, pz + 2.4, { jitter: true });
+  for (const s of [-1, 1]) P.box(0.12, 0.4, 0.34, KAC.woodDark, px - 2.5 + s * 0.62, 0.2, pz + 2.4, { jitter: false });
+  P.box(1.3, 0.06, 0.28, KAC.water, px - 2.5, 0.48, pz + 2.4, { jitter: false, bucket: 'fine' });
+  P.box(1.3, 0.02, 0.2, KAC.waterHi, px - 2.5, 0.52, pz + 2.4, { jitter: false, bucket: 'glow' });
+
+  /* 一头驴在喝水：低模 */
+  {
+    const x = px - 3.6, z = pz + 2.5;
+    P.sph(0.36, 0x8a7a68, x, 0.72, z, { sy: 0.75, sx: 1.5 }, 10, 7);         // 身
+    P.box(0.2, 0.35, 0.2, 0x8a7a68, x - 0.62, 0.95, z, { rz: 0.5, jitter: false }); // 脖子
+    P.sph(0.16, 0x9a8a76, x - 0.82, 1.12, z, { sy: 0.8, sx: 1.2 }, 9, 6);    // 头
+    for (const s of [-1, 1]) {
+      P.box(0.05, 0.2, 0.05, 0x6b5a48, x - 0.86, 1.3, z + s * 0.07, { rz: s * 0.25, jitter: false }); // 耳朵
+    }
+    for (const [dx, dz] of [[-0.28, -0.14], [-0.28, 0.14], [0.3, -0.14], [0.3, 0.14]]) {
+      P.box(0.08, 0.6, 0.08, 0x6b5a48, x + dx, 0.3, z + dz, { jitter: false });
+    }
+    P.box(0.04, 0.34, 0.04, 0x4a3f34, x + 0.56, 0.72, z, { rz: -0.5, jitter: false }); // 尾巴
+  }
+
+  /* 两个取水／洗衣的人 */
+  person(px - 1.6, pz + 1.9, { ry: -1.2, basket: true });
+  person(px + 0.6, pz + 2.6, { ry: -1.6, coat: 0xb8452f });
+  /* 洗衣的石板与木盆 */
+  P.box(0.8, 0.14, 0.6, 0xa89a86, px - 2.9, 0.07, pz + 1.5, { jitter: true });
+  P.cyl(0.26, 0.22, 0.2, KAC.wood, px - 2.3, 0.1, pz + 1.9, {}, 12);
+}
+
+/* ---------- 葡萄长廊：再加两排，把架子连成一条廊 ---------- */
+layer(0.45);
+grapeRow(2.2, -5.6, 9.0, 0);
+grapeRow(2.2, -4.2, 9.0, 0);
+
+/* ---------- 院子周边：馕坑、柴堆、麦草垛、羊 ---------- */
+layer(0.46);
+{
+  /* 馕坑：土坯圆炉，顶上收口，侧边一个火口 */
+  const nx = -11.2, nz = -1.5;
+  P.cyl(0.46, 0.58, 1.0, KAC.adobe, nx, 0.5, nz, {}, 14);
+  P.sph(0.46, KAC.adobeDark, nx, 1.02, nz, { sy: 0.5 }, 12, 7);
+  P.cyl(0.24, 0.3, 0.1, 0x3a3128, nx, 1.22, nz, {}, 12);
+  P.box(0.34, 0.3, 0.2, 0x2a2420, nx + 0.5, 0.3, nz, { jitter: false });
+  P.box(0.4, 0.1, 0.3, 0xa89a86, nx + 0.62, 0.05, nz, { jitter: true });
+  /* 坑边挂的馕 */
+  P.cyl(0.14, 0.14, 0.03, 0xd9b46a, nx - 0.42, 0.62, nz + 0.42, { rx: 1.2 }, 12);
+
+  /* 柴堆 */
+  const fx = -12.6, fz = -3.0;
+  for (let r = 0; r < 3; r++) {
+    for (let i = 0; i < 5; i++) {
+      P.cyl(0.09, 0.09, 1.1, pick([KAC.wood, KAC.woodDark, 0x8a7150]), fx + i * 0.2 - 0.4, 0.12 + r * 0.18, fz + r * 0.02, { rz: Math.PI / 2, jitter: true }, 6);
+    }
+  }
+
+  /* 麦草垛：两个圆锥 */
+  for (const [sx, sz, r] of [[-7.4, -5.4, 0.9], [-6.6, -4.6, 0.7]]) {
+    P.cyl(r * 0.55, r, 0.9, 0xd9c39a, sx, 0.45, sz, {}, 12);
+    P.cyl(0.06, r, 0.55, 0xd2ba90, sx, 1.18, sz, {}, 12);
+    P.cyl(0.05, 0.08, 0.3, 0x9a8156, sx, 1.6, sz, {}, 6);
+  }
+
+  /* 三只羊 */
+  function sheep(x, z, r = 0) {
+    const c = Math.cos(r), s2 = Math.sin(r);
+    const at = (lx, lz) => [x + lx * c - lz * s2, z + lx * s2 + lz * c];
+    P.sph(0.3, 0xf0ead8, x, 0.44, z, { sy: 0.8, sx: 1.35, ry: r }, 10, 7);
+    const [hx, hz] = at(-0.42, 0);
+    P.sph(0.14, 0x4a4238, hx, 0.52, hz, { sy: 0.9 }, 8, 6);
+    const [ex, ez] = at(-0.52, 0.08);
+    P.sph(0.05, 0xd9c9a8, ex, 0.58, ez, {}, 6, 4);
+    for (const [lx, lz] of [[-0.2, -0.12], [-0.2, 0.12], [0.22, -0.12], [0.22, 0.12]]) {
+      const [px2, pz2] = at(lx, lz);
+      P.box(0.06, 0.3, 0.06, 0x4a4238, px2, 0.15, pz2, { jitter: false });
+    }
+  }
+  sheep(-5.6, -1.8, 0.4);
+  sheep(-4.9, -2.4, -0.8);
+  sheep(-5.3, -3.1, 0.1);
+  /* 圈羊的矮栅栏 */
+  for (let i = 0; i < 7; i++) {
+    P.box(0.07, 0.6, 0.07, KAC.woodDark, -6.4 + i * 0.36, 0.3, -1.3, { jitter: false });
+  }
+  P.box(2.3, 0.06, 0.06, KAC.woodDark, -5.3, 0.52, -1.3, { jitter: false });
+  P.box(2.3, 0.06, 0.06, KAC.woodDark, -5.3, 0.22, -1.3, { jitter: false });
+}
+
+/* ---------- 地层里的细节：含水层水位线、卵石透镜体、井壁脚窝、基岩裂隙 ---------- */
+layer(0.47);
+{
+  const o = { jitter: false, bucket: 'fine' };
+  /* 含水层水位线：一道断续的蓝线（剖面图里的潜水面） */
+  const wtY = -3.30;
+  for (let x = -KA.halfX + 0.6; x < KA.halfX - 0.6; x += 0.62) {
+    if (isShaftX(x)) continue;
+    P.box(0.38, 0.07, 0.06, 0x2f6f96, x, wtY, KA.cutZ + 0.05, o);
+  }
+  /* 水位线两端各画一个小三角，表示水面 */
+  for (const x of [-18.6, 18.4]) {
+    P.box(0.26, 0.07, 0.07, 0x2f6f96, x, wtY + 0.14, KA.cutZ + 0.05, { rz: 0.6, bucket: 'fine', jitter: false });
+    P.box(0.26, 0.07, 0.07, 0x2f6f96, x, wtY + 0.14, KA.cutZ + 0.05, { rz: -0.6, bucket: 'fine', jitter: false });
+  }
+  /* 卵石透镜体：砂层里夹的一窝砾石（古河道留下的） */
+  for (let i = 0; i < 34; i++) {
+    const t = rnd(-1, 1);
+    const lx = 6.6 + t * 1.5;
+    const ly = -2.15 + rnd(-0.28, 0.28) * (1 - Math.abs(t) * 0.55);
+    P.box(rnd(0.1, 0.2), rnd(0.07, 0.13), 0.09, pick([0xb5a894, 0x8d8071, 0xc7bda8, 0x9c9080]),
+      lx, ly, KA.cutZ + 0.06, { rz: rnd(0, 3), ...o });
+  }
+  /* 基岩裂隙：几条暗缝 */
+  for (let i = 0; i < 12; i++) {
+    const x = rnd(-KA.halfX + 1, KA.halfX - 1);
+    P.box(rnd(0.5, 1.4), 0.045, 0.05, 0x33302a, x, rnd(-5.35, -6.05), KA.cutZ + 0.04,
+      { rz: rnd(-0.35, 0.35), ...o });
+  }
+  /* 井壁脚窝：下井的人踩着上下 */
+  for (const sx of KA.shaftXs) {
+    const ty = tunnelY(sx);
+    for (let i = 1; i < 9; i++) {
+      const y = ty - 0.35 + i * 0.42;
+      if (y > -0.25) break;
+      for (const sgn of [-1, 1]) {
+        P.box(0.2, 0.06, 0.1, 0x6f5a3f, sx + sgn * (KA.shaftW / 2 + 0.02), y, KA.cutZ - KA.shaftDepthZ + 0.16,
+          { bucket: 'fine', jitter: false });
+      }
+    }
+  }
+}
+
+/* ---------- 下游的水磨：明渠的水推着轮子转 ---------- */
+layer(0.48);
+{
+  const chZ = KA.cutZ - 0.7;          // 明渠所在 z
+  const wheelX = 16.05;
+  const waterY = THREE.MathUtils.lerp(KA.tunnelY1 + 0.12, -0.02, (wheelX - KA.tunnelX1) / (16.9 - KA.tunnelX1));
+  const axleY = waterY + 0.72;
+
+  /* 水轮（单独成网格，五十里让它转）：轴向沿 z */
+  addGeo(new THREE.TorusGeometry(0.86, 0.055, 6, 20), KAC.woodDark, { bucket: 'millwheel', jitter: false });
+  addGeo(new THREE.TorusGeometry(0.5, 0.04, 5, 16), KAC.woodDark, { bucket: 'millwheel', jitter: false });
+  for (let i = 0; i < 4; i++) {
+    addGeo(new THREE.BoxGeometry(1.72, 0.07, 0.09), KAC.wood, { bucket: 'millwheel', rz: (i / 4) * Math.PI, jitter: false });
+  }
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    addGeo(new THREE.BoxGeometry(0.1, 0.3, 0.44), KAC.wood,
+      { bucket: 'millwheel', x: Math.cos(a) * 0.84, y: Math.sin(a) * 0.84, rz: a, jitter: false });
+  }
+  addGeo(new THREE.CylinderGeometry(0.07, 0.07, 0.72, 10), 0x6a6f75, { bucket: 'millwheel', rx: Math.PI / 2, jitter: false });
+
+  /* 轮轴两端的木支架，架在渠上 */
+  for (const sgn of [-1, 1]) {
+    P.cyl0(0.11, 0.14, axleY + 0.5, KAC.woodDark, wheelX - 0.55, waterY - 0.5, chZ + sgn * 0.5, {}, 8);
+    P.cyl0(0.11, 0.14, axleY + 0.5, KAC.woodDark, wheelX + 0.55, waterY - 0.5, chZ + sgn * 0.5, {}, 8);
+    P.box(0.2, 0.14, 1.3, KAC.woodDark, wheelX, axleY, chZ + sgn * 0.5, { jitter: false });
+  }
+  /* 轮下的小堰：把水攒起来冲轮子 */
+  P.box(0.5, 0.3, 1.0, 0xa89a86, wheelX - 0.9, waterY - 0.28, chZ, { jitter: true });
+
+  /* 磨坊：土坯小屋，门朝着水轮 */
+  const mx = wheelX - 0.4, mz = chZ - 2.5;
+  P.box(2.6, 0.26, 2.2, 0xa89a86, mx, 0.13, mz, { jitter: true });
+  P.box(2.3, 2.0, 1.9, KAC.adobe, mx, 1.26, mz, { jitter: false });
+  P.box(2.7, 0.2, 2.3, KAC.adobeDark, mx, 2.36, mz, { jitter: false });
+  for (let i = 0; i < 4; i++) {
+    P.cyl(0.05, 0.05, 2.5, KAC.wood, mx, 2.56, mz - 0.9 + i * 0.6, { rz: Math.PI / 2 }, 6);
+  }
+  P.box(0.9, 1.4, 0.12, KAC.woodDark, mx, 0.98, mz + 0.98, { jitter: false });   // 门
+  P.box(0.5, 0.5, 0.1, KAC.woodDark, mx + 0.75, 1.5, mz + 0.98, { jitter: false }); // 窗
+  /* 屋里的磨盘：上下两扇石磨 + 木架 */
+  P.box(1.0, 0.7, 0.9, KAC.wood, mx + 0.2, 0.6, mz - 0.2, { jitter: true });
+  P.cyl(0.42, 0.42, 0.12, 0x9c9488, mx + 0.2, 1.01, mz - 0.2, {}, 16);
+  P.cyl(0.4, 0.4, 0.12, 0xa89a86, mx + 0.2, 1.13, mz - 0.2, {}, 16);
+  P.cyl(0.05, 0.05, 0.5, KAC.woodDark, mx + 0.2, 1.35, mz - 0.2, {}, 8);
+  /* 磨好的面袋 */
+  for (let i = 0; i < 3; i++) {
+    P.sph(0.24, 0xd9c9a8, mx + 0.85, 0.22, mz - 0.9 + i * 0.4, { sy: 0.8, sx: 1.05 }, 9, 6);
+  }
+}
+
+/* ---------- 葡萄干晾架：晾房外面的托盘 ---------- */
+layer(0.49);
+{
+  function dryRack(x, z, ry = 0) {
+    const c = Math.cos(ry), s = Math.sin(ry);
+    const at = (lx, lz) => [x + lx * c - lz * s, z + lx * s + lz * c];
+    for (const [lx, lz] of [[-0.8, -0.45], [0.8, -0.45], [-0.8, 0.45], [0.8, 0.45]]) {
+      const [px, pz] = at(lx, lz);
+      P.cyl0(0.06, 0.07, 1.15, KAC.woodDark, px, 0, pz, {}, 6);
+    }
+    for (const lz of [-0.45, 0.45]) {
+      const [px, pz] = at(0, lz);
+      P.box(1.8, 0.08, 0.08, KAC.wood, px, 1.1, pz, { ry, jitter: false });
+    }
+    /* 两层托盘 + 葡萄 */
+    for (const ly of [0.5, 0.95]) {
+      for (const lz of [-0.45, 0.45]) {
+        const [px, pz] = at(0, lz);
+        P.box(1.7, 0.07, 0.62, KAC.wood, px, ly, pz, { ry, jitter: true });
+        const [gx, gz] = at(0, lz);
+        for (let i = 0; i < 14; i++) {
+          P.sph(rnd(0.06, 0.1), pick([0x6a4a7a, 0x5f7a3a, 0x7a5a8a]), gx + rnd(-0.7, 0.7) * c, ly + 0.07, gz + rnd(-0.2, 0.2), { sy: 0.6 }, 6, 4);
+        }
+      }
+    }
+  }
+  dryRack(12.4, -1.5, 0.1);
+  dryRack(13.6, -0.9, -0.15);
+}
+
+/* ---------- 骆驼商队：两只骆驼 + 一个牵驼人 ---------- */
+layer(0.5);
+{
+  function camel(x, z, ry) {
+    const c = Math.cos(ry), s = Math.sin(ry);
+    const at = (lx, lz) => [x + lx * c - lz * s, z + lx * s + lz * c];
+    const coat = 0xb59a6a;
+    P.sph(0.42, coat, x, 1.28, z, { sy: 0.68, sx: 1.6, ry, jitter: false }, 12, 8);
+    const [h1x, h1z] = at(-0.32, 0), [h2x, h2z] = at(0.28, 0);
+    P.sph(0.29, coat, h1x, 1.66, h1z, { sy: 0.85, sx: 1.05, jitter: false }, 10, 7);
+    P.sph(0.27, coat, h2x, 1.63, h2z, { sy: 0.85, sx: 1.05, jitter: false }, 10, 7);
+    /* 脖子（斜着往前上方）与头 */
+    const [nx, nz] = at(-0.62, 0);
+    P.box(0.2, 0.72, 0.2, coat, nx, 1.62, nz, { ry, rz: 0.5, jitter: false });
+    const [hx, hz] = at(-1.02, 0);
+    P.sph(0.17, coat, hx, 1.94, hz, { sy: 0.8, sx: 1.5, ry, jitter: false }, 9, 6);
+    const [mxx, mzz] = at(-1.28, 0);
+    P.sph(0.1, 0x8a7450, mxx, 1.88, mzz, { sy: 0.8, sx: 1.3, ry, jitter: false }, 8, 5);
+    for (const sgn of [-1, 1]) {
+      const [ex, ez] = at(-1.02, sgn * 0.12);
+      P.box(0.06, 0.14, 0.05, 0x8a7450, ex, 2.06, ez, { rz: sgn * 0.2, jitter: false });
+    }
+    for (const [lx, lz] of [[-0.4, -0.16], [-0.4, 0.16], [0.42, -0.16], [0.42, 0.16]]) {
+      const [px, pz] = at(lx, lz);
+      P.box(0.11, 1.15, 0.11, coat, px, 0.58, pz, { jitter: false });
+      P.box(0.14, 0.1, 0.16, 0x6b5a48, px, 0.05, pz, { jitter: true });
+    }
+    const [tx, tz] = at(0.72, 0);
+    P.box(0.05, 0.44, 0.05, 0x6b5a48, tx, 1.32, tz, { rz: -0.4, jitter: false });
+  }
+  camel(6.4, 1.1, 0.06);
+  camel(8.1, 1.35, -0.04);
+  person(9.6, 1.2, { ry: -1.5, coat: 0x8a6a44, hat: 0xd9c39a });
+}
 /* ---------- 50 · 光、动效、交互、主循环 ---------- */
 
 finishBucket('solid', toonMat, true);
@@ -1287,6 +2453,26 @@ function radialTexture(size = 128) {
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
 }
+/* 馕坑的烟：一小股，慢慢往上飘 */
+const NAAN_N = 26;
+const naanPos = new Float32Array(NAAN_N * 3);
+const naanSeed = new Float32Array(NAAN_N);
+const NAAN_X = -11.2, NAAN_Z = -1.5, NAAN_Y0 = 1.3;
+for (let i = 0; i < NAAN_N; i++) {
+  naanPos[i * 3] = NAAN_X + rnd(-0.18, 0.18);
+  naanPos[i * 3 + 1] = NAAN_Y0 + rnd(0, 1.4);
+  naanPos[i * 3 + 2] = NAAN_Z + rnd(-0.18, 0.18);
+  naanSeed[i] = rnd(0, 1);
+}
+const naanGeo = new THREE.BufferGeometry();
+naanGeo.setAttribute('position', new THREE.BufferAttribute(naanPos, 3));
+const naanSmoke = new THREE.Points(naanGeo, new THREE.PointsMaterial({
+  map: radialTexture(64), color: 0xf2efe6, size: 0.4, sizeAttenuation: true,
+  transparent: true, opacity: 0.26, depthWrite: false, fog: true,
+}));
+naanSmoke.frustumCulled = false;
+scene.add(naanSmoke);
+
 const glowSprites = [];
 for (const [x, y, z, s, c, o] of glowPts) {
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({
@@ -1301,6 +2487,9 @@ for (const [x, y, z, s, c, o] of glowPts) {
   scene.add(sp);
   glowSprites.push(sp);
 }
+
+/* 热点标记、卡片与介绍面板由共用组件 tools/shared/tour.js 负责，
+   热点数据在 60-tour.js 里配。 */
 
 /* 底座下面一层接触阴影，别让模型飘着 */
 {
@@ -1343,6 +2532,15 @@ function makeSeparate(name) {
 const flow = makeSeparate('flow');
 const pond = makeSeparate('pond');
 
+/* 下游水磨的轮子：明渠的水推着它转（轴向沿 z，绕 z 转） */
+const millWheel = makeSeparate('millwheel');
+if (millWheel) {
+  const mx = 16.05;
+  const chZ = KA.cutZ - 0.7;
+  const waterY = THREE.MathUtils.lerp(KA.tunnelY1 + 0.12, -0.02, (mx - KA.tunnelX1) / (16.9 - KA.tunnelX1));
+  millWheel.position.set(mx, waterY + 0.72, chZ);
+}
+
 /* 渠水条纹沿坡往下漂 */
 let flowOff = 0;
 function moveFlow(dt) {
@@ -1380,7 +2578,8 @@ for (const sx of [KA.shaftXs[3], KA.shaftXs[5], KA.shaftXs[7]]) {
 const cam = {
   az: -0.5, pol: 0.8, dist: 120,
   goalAz: -0.34, goalPol: 1.3, goalDist: 44,
-  target: new THREE.Vector3(0, -2.3, 0),
+  /* 看点稍微往东偏，让模型避开左上角的介绍面板 */
+  target: new THREE.Vector3(2.6, -2.3, 0),
 };
 if (window.innerWidth < window.innerHeight) {
   cam.goalAz = -0.16;
@@ -1414,9 +2613,34 @@ let NOW = 0;
 const pointers = new Map();
 let pinchDist = 0;
 
+/* ---------- 相机适配：供共用导览组件调用 ---------- */
+const camTargetGoal = cam.target.clone();
+
+/* 把镜头目标设过去（updateCamera 会插值，形成「飞过去」的效果） */
+function flyTo(v) {
+  if (Number.isFinite(v.az)) cam.goalAz = v.az;
+  if (Number.isFinite(v.pol)) cam.goalPol = v.pol;
+  if (Number.isFinite(v.dist)) cam.goalDist = v.dist;
+  if (Number.isFinite(v.tx) || Number.isFinite(v.ty) || Number.isFinite(v.tz)) {
+    camTargetGoal.set(
+      Number.isFinite(v.tx) ? v.tx : cam.target.x,
+      Number.isFinite(v.ty) ? v.ty : cam.target.y,
+      Number.isFinite(v.tz) ? v.tz : cam.target.z
+    );
+  }
+  lastInput = NOW;                 // 别让闲置自转马上把镜头带走
+}
+const HOME_VIEW = { az: -0.34, pol: 1.3, dist: 44, tx: 2.6, ty: -2.3, tz: 0 };
+function resetView() { flyTo(HOME_VIEW); }
+
 function clampTarget() {
   cam.target.x = THREE.MathUtils.clamp(cam.target.x, -21, 21);
   cam.target.z = THREE.MathUtils.clamp(cam.target.z, -7, 7);
+}
+/* 手动平移/走动时，把目标点同步给插值目标，否则会互相拽 */
+function syncTargetGoal() {
+  clampTarget();
+  camTargetGoal.copy(cam.target);
 }
 function panBy(dx, dy) {
   const k = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * cam.dist * fitK) / Math.max(window.innerHeight, 1);
@@ -1424,7 +2648,7 @@ function panBy(dx, dy) {
   const fx = -Math.sin(cam.az), fz = -Math.cos(cam.az);
   cam.target.x += -rx * dx * k + fx * dy * k;
   cam.target.z += -rz * dx * k + fz * dy * k;
-  clampTarget();
+  syncTargetGoal();
   lastInput = NOW;
 }
 const held = new Set();
@@ -1449,7 +2673,7 @@ function moveByKeys(dt) {
   if (len > 0) {
     cam.target.x += (mx / len) * speed * dt;
     cam.target.z += (mz / len) * speed * dt;
-    clampTarget();
+    syncTargetGoal();
     lastInput = NOW;
   }
 }
@@ -1470,7 +2694,7 @@ function onPointerDown(e) {
   }
 }
 function onPointerMove(e) {
-  if (!pointers.has(e.pointerId)) return;
+  if (!pointers.has(e.pointerId)) return;      // 悬停探测交给 tour 组件
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   lastInput = NOW;
   if (pointers.size >= 2) {
@@ -1510,9 +2734,13 @@ canvas.addEventListener('contextmenu', (e) => e.preventDefault());
 
 function updateCamera(dt, now) {
   if (intro.done) {
-    cam.dist += (cam.goalDist - cam.dist) * Math.min(1, dt * 5);
-    cam.az += (cam.goalAz - cam.az) * Math.min(1, dt * 5);
-    cam.pol += (cam.goalPol - cam.pol) * Math.min(1, dt * 5);
+    const k = Math.min(1, dt * 3.2);
+    cam.dist += (cam.goalDist - cam.dist) * k;
+    cam.az += (cam.goalAz - cam.az) * k;
+    cam.pol += (cam.goalPol - cam.pol) * k;
+    /* 看点也插值，点热点飞过去才顺 */
+    cam.target.lerp(camTargetGoal, k);
+    clampTarget();
     /* 闲置一会儿就慢慢转 */
     if (now - lastInput > 6) cam.goalAz += dt * 0.06;
   } else {
@@ -1523,6 +2751,7 @@ function updateCamera(dt, now) {
     cam.az = THREE.MathUtils.lerp(-0.5, cam.goalAz, k);
     cam.pol = THREE.MathUtils.lerp(0.8, cam.goalPol, k);
     cam.dist = THREE.MathUtils.lerp(120, cam.goalDist, k);
+    cam.target.copy(camTargetGoal);
     if (intro.t >= intro.dur || performance.now() >= intro.deadline) finishIntro();
   }
   const d = cam.dist * fitK;
@@ -1566,6 +2795,20 @@ function frame() {
   /* 水面呼吸 */
   if (flow) flow.position.y += Math.sin(now * 1.6) * 0.004;
   if (pond) pond.position.y = Math.sin(now * 1.1) * 0.012;
+  /* 水轮匀速转 */
+  if (millWheel) millWheel.rotation.z = -now * 0.7;
+
+  /* 馕坑的烟 */
+  for (let i = 0; i < NAAN_N; i++) {
+    naanPos[i * 3 + 1] += dt * (0.3 + naanSeed[i] * 0.24);
+    naanPos[i * 3] += Math.sin(now * 0.7 + i) * dt * 0.1;
+    if (naanPos[i * 3 + 1] > NAAN_Y0 + 2.6) {
+      naanPos[i * 3] = NAAN_X + rnd(-0.18, 0.18);
+      naanPos[i * 3 + 1] = NAAN_Y0;
+      naanPos[i * 3 + 2] = NAAN_Z + rnd(-0.18, 0.18);
+    }
+  }
+  naanGeo.attributes.position.needsUpdate = true;
 
   for (const s of glowSprites) {
     s.material.opacity = s.userData.base * (0.9 + 0.1 * Math.sin(now * s.userData.speed + s.userData.phase));
@@ -1595,6 +2838,7 @@ window.__MINS_DIAG = () => ({
   triangles: renderer.info.render.triangles,
   camera: [cam.az, cam.pol, cam.dist].map((v) => +v.toFixed(2)),
 });
+
 window.__MINS = {
   setView(o = {}) {
     for (const [key, field] of [['az', 'goalAz'], ['pol', 'goalPol'], ['dist', 'goalDist']]) {
@@ -1605,7 +2849,112 @@ window.__MINS = {
     }
     intro.done = true;
     cam.az = cam.goalAz; cam.pol = cam.goalPol; cam.dist = cam.goalDist;
+    camTargetGoal.copy(cam.target);
   },
-};</script>
+};
+/* ---------- 60 · 场景导览配置（热点 + 介绍面板） ----------
+ * 逻辑全在共用组件 tools/shared/tour.js 里；这里只填「这个场景要讲什么」。
+ * 换到别的模型时，照抄这一段、改 ui 与 spots 即可。
+ */
+
+/** CAM 是宿主提供的小适配器：给组件一个「把镜头送过去 / 送回原位」的口子 */
+const KAREZ_TOUR = createSceneTour(THREE, {
+  scene,
+  canvas,
+  camera,
+  parent: null,
+
+  ui: {
+    masthead: '坎儿井',
+    mastheadIndex: '地下引水 · 剖面沙盘',
+    kicker: '坎儿井 · 剖面沙盘',
+    title: '把一条地下河，切开给你看',
+    lead: '坎儿井是干旱区的地下引水工程：把天山雪水从地下暗渠一路引到绿洲，全程不见天日，所以蒸发极少。',
+    legend: [
+      { color: '#4f93b8', label: '暗渠', note: '地下引水渠，缓坡自流' },
+      { color: '#c0a173', label: '竖井', note: '出土、通风、取水' },
+      { color: '#6a5436', label: '含水层', note: '渠只挖到水位线以下一点' },
+      { color: '#8a7550', label: '涝坝', note: '蓄水池，再分给农田' },
+    ],
+    tip: '点亮金环，镜头会飞过去并展开说明。共 9 处。本模型为原创示意，井距与坡度按「看得懂剖面」重新安排。',
+    keys: [
+      [{ kbd: '左键拖动' }, ' 旋转'],
+      [{ kbd: '滚轮' }, '／', { kbd: '双指' }, ' 缩放'],
+      [{ kbd: '右键' }, '／', { kbd: 'Shift' }, '+拖动 平移'],
+      [{ kbd: 'W' }, { kbd: 'A' }, { kbd: 'S' }, { kbd: 'D' }, ' 走动'],
+      [{ kbd: '点金环' }, ' 看说明'],
+    ],
+  },
+
+  spots: [
+    {
+      id: 'seep', name: '雪水渗入', en: 'SEEPAGE',
+      marker: [-18.3, 0.55, KA.cutZ - 0.9],
+      view: { az: -0.12, pol: 1.20, dist: 14, tx: -18.0, ty: 0.25, tz: 0.4 },
+      text: '天山雪水从洪积扇渗进地下，这一段是整条坎儿井的水源。渗水带地表颜色发暗、长着芦苇，说明底下是透水的砂砾层。',
+    },
+    {
+      id: 'gobi', name: '戈壁表层', en: 'GOBI SURFACE',
+      marker: [-13.4, 0.6, 1.6],
+      view: { az: -0.18, pol: 1.22, dist: 16, tx: -13.4, ty: 0.1, tz: 0.8 },
+      text: '地表是黄土与砂砾，年蒸发量远大于降水量。正因如此，水不能走地上——走地上就晒干了，只能走地下。',
+    },
+    {
+      id: 'well', name: '母井', en: 'MOTHER WELL',
+      marker: [-17.6, -0.55, 1.9],
+      view: { az: -0.08, pol: 1.36, dist: 12, tx: -17.6, ty: -2.0, tz: 0.5 },
+      text: '第一口井最深，一直打到含水层，是整条坎儿井的起点，所以叫「母井」。井口那一圈土，是挖井时掏出来的。',
+    },
+    {
+      id: 'shaft', name: '竖井', en: 'SHAFT',
+      marker: [-9.6, -0.7, 2.1],
+      view: { az: 0.04, pol: 1.34, dist: 12, tx: -9.6, ty: -2.2, tz: 0.4 },
+      text: '竖井是挖暗渠时出土、通风、取水的通道，沿线一串，越往东越浅——因为暗渠在往地面爬。井壁上还留着下井人踩的脚窝。',
+    },
+    {
+      id: 'qan', name: '暗渠', en: 'QANAT',
+      marker: [-2.4, tunnelY(-2.4) + 1.0, KA.cutZ - 0.5],
+      view: { az: 0.04, pol: 1.42, dist: 10, tx: -2.4, ty: tunnelY(-2.4) + 0.3, tz: 0.2 },
+      text: '暗渠才是真正引水的渠：全程不见天日，坡度极缓（千分之几），水靠重力自己流。渠里那几盏油灯，是挖渠时用来定向、保证两头能对接的。',
+    },
+    {
+      id: 'aqua', name: '含水层', en: 'AQUIFER',
+      marker: [-10.6, -3.3, KA.cutZ + 0.25],
+      view: { az: 0.02, pol: 1.44, dist: 15, tx: -10.6, ty: -3.6, tz: 0.2 },
+      text: '剖面里那道断续的蓝线就是水位线。暗渠只挖到水位线以下一点：既取得到水，又不至于把整层水抽空。',
+    },
+    {
+      id: 'ming', name: '明渠', en: 'OPEN CHANNEL',
+      marker: [13.6, 0.5, 2.4],
+      view: { az: 0.04, pol: 1.28, dist: 13, tx: 13.8, ty: -0.1, tz: 1.0 },
+      text: '暗渠一路爬升，到这里终于出地面，接上石砌的明渠——水在地下走了十几公里，这一段才第一次见到天。',
+    },
+    {
+      id: 'mill', name: '水磨', en: 'WATER MILL',
+      marker: [16.05, 1.05, 2.5],
+      view: { az: 0.02, pol: 1.28, dist: 12, tx: 16.0, ty: 0.2, tz: 1.0 },
+      text: '明渠的水推动水轮，带动屋里的石磨磨面。坎儿井不只是喝水——它顺路把磨坊、果园、农田都养活了。',
+    },
+    {
+      id: 'laoba', name: '涝坝', en: 'RESERVOIR',
+      marker: [18.0, 0.95, 2.2],
+      view: { az: 0.10, pol: 1.26, dist: 16, tx: 18.0, ty: -0.2, tz: 0.4 },
+      text: '涝坝是蓄水池。夜里不浇地时把水存起来，白天再按户分给农田与果园；坝边有取水的石阶、饮牲口的水槽。',
+    },
+  ],
+
+  /* 组件只管「要飞到哪」，具体怎么做插值由宿主决定 */
+  onFlyTo(view) {
+    intro.done = true;          // 有人在操作，先把入场结束掉
+    finishIntro();
+    flyTo(view);
+  },
+  onReset() {
+    resetView();
+  },
+});
+
+/* 把导览的调试接口并进 __MINS，方便外部测试与批处理截图 */
+window.__TOUR = KAREZ_TOUR;</script>
 </body>
 </html>

@@ -1,0 +1,2730 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#cfe0e4" />
+<title>四季生产调 · 哈尼族民间文学</title>
+<meta name="description" content="哈尼族四季生产调（Ⅰ-24）唱词内容的视觉演绎：沿森林—寨子—梯田—河谷的垂直系统，走一遍引子与冬、春、夏、秋五幕。原创程序化场景，非实地影像。" />
+<link rel="icon" href="data:," />
+<style>* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #cfe0e4;
+  color: #2f3a3c;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+}
+
+#stage { position: fixed; inset: 0; }
+
+#scene {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: default;
+}
+body.is-hero #scene { cursor: grab; }
+body.is-hero #scene:active { cursor: grabbing; }
+
+/* ---------- 加载层 ---------- */
+#boot {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  background: linear-gradient(180deg, #dceef2 0%, #cfe0e4 60%, #c2d6dc 100%);
+  z-index: 60;
+  transition: opacity .9s ease, visibility .9s ease;
+}
+#boot span {
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(30px, 5vw, 54px);
+  letter-spacing: .5em;
+  color: #2c5c66;
+  text-indent: .5em;
+}
+#boot i { font-style: normal; font-size: 13px; letter-spacing: .3em; color: #6a8a90; }
+#boot.is-gone { opacity: 0; visibility: hidden; }
+#boot.error span { color: #a8332a; }
+#boot pre {
+  max-width: 70vw;
+  margin: 0 auto;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #7a8a8c;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+/* ---------- 阶段层 ----------
+   两个整屏层只负责显隐与定位上下文，本身不画东西。
+   必须铺满，否则子元素的 left/right 会按收缩后的宽度算、全部叠在一起。 */
+.ui { position: absolute; z-index: 30; }
+.ui-opening, .ui-hero { inset: 0; pointer-events: none; }
+.ui-opening, .ui-hero { transition: opacity .6s ease, visibility .6s ease; }
+body.is-opening .ui-hero { opacity: 0; visibility: hidden; pointer-events: none; }
+body.is-hero .ui-opening { opacity: 0; visibility: hidden; pointer-events: none; }
+.ui-opening > *, .ui-hero > * {
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* ---------- 定格后的暗角 ---------- */
+body.is-hero #stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(ellipse at 50% 46%, transparent 44%, rgba(14, 40, 48, .28) 100%);
+}
+/* 运镜途中用上下黑边强化"镜头"感 */
+body.is-opening #stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+  background:
+    linear-gradient(180deg, #0b1f26 0%, #0b1f26 7%, transparent 7%,
+      transparent 93%, #0b1f26 93%, #0b1f26 100%);
+  opacity: .82;
+}
+
+/* ---------- 开场界面 ---------- */
+.opening-copy {
+  left: clamp(20px, 4vw, 72px);
+  bottom: clamp(56px, 12vh, 140px);
+  max-width: 360px;
+  padding: 16px 22px 16px 18px;
+  border-left: 2px solid rgba(255, 217, 168, .8);
+  background: linear-gradient(90deg, rgba(8, 28, 35, .68), rgba(8, 28, 35, 0));
+  border-radius: 0 4px 4px 0;
+}
+.opening-kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: .34em;
+  color: #ffd9a8;
+  margin-bottom: 10px;
+}
+.opening-kicker.is-in { animation: lineIn .55s ease-out; }
+.opening-copy p {
+  margin: 0;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(19px, 2.3vw, 29px);
+  line-height: 1.6;
+  letter-spacing: .09em;
+  color: #f4fbfc;
+  text-shadow: 0 3px 20px rgba(6, 26, 32, .9);
+}
+.opening-copy p.is-in { animation: lineIn .55s ease-out; }
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.opening-foot {
+  right: clamp(20px, 4vw, 72px);
+  bottom: clamp(56px, 12vh, 140px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11.5px;
+  letter-spacing: .18em;
+  color: #d8e8ec;
+  padding: 8px 10px 8px 16px;
+  border-radius: 30px;
+  background: rgba(8, 28, 35, .55);
+  backdrop-filter: blur(4px);
+}
+.opening-foot button {
+  border: 1px solid rgba(255, 226, 180, .6);
+  background: rgba(10, 34, 42, .5);
+  color: #ffe8c8;
+  border-radius: 30px;
+  padding: 10px 18px;
+  font: inherit;
+  letter-spacing: .12em;
+  cursor: pointer;
+}
+.opening-foot button:hover { background: rgba(176, 122, 48, .85); border-color: #ffd9a8; }
+.opening-foot b { font-weight: 400; }
+.opening-bar {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, .16);
+}
+.opening-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffd9a8, #7fd0d8);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+/* ---------- 定格界面 ---------- */
+.masthead {
+  top: clamp(18px, 3.4vh, 40px);
+  left: clamp(18px, 3.4vw, 56px);
+  pointer-events: none;
+}
+.masthead .kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: .3em;
+  color: #37646e;
+}
+.masthead .kicker i { display: block; width: 26px; height: 1px; background: #7aa6ae; }
+.masthead h1 {
+  margin: 10px 0 6px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(32px, 4.4vw, 58px);
+  font-weight: 400;
+  letter-spacing: .16em;
+  color: #1f4a54;
+  text-shadow: 0 2px 18px rgba(255, 255, 255, .7);
+}
+.masthead .sub { font-size: 12px; letter-spacing: .22em; color: #4a7480; }
+
+.hero-status {
+  top: clamp(20px, 3.6vh, 44px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border-radius: 30px;
+  background: rgba(252, 250, 244, .82);
+  font-size: 11.5px;
+  letter-spacing: .16em;
+  color: #3f6b74;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+.hero-status i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #2c8ea0;
+  box-shadow: 0 0 0 4px rgba(44, 142, 160, .22);
+  flex: none;
+}
+.hero-actions {
+  top: clamp(18px, 3.4vh, 40px);
+  right: clamp(18px, 3.4vw, 56px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-actions button {
+  border: 1px solid rgba(120, 160, 166, .7);
+  background: rgba(252, 250, 244, .85);
+  color: #1f4a54;
+  border-radius: 30px;
+  padding: 9px 17px;
+  font: inherit;
+  font-size: 12.5px;
+  letter-spacing: .12em;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.hero-actions button:hover { background: #a8752c; border-color: #a8752c; color: #fff6e8; }
+.hero-actions span { font-weight: 400; }
+#back-overview { border-color: rgba(44, 142, 160, .8); }
+#back-overview:hover { background: #2c8ea0; border-color: #2c8ea0; }
+#back-overview[hidden], #show-brief[hidden] { display: none; }
+#show-brief { border-color: rgba(168, 117, 44, .7); color: #8a5a1c; }
+
+/* 底部信息带 */
+.hint {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px 18px;
+  padding: 30px clamp(18px, 3.4vw, 56px) 13px;
+  font-size: 11.5px;
+  letter-spacing: .12em;
+  color: #dcecef;
+  background: linear-gradient(180deg, transparent, rgba(9, 30, 37, .72));
+  pointer-events: none;
+}
+.hint b { font-weight: 400; color: #ffcf94; }
+
+.note {
+  top: auto;
+  bottom: 46px;
+  left: clamp(18px, 3.4vw, 56px);
+  max-width: min(560px, 60vw);
+  font-size: 11px;
+  letter-spacing: .1em;
+  line-height: 1.7;
+  color: #e2f0f2;
+  pointer-events: none;
+  text-align: left;
+  text-shadow: 0 1px 10px rgba(8, 30, 38, .85);
+}
+.note a { color: #ffe0ae; text-decoration: none; border-bottom: 1px solid rgba(255, 224, 174, .5); }
+
+/* ---------- 项目简介卡：放左侧标题下方，右侧留给内容卡 ---------- */
+.brief {
+  left: clamp(18px, 3.4vw, 56px);
+  right: auto;
+  top: clamp(166px, 20vh, 202px);
+  bottom: auto;
+  width: min(404px, 32vw);
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding: 18px 20px 16px;
+  background: rgba(252, 250, 244, .94);
+  border: 1px solid rgba(120, 160, 166, .5);
+  border-radius: 4px;
+  box-shadow: 0 14px 42px rgba(20, 60, 70, .24);
+  backdrop-filter: blur(6px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+.brief.is-hidden { opacity: 0; transform: translateX(-14px); pointer-events: none; visibility: hidden; }
+.brief-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(120, 160, 166, .5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .7);
+  color: #4a7480;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.brief-close:hover { background: #2c8ea0; border-color: #2c8ea0; color: #fff; }
+.brief-kicker { display: block; font-size: 11px; letter-spacing: .26em; color: #a8752c; }
+.brief h2 {
+  margin: 6px 0 5px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: .1em;
+  color: #1f4a54;
+}
+.brief-lede {
+  margin: 0 0 11px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(120, 160, 166, .32);
+  font-size: 12.5px;
+  line-height: 1.78;
+  color: #4a6a70;
+}
+.brief-list { margin: 0; }
+.brief-list dt {
+  margin-top: 11px;
+  font-size: 11px;
+  letter-spacing: .22em;
+  color: #2c8ea0;
+}
+.brief-list dt:first-child { margin-top: 0; }
+.brief-list dd {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.78;
+  color: #3d5358;
+}
+.brief-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.brief-tags span {
+  padding: 2px 9px;
+  border-radius: 30px;
+  background: #e6f1f2;
+  border: 1px solid rgba(44, 142, 160, .3);
+  font-size: 11.5px;
+  letter-spacing: .06em;
+  color: #20596b;
+}
+.brief-foot {
+  margin: 11px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(120, 160, 166, .32);
+  font-size: 11px;
+  line-height: 1.75;
+  color: #6a8489;
+}
+.brief-foot b { color: #8a5a1c; font-weight: 400; }
+.brief-foot a { color: #20596b; }
+
+/* ---------- 内容卡（点热点后） ---------- */
+.story {
+  right: clamp(16px, 3vw, 48px);
+  top: clamp(78px, 12vh, 118px);
+  width: min(340px, 38vw);
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding: 22px 24px 20px;
+  background: rgba(252, 250, 244, .94);
+  border: 1px solid rgba(120, 160, 166, .5);
+  border-radius: 4px;
+  box-shadow: 0 14px 42px rgba(20, 60, 70, .24);
+  backdrop-filter: blur(6px);
+}
+.story:empty { display: none; }
+.story.is-in { animation: storyIn .45s cubic-bezier(.2, .8, .3, 1); }
+@keyframes storyIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.story-num { display: block; font-size: 11px; letter-spacing: .3em; color: #a8752c; }
+.story h2 {
+  margin: 8px 0 10px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: .1em;
+  color: #1f4a54;
+}
+.story p { margin: 0; font-size: 13.5px; line-height: 1.95; color: #3d5358; }
+
+/* ---------- 热点 ---------- */
+#hotspots { position: absolute; inset: 0; pointer-events: none; z-index: 22; }
+
+.hotspot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f4fbfc;
+  font: inherit;
+  font-size: calc(12.5px * var(--hs, 1));
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transform-origin: 0 0;
+  transition: opacity .4s ease;
+}
+.hotspot i {
+  position: relative;
+  display: block;
+  width: calc(14px * var(--hs, 1));
+  height: calc(14px * var(--hs, 1));
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .94);
+  border: calc(2px * var(--hs, 1)) solid #2c8ea0;
+  box-shadow: 0 2px 10px rgba(20, 60, 70, .5);
+  flex: none;
+}
+.hotspot i::after {
+  content: "";
+  position: absolute;
+  inset: calc(-6px * var(--hs, 1));
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .75);
+  animation: pulse 2.6s ease-out infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(.7); opacity: .9; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+/* 靠画面右侧的热点：标签翻到圆点左边，避免顶出屏幕 */
+.hotspot.is-flip { flex-direction: row-reverse; }
+.hotspot span {
+  padding: 3px 9px;
+  border-radius: 3px;
+  background: rgba(22, 52, 58, .74);
+  backdrop-filter: blur(3px);
+  letter-spacing: .08em;
+  box-shadow: 0 2px 12px rgba(10, 40, 48, .35);
+}
+.hotspot:hover span,
+.hotspot.is-active span { background: rgba(168, 117, 44, .92); }
+.hotspot.is-active i { border-color: #a8752c; background: #ffe8c8; }
+@media (prefers-reduced-motion: reduce) {
+  .hotspot i::after { animation: none; opacity: .35; }
+}
+
+@media (max-width: 860px) {
+  body.is-opening #stage::before { display: none; }
+  .hint { display: none; }
+  .masthead { top: 14px; left: 16px; }
+  .masthead h1 { font-size: clamp(26px, 7.4vw, 38px); }
+  .masthead .sub { font-size: 11px; }
+
+  /* 竖屏底部自下而上：注释 / 状态 + 按钮 / 卡片，各自留位不重叠 */
+  .note {
+    bottom: 96px;
+    left: 16px;
+    right: 16px;
+    max-width: none;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  .hero-status {
+    top: auto;
+    left: 16px;
+    right: auto;
+    transform: none;
+    bottom: 60px;
+    font-size: 10.5px;
+    padding: 6px 12px;
+  }
+  .hero-actions {
+    top: auto;
+    bottom: 54px;
+    right: 16px;
+    left: auto;
+  }
+  .hero-actions button { padding: 7px 13px; font-size: 11px; }
+
+  .brief, .story {
+    top: auto;
+    bottom: 156px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: 58vh;
+    padding: 15px 17px 14px;
+  }
+  .brief h2 { font-size: 21px; margin: 6px 0 5px; }
+  .brief-lede { font-size: 12.5px; margin-bottom: 11px; padding-bottom: 10px; }
+  .brief-list dd { font-size: 12.5px; line-height: 1.8; }
+  .brief-list dt { margin-top: 11px; }
+  .brief-foot { font-size: 11px; }
+  .story h2 { font-size: 20px; margin: 5px 0 6px; }
+  .story p { font-size: 12.5px; line-height: 1.75; }
+  .story { max-height: 34vh; }
+
+  .opening-copy { left: 14px; right: 14px; bottom: 92px; max-width: none; }
+  .opening-foot { left: 14px; right: 14px; bottom: 34px; justify-content: space-between; }
+}</style>
+</head>
+<body class="is-opening">
+<div id="stage">
+  <canvas id="scene"></canvas>
+
+  <!-- 五幕运镜途中的叙事界面 -->
+  <div class="ui ui-opening" id="ui-opening">
+    <div class="opening-copy">
+      <span class="opening-kicker" id="opening-kicker">引子 / 顺着水走</span>
+      <p id="opening-text">水从山顶的林子下来，一层一层，落进田里。</p>
+    </div>
+    <div class="opening-foot">
+      <span>五幕运镜 · 约 16 秒</span>
+      <button type="button" id="skip">跳过开场 <b aria-hidden="true">→</b></button>
+    </div>
+    <div class="opening-bar" aria-hidden="true"><i id="opening-progress"></i></div>
+  </div>
+
+  <!-- 定格后的界面 -->
+  <div class="ui ui-hero" id="ui-hero">
+    <header class="masthead">
+      <div class="kicker"><span>民间文学</span><i></i><span>Ⅰ-24</span></div>
+      <h1>四季生产调</h1>
+      <p class="sub">哈尼族 · 云南红河</p>
+    </header>
+
+    <!-- 全景时左侧显示项目简介；点热点后让位给内容卡 -->
+    <section class="ui brief" id="brief" aria-label="哈尼族四季生产调项目简介">
+      <button type="button" class="brief-close" id="brief-close" aria-label="收起简介">×</button>
+      <span class="brief-kicker">Ⅰ-24 · 民间文学 · 2006 年第一批</span>
+      <h2>四季生产调</h2>
+      <p class="brief-lede">山区梯田生产技术及其礼仪禁忌的百科大典，可诵可唱。</p>
+
+      <dl class="brief-list">
+        <dt>是什么</dt>
+        <dd>流传于云南省红河哈尼族彝族自治州红河、元阳、绿春、金平、建水等县的哈尼族聚居区，起源时间的下限不晚于唐代。包括引子、冬季、春季、夏季和秋季五大单元。</dd>
+
+        <dt>讲什么</dt>
+        <dd>引子强调祖先传承下来的四季生产调对哈尼族生存的意义；其余部分按季节顺序讲述梯田耕作的程序、技术要领，以及与之相应的天文历法知识、自然物候变化规律、节庆祭典知识和人生礼节规范。</dd>
+
+        <dt>价值</dt>
+        <dd>不仅是梯田生产技术的全面总结，也是哈尼族社会伦理道德规范的集大成之作，见证了哈尼族梯田稻作文明的变迁历程。</dd>
+
+        <dt>传承</dt>
+        <dd>口传心授，体系严整、通俗易懂、可诵可唱。目前能系统传唱的长辈艺人和祭师已屈指可数，抢救与保护迫在眉睫。代表性传承人朱小和（1940 年生，哈尼族）。</dd>
+
+        <dt>五幕</dt>
+        <dd class="brief-tags">
+          <span>引子</span><span>冬季</span><span>春季</span><span>夏季</span><span>秋季</span>
+        </dd>
+      </dl>
+
+      <p class="brief-foot">
+        <b>本页是唱词内容的视觉演绎。</b>该项目的本体是口传唱词；场景为原创教学示意，不是实地影像，也不是村寨、服饰或农事的复原。
+        <a href="https://www.ihchina.cn/project_details/12224/" target="_blank" rel="noopener noreferrer">中国非遗网 ↗</a>
+      </p>
+    </section>
+
+    <div class="hero-status"><i aria-hidden="true"></i>画面已定格 · 点击光点探索</div>
+
+    <div class="hero-actions">
+      <button type="button" id="show-brief" hidden>项目简介</button>
+      <button type="button" id="back-overview" hidden>回到全景 <span aria-hidden="true">⤢</span></button>
+      <button type="button" id="replay">重播五幕 <span aria-hidden="true">↺</span></button>
+    </div>
+
+    <div class="hint">
+      <span><b>拖动</b> 旋转</span>
+      <span><b>滚轮</b> 缩放</span>
+      <span><b>Shift 拖动</b> 平移</span>
+      <span><b>点击光点</b> 看内容</span>
+    </div>
+
+    <p class="note">
+      原创程序化三维场景 · 教学示意，非实地影像，也不是村寨或农事的复原<br />
+      内容依据<a href="https://www.ihchina.cn/project_details/12224/" target="_blank" rel="noopener noreferrer">中国非遗网项目页 ↗</a>
+    </p>
+  </div>
+
+  <section class="ui story" id="story" aria-live="polite"></section>
+  <div id="hotspots" aria-label="探索四季生产调内容"></div>
+
+  <div id="boot"><span>四 季</span><i>正在放水整田</i></div>
+</div>
+<script>(function () {
+  var panel = document.getElementById('boot');
+  var booted = false;
+  function show(title, detail) {
+    if (booted) return;
+    booted = true;
+    panel.className = 'error';
+    panel.innerHTML = '<span></span><pre></pre>';
+    panel.querySelector('span').textContent = title;
+    panel.querySelector('pre').textContent = detail || '';
+  }
+  window.__TITIAN_FAIL = show;
+  if (location.protocol === 'file:') {
+    show('请通过本地服务器打开', '浏览器会拦截 file:// 下的 ES 模块。\n运行 npm run dev 后访问 http://127.0.0.1:5173/titian/index.html');
+    return;
+  }
+  if (!(window.WebGLRenderingContext || window.WebGL2RenderingContext)) {
+    show('浏览器没有启用 WebGL', '请打开硬件加速，或换用 Chrome / Edge 最新版。');
+    return;
+  }
+  window.addEventListener('error', function (e) {
+    var t = e && e.target;
+    if (t && t !== window && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+      show('资源加载失败', (t.src || t.href || '') + '\n检查 public/titian/vendor/three 是否已生成：npm run build:titian');
+      return;
+    }
+    show('脚本出错', (e.message || '未知错误') + '\n' + String(e.filename || '').split('/').slice(-1)[0] + ':' + (e.lineno || '?'));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    show('脚本出错', String((e.reason && e.reason.message) || e.reason));
+  });
+  setTimeout(function () {
+    if (window.__TITIAN_READY) return;
+    var diag = '';
+    try { if (window.__TITIAN_DIAG) diag = '\n' + JSON.stringify(window.__TITIAN_DIAG()); } catch (err) {}
+    show('画面没有出现（20 秒超时）', '打开控制台看第一条红色报错。' + diag);
+  }, 20000);
+})();</script>
+<script type="module">import * as THREE from './vendor/three/build/three.module.js';
+
+/* 哈尼梯田 · 四季生产调 —— 三渲二镜头穿行
+ * 全部程序化建模：没有外部模型与贴图，文字用 canvas 现画。
+ * 代码由 build.mjs 按顺序拼接成一个模块：
+ *   00 引导 / 10 工具 / 20 山与梯田 / 30 寨子 / 40 农事与人物 / 50 动效与交互
+ *
+ * 场景是「唱词内容的视觉演绎」，不是实地测绘：山脉走向、田块划分、
+ * 房屋形制均为示意，不代表任何真实村寨。
+ */
+
+const QS = new URLSearchParams(location.search);
+const SKIP_INTRO = QS.has('skip');
+const SHOT = QS.has('shot');
+
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+renderer.setClearColor(0xd7e6e6, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+
+const scene = new THREE.Scene();
+/* 山区的空气透视：远山一层层退到天光里，是梯田最有辨识度的观感 */
+scene.fog = new THREE.FogExp2(0xd8e6e8, 0.0030);
+
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1200);
+
+/** 全场景共享的 uniform */
+const U = {
+  time: { value: 0 },
+  assemble: { value: 0 },
+  outline: { value: 0.026 },
+  dpr: { value: Math.min(window.devicePixelRatio || 1, 2) },
+  /* 季节：0=冬 0.33=春 0.66=夏 1=秋，用来推演稻色、水光与雾气 */
+  season: { value: 0 },
+};
+
+/** 屏幕比例变化时记录系数，供取景使用 */
+let fitK = 1;
+function resizeNow() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  fitK = 1;
+}
+window.addEventListener('resize', resizeNow);
+resizeNow();
+
+/* 自己走时间，避免 THREE.Clock 的弃用提示 */
+const timeState = { elapsed: 0, delta: 0 };
+let lastFrameTime = performance.now();
+function tickTime() {
+  const t = performance.now();
+  timeState.delta = Math.min((t - lastFrameTime) / 1000, 0.05);
+  timeState.elapsed += timeState.delta;
+  lastFrameTime = t;
+}
+
+/* 固定种子随机：每次刷新出来的小件位置都一样，好对比截图 */
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20261020);
+const rnd = (a = 0, b = 1) => a + (b - a) * rand();
+const pick = (arr) => arr[Math.floor(rand() * arr.length) % arr.length];
+const smoothstep = (e0, e1, v) => {
+  const t = THREE.MathUtils.clamp((v - e0) / (e1 - e0), 0, 1);
+  return t * t * (3 - 2 * t);
+};
+/* ---------- 10 · 配色、材质、招牌图集、合批工具 ---------- */
+
+const PAL = {
+  /* 山与土 */
+  rock: 0x7d7a6e, rockDark: 0x5f5d54, rockHi: 0x93907f,
+  soil: 0x8a7250, soilDark: 0x6d5a3e, soilRed: 0x9c6a4a,
+  moss: 0x6f8a52, grass: 0x7d9a58, grassDeep: 0x5e7a42,
+
+  /* 水：梯田的灵魂 */
+  water: 0x8fb8c4, waterDeep: 0x6d9aa8, waterShallow: 0xb4d2d8,
+  waterHi: 0xd8ecef, waterFoam: 0xeef8f8, waterDark: 0x54737f,
+
+  /* 稻与作物（受季节 uniform 影响） */
+  crop: 0x86a05a, cropDeep: 0x5e7a3e, cropGold: 0xd8b455, cropPale: 0xc8c46a,
+  stubble: 0xa89468, seedling: 0x9cc25e,
+
+  /* 寨子：哈尼蘑菇房 */
+  wall: 0xd8c8a8, wallDeep: 0xbcaa86,
+  thatch: 0xb59a68, thatchDark: 0x8f784c, thatchPale: 0xd0b885,
+  wood: 0x7a5a3c, woodDark: 0x543c28, woodLight: 0xa07a4e,
+  bamboo: 0xc0a068, bambooDark: 0x94793f, bambooGreen: 0x86a058,
+  tile: 0x4f5a68, stone: 0x9a958a, stoneDark: 0x74706a,
+
+  /* 织物与器物 */
+  cloth: 0xe8dcc0, clothRed: 0xa8382c, clothIndigo: 0x3a5578,
+  clothDark: 0x2c3a4c, silver: 0xd0d6da, silverDark: 0x9aa2a8, bronze: 0xb08a3c,
+  ceramic: 0xe2dccd, paper: 0xf4e8cf, ink: 0x2a2824, metal: 0x6a7078, metalDark: 0x3e434a,
+  ember: 0xd8622e, flame: 0xe89a3c,
+
+  /* 人物服饰（哈尼族尚黑，配银饰与彩绣） */
+  skin: 0xd0a078, skinDark: 0xb0835e,
+  dress: 0x2e3340, dressAlt: 0x3a4250, dressBlue: 0x35507a,
+  dressRed: 0x9c3a30, dressWhite: 0xe8e2d4, hair: 0x24201e,
+
+  /* 植被 */
+  leaf: 0x4e7a3e, leafHi: 0x6d9d4e, leafDeep: 0x35592f,
+  trunk: 0x5a4330, trunkPale: 0x7a604a, pine: 0x3f6640,
+  flower: 0xd0708a, flowerGold: 0xd8b455,
+};
+
+/* 四阶灰度渐变：三渲二的分界（山地日光，比平原略冷） */
+function gradientTexture() {
+  const steps = new Uint8Array([140, 196, 232, 255]);
+  const tex = new THREE.DataTexture(steps, steps.length, 1, THREE.RedFormat);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/* 组装动画：所有零件绕自己的「落点」从地面长出来并上浮 */
+const ASSEMBLE_GLSL = `
+vec3 assemblePiece(vec3 p, vec3 ground, float d, float prog) {
+  float t = clamp((prog - d * 2.2) / 0.34, 0.0, 1.0);
+  float e = 1.0 - pow(1.0 - t, 3.0);
+  vec3 q = ground + (p - ground) * mix(0.72, 1.0, e);
+  q.y += (e - 1.0) * 0.85;
+  return q;
+}`;
+
+function withAssemble(mat) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uAssemble = U.assemble;
+    shader.vertexShader =
+      'attribute vec3 aPivot;\nattribute float aDelay;\nuniform float uAssemble;\n' +
+      ASSEMBLE_GLSL + '\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `#include <begin_vertex>
+      transformed = assemblePiece(transformed, vec3(aPivot.x, 0.0, aPivot.z), aDelay, uAssemble);`
+    );
+  };
+  return mat;
+}
+
+/* 稻作层：颜色随季节 uniform 推移。
+   五幕（引子/冬/春/夏/秋）不重建几何，只改这一支 tint ——
+   水田由稻桩泥色 → 新秧 → 浓绿 → 金黄，一次推完。 */
+function seasonCropColor(s) {
+  /* s: 0=冬 0.33=春 0.66=夏 1=秋 */
+  const winter = new THREE.Color(0xa89468);  /* 收割后的稻桩与泥 */
+  const spring = new THREE.Color(0x9cc25e);  /* 新秧 */
+  const summer = new THREE.Color(0x4e7a3e);  /* 浓绿 */
+  const autumn = new THREE.Color(0xd8b455);  /* 金黄 */
+  if (s < 0.33) return winter.clone().lerp(spring, s / 0.33);
+  if (s < 0.66) return spring.clone().lerp(summer, (s - 0.33) / 0.33);
+  return summer.clone().lerp(autumn, (s - 0.66) / 0.34);
+}
+
+function withSeason(mat, mixAmount) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uCropTint = { value: seasonCropColor(0) };
+    shader.uniforms.uCropMix = { value: mixAmount };
+    /* onBeforeCompile 可能对同一材质触发多次，避免重复登记 */
+    if (!SEASON_UNIFORMS.includes(shader.uniforms.uCropTint)) {
+      SEASON_UNIFORMS.push(shader.uniforms.uCropTint);
+    }
+    shader.fragmentShader = 'uniform vec3 uCropTint;\nuniform float uCropMix;\n' + shader.fragmentShader;
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <color_fragment>',
+      `#include <color_fragment>
+      diffuseColor.rgb = mix(diffuseColor.rgb, uCropTint, uCropMix);`
+    );
+  };
+  return mat;
+}
+/** 收集所有季节相关的 uniform，逐帧统一写入 */
+const SEASON_UNIFORMS = [];
+
+const toonMat = withAssemble(new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: gradientTexture() }));
+/* 稻作/植被层：跟着季节走 */
+const cropMat = withSeason(withAssemble(new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: gradientTexture() })), 0.7);
+
+const glowMat = withAssemble(new THREE.MeshBasicMaterial({ vertexColors: true, fog: true }));
+const glassMat = withAssemble(new THREE.MeshBasicMaterial({
+  color: 0xdbeefc, transparent: true, opacity: 0.1, depthWrite: false,
+  side: THREE.DoubleSide, fog: true,
+}));
+const signMat = withAssemble(new THREE.MeshBasicMaterial({
+  map: null, vertexColors: true, toneMapped: false, fog: true,
+}));
+/* 水面：半透明，让泥底透出来 */
+const waterMat = withAssemble(new THREE.MeshBasicMaterial({
+  vertexColors: true, transparent: true, opacity: 0.86, fog: true,
+}));
+/* 田水：单独一层。梯田的水位随季节变 —— 冬天泡田是镜面，秋天收割前要放干，
+   所以不能和河里那层共用材质。 */
+const paddyMat = withAssemble(new THREE.MeshBasicMaterial({
+  vertexColors: true, transparent: true, opacity: 0.9, fog: true,
+}));
+
+/* 描边：反向外壳，在视空间按法线外扩 */
+const outlineMat = new THREE.ShaderMaterial({
+  uniforms: { uAssemble: U.assemble, uWidth: U.outline, uColor: { value: new THREE.Color(0x33302a) } },
+  vertexShader: `
+    attribute vec3 aPivot;
+    attribute float aDelay;
+    uniform float uAssemble;
+    uniform float uWidth;
+    ${ASSEMBLE_GLSL}
+    void main() {
+      vec3 p = assemblePiece(position, vec3(aPivot.x, 0.0, aPivot.z), aDelay, uAssemble);
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      vec3 n = normalize(normalMatrix * normal);
+      mv.xyz += n * uWidth;
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `uniform vec3 uColor; void main() { gl_FragColor = vec4(uColor, 1.0); }`,
+  side: THREE.BackSide,
+});
+
+/* 阴影用的深度材质：必须和主材质有同一套组装变形，否则投影会「提前组装好」 */
+const depthMat = withAssemble(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }));
+
+/* ---------- 圆形粒子贴图：PointsMaterial 默认画方块 ---------- */
+function makeDotTexture() {
+  const S = 64;
+  const cv = document.createElement('canvas');
+  cv.width = S; cv.height = S;
+  const g = cv.getContext('2d');
+  const grd = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  grd.addColorStop(0.0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.5, 'rgba(255,255,255,0.9)');
+  grd.addColorStop(1.0, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, S, S);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const DOT_TEXTURE = makeDotTexture();
+
+/* ---------- 招牌图集 ---------- */
+const ATLAS = (() => {
+  const W = 1024, H = 2048;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  g.clearRect(0, 0, W, H);
+
+  let cursorX = 0, cursorY = 0, rowH = 0;
+  const rects = {};
+  function alloc(name, w, h) {
+    if (cursorX + w > W) { cursorX = 0; cursorY += rowH; rowH = 0; }
+    const r = [cursorX, cursorY, w, h];
+    cursorX += w + 4;
+    rowH = Math.max(rowH, h);
+    rects[name] = [r[0] / W, 1 - (r[1] + h) / H, (r[0] + w) / W, 1 - r[1] / H];
+    return r;
+  }
+  function panel(name, w, h, bg, draw) {
+    const [x, y] = alloc(name, w, h);
+    g.save();
+    g.translate(x, y);
+    g.beginPath(); g.rect(0, 0, w, h); g.clip();
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    draw(g, w, h);
+    g.restore();
+  }
+  const KAI = '"STKaiti","KaiTi","Kaiti SC","SimSun","Microsoft YaHei",serif';
+  const HEI = '"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif';
+  function han(ctx, text, x, y, size, color, font = KAI, spacing = 0) {
+    ctx.font = `${size}px ${font}`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const chars = [...text];
+    const total = chars.length * (size + spacing);
+    chars.forEach((ch, i) => ctx.fillText(ch, x - total / 2 + (size + spacing) * (i + 0.5), y));
+  }
+  function vhan(ctx, text, x, y, size, color, gap = 6) {
+    ctx.font = `${size}px ${KAI}`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    [...text].forEach((ch, i) => ctx.fillText(ch, x, y + i * (size + gap)));
+  }
+
+  /* 木牌：深底金字 */
+  function plaque(name, text) {
+    panel(name, 300, 86, '#2b1e17', (c, w, h) => {
+      c.strokeStyle = '#c8a75e'; c.lineWidth = 3;
+      c.strokeRect(7, 7, w - 14, h - 14);
+      const t = text.replace(/\s+/g, '');
+      han(c, t, w / 2, h / 2 + 2, t.length >= 4 ? 38 : 46, '#e8c987', KAI, 6);
+    });
+  }
+
+  /* 季节幕牌：竖排大字，带季色 */
+  function seasonPlate(name, text, accent) {
+    panel(name, 200, 300, '#2a2620', (c, w, h) => {
+      c.strokeStyle = accent; c.lineWidth = 4;
+      c.strokeRect(9, 9, w - 18, h - 18);
+      c.fillStyle = accent;
+      c.fillRect(9, 9, w - 18, 10);
+      vhan(c, text, w / 2, 92, 62, '#f0e2c2', 14);
+      c.font = `13px ${HEI}`; c.fillStyle = accent; c.textAlign = 'center';
+      c.fillText('FOUR SEASONS', w / 2, h - 34);
+    });
+  }
+
+  plaque('pDivide', '分 水 口');
+  plaque('pRidge', '田 埂');
+  plaque('pGrove', '寨 神 林');
+  plaque('pHouse', '蘑 菇 房');
+  plaque('pMill', '水 碾');
+  plaque('pYard', '晒 谷 场');
+  plaque('pSeed', '秧 田');
+  plaque('pGate', '寨 门');
+
+  seasonPlate('sProem', '引子', '#d8b455');
+  seasonPlate('sWinter', '冬季', '#8fb8c4');
+  seasonPlate('sSpring', '春季', '#9cc25e');
+  seasonPlate('sSummer', '夏季', '#4e7a3e');
+  seasonPlate('sAutumn', '秋季', '#d8b455');
+
+  /* 基地说明牌（立在寨门附近，说明本页性质） */
+  panel('notice', 260, 190, '#e0d3b4', (c, w, h) => {
+    c.fillStyle = '#33403c'; c.font = `bold 20px ${KAI}`; c.textAlign = 'center';
+    c.fillText('四 季 生 产 调', w / 2, 32);
+    c.font = `12px ${HEI}`; c.fillStyle = '#5a655e';
+    c.fillText('Ⅰ-24 · 民间文学', w / 2, 54);
+    c.fillText('唱词的视觉演绎', w / 2, 74);
+    c.strokeStyle = 'rgba(60,72,66,.4)'; c.lineWidth = 1;
+    for (let i = 0; i < 4; i++) {
+      c.beginPath(); c.moveTo(24, 100 + i * 20); c.lineTo(w - 24, 100 + i * 20); c.stroke();
+    }
+  });
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  tex.needsUpdate = true;
+  return { tex, rects };
+})();
+signMat.map = ATLAS.tex;
+
+/* ---------- 合批 ---------- */
+const BUCKETS = new Map();
+function bucket(name) {
+  let b = BUCKETS.get(name);
+  if (!b) {
+    b = { pos: [], nor: [], uv: [], col: [], piv: [], del: [] };
+    BUCKETS.set(name, b);
+  }
+  return b;
+}
+let nowDelay = 0;
+function layer(d) { nowDelay = d; }
+
+const _col = new THREE.Color();
+const _m = new THREE.Matrix4();
+const _q = new THREE.Quaternion();
+const _e = new THREE.Euler();
+const _p = new THREE.Vector3();
+const _s = new THREE.Vector3();
+
+function addGeo(geo, hex, o = {}) {
+  const x = o.x || 0, y = o.y || 0, z = o.z || 0;
+  _e.set(o.rx || 0, o.ry || 0, o.rz || 0, 'YXZ');
+  _q.setFromEuler(_e);
+  _p.set(x, y, z);
+  _s.set(o.sx || 1, o.sy || 1, o.sz || 1);
+  _m.compose(_p, _q, _s);
+
+  const g = geo.index ? geo.toNonIndexed() : geo.clone();
+  g.applyMatrix4(_m);
+  g.computeBoundingBox();
+  const bb = g.boundingBox;
+  const thin = Math.min(
+    Math.abs(bb.max.x - bb.min.x),
+    Math.abs(bb.max.y - bb.min.y),
+    Math.abs(bb.max.z - bb.min.z)
+  ) < 0.058;
+  const b = bucket(o.bucket || (thin ? 'fine' : 'solid'));
+  const pa = g.attributes.position.array;
+  const na = g.attributes.normal.array;
+  const ua = g.attributes.uv ? g.attributes.uv.array : null;
+
+  _col.set(hex);
+  if (o.tint) _col.multiply(new THREE.Color(o.tint));
+  const jit = o.jitter === false ? 1 : 0.95 + rand() * 0.08;
+  const cr = _col.r * jit, cg = _col.g * jit, cb = _col.b * jit;
+
+  const pivot = o.pivot ? [o.pivot[0], o.pivot[1], o.pivot[2]] : [x, 0, z];
+  const d = o.delay != null ? o.delay : nowDelay;
+  const uvR = o.uvRect;
+  const n = pa.length / 3;
+  for (let i = 0; i < n; i++) {
+    b.pos.push(pa[i * 3], pa[i * 3 + 1], pa[i * 3 + 2]);
+    b.nor.push(na[i * 3], na[i * 3 + 1], na[i * 3 + 2]);
+    if (ua) {
+      let u = ua[i * 2], v = ua[i * 2 + 1];
+      if (uvR) { u = uvR[0] + u * (uvR[2] - uvR[0]); v = uvR[1] + v * (uvR[3] - uvR[1]); }
+      b.uv.push(u, v);
+    } else {
+      b.uv.push(0, 0);
+    }
+    b.col.push(cr, cg, cb);
+    b.piv.push(pivot[0], pivot[1], pivot[2]);
+    b.del.push(d);
+  }
+  g.dispose();
+}
+
+function toGeometry(b) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(b.pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(b.nor, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(b.uv, 2));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(b.col, 3));
+  geo.setAttribute('aPivot', new THREE.Float32BufferAttribute(b.piv, 3));
+  geo.setAttribute('aDelay', new THREE.Float32BufferAttribute(b.del, 1));
+  geo.computeBoundingSphere();
+  return geo;
+}
+
+/* ---------- 常用体块 ---------- */
+const P = {
+  box(w, h, d, c, x, y, z, o) { addGeo(new THREE.BoxGeometry(w, h, d), c, { ...o, x, y, z }); },
+  box0(w, h, d, c, x, y0, z, o) { this.box(w, h, d, c, x, y0 + h / 2, z, o); },
+  cyl(rt, rb, h, c, x, y, z, o, seg = 14) { addGeo(new THREE.CylinderGeometry(rt, rb, h, seg), c, { ...o, x, y, z }); },
+  cyl0(rt, rb, h, c, x, y0, z, o, seg = 14) { this.cyl(rt, rb, h, c, x, y0 + h / 2, z, o, seg); },
+  sph(r, c, x, y, z, o, ws = 12, hs = 8) { addGeo(new THREE.SphereGeometry(r, ws, hs), c, { ...o, x, y, z }); },
+  cone(rt, h, c, x, y, z, o, seg = 12) { addGeo(new THREE.ConeGeometry(rt, h, seg), c, { ...o, x, y, z }); },
+  plane(w, h, c, x, y, z, o) { addGeo(new THREE.PlaneGeometry(w, h), c, { ...o, x, y, z }); },
+  torus(r, tube, c, x, y, z, o, rs = 8, ts = 16) { addGeo(new THREE.TorusGeometry(r, tube, rs, ts), c, { ...o, x, y, z }); },
+  tube(pts, r, c, o, seg = 40, rad = 5) {
+    const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(p[0], p[1], p[2])));
+    addGeo(new THREE.TubeGeometry(curve, seg, r, rad, false), c, o || {});
+  },
+  /* 水面：略高于田面的薄片 */
+  water(w, d, c, x, y, z, o = {}) { addGeo(new THREE.BoxGeometry(w, 0.05, d), c, { ...o, x, y, z, bucket: 'water', jitter: false }); },
+  /* 田水：随季节涨落的层 */
+  paddy(w, d, c, x, y, z, o = {}) { addGeo(new THREE.BoxGeometry(w, 0.05, d), c, { ...o, x, y, z, bucket: 'paddy', jitter: false }); },
+  /* 圆形水面：山顶水池这类，做成方的会一眼看出是块板子 */
+  waterDisc(r, c, x, y, z, o = {}) { addGeo(new THREE.CylinderGeometry(r, r, 0.06, 20), c, { ...o, x, y, z, bucket: 'water', jitter: false }); },
+  /* 稻作层：跟着季节变色 */
+  crop(w, h, d, c, x, y, z, o = {}) { addGeo(new THREE.BoxGeometry(w, h, d), c, { ...o, x, y, z, bucket: 'crop' }); },
+  cropSph(r, c, x, y, z, o = {}, ws = 7, hs = 5) { addGeo(new THREE.SphereGeometry(r, ws, hs), c, { ...o, x, y, z, bucket: 'crop' }); },
+  sign(name, w, h, x, y, z, o = {}) {
+    addGeo(new THREE.PlaneGeometry(w, h), o.color || 0xffffff, {
+      ...o, x, y, z, bucket: 'sign', uvRect: ATLAS.rects[name], jitter: false,
+    });
+  },
+  glowBox(w, h, d, c, x, y, z, o) { addGeo(new THREE.BoxGeometry(w, h, d), c, { ...o, x, y, z, bucket: 'glow', jitter: false }); },
+  glowPlane(w, h, c, x, y, z, o) { addGeo(new THREE.PlaneGeometry(w, h), c, { ...o, x, y, z, bucket: 'glow', jitter: false }); },
+  glassPlane(w, h, x, y, z, o) { addGeo(new THREE.PlaneGeometry(w, h), 0xdff0ff, { ...o, x, y, z, bucket: 'glass', jitter: false }); },
+};
+
+/* 把桶变成 mesh：solid / 山体额外描边 */
+const worldGroups = new THREE.Group();
+scene.add(worldGroups);
+
+/** 需要加光晕 sprites 的位置：[x, y, z, size, color, opacity] */
+const glowPts = [];
+
+function finishBucket(name, mat, outline, opts = {}) {
+  const b = BUCKETS.get(name);
+  if (!b || !b.pos.length) return null;
+  const geo = toGeometry(b);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  mesh.castShadow = opts.shadow !== false;
+  mesh.receiveShadow = opts.receive !== false;
+  if (!QS.has('nodepth')) mesh.customDepthMaterial = depthMat;
+  if (outline) {
+    const out = new THREE.Mesh(geo, outlineMat);
+    out.frustumCulled = false;
+    out.castShadow = false;
+    out.receiveShadow = false;
+    out.renderOrder = -1;
+    mesh.renderOrder = 1;
+    worldGroups.add(out);
+  }
+  worldGroups.add(mesh);
+  BUCKETS.delete(name);
+  return mesh;
+}
+/* ---------- 20 · 地形：多座梯田山、林山、水渠、河谷、远山 ----------
+ *
+ * 空间按梯田的垂直系统组织（这是梯田最有辨识度的结构）：
+ *   北高处 = 林山（水源）→ 山腰 = 寨子 → 四周坡面 = 层层梯田 → 南面 = 河谷
+ * 坐标：+X 向东，+Z 向南，Y 向上。单位约等于米。
+ *
+ * 田块沿等高线成带，用逐段小方块拼出带起伏的曲岸 ——
+ * 这是示意性的划分，不代表任何真实村寨的田块。
+ * 除主山外另有四座次一级的梯田山，形成一片梯田山谷，而不是孤零零一个锥体。
+ */
+
+const TAU = Math.PI * 2;
+/** 山脚地面的高度：所有山体都从这一层长起来 */
+const GROUND_Y = 0.8;
+
+/* 主山：寨子在山顶平台上 */
+const HILL = {
+  x: 16,
+  z: -16,
+  topR: 12,        /* 最上一层的半径；比它更靠里的山顶平台留给寨子 */
+  growth: 3.15,    /* 每往下一层，半径增加 */
+  step: 1.25,      /* 每层的高差 */
+  levels: 16,      /* 层数 */
+  topY: 34,        /* 最上一层的田面高度 */
+  seg: 38,         /* 每层的环向分段（越小越快，38 仍够看出曲岸） */
+};
+/** 山顶平台（寨子所在）的高度 */
+const PLATEAU_Y = 34.3;
+/** 北侧林山：山顶水源林与寨神林所在。做成几段收分的山肩，
+ *  而不是一个直筒 —— 直筒在画面里会读成一个灰色的鼓。 */
+const RIDGE = { x: 14, z: -128, h: 46, topR: 11, baseR: 54, baseY: -8 };
+
+/* 次一级的梯田山：围成一圈，让这里读起来是"一片梯田山谷" */
+const HILLS = [
+  { x: -86, z: 14, topR: 8, growth: 2.7, step: 1.15, levels: 12, topY: 29, seg: 24,
+    from: -1.05, to: 2.35 },                       /* 西侧那座，只种朝东的一面 */
+  { x: -60, z: -76, topR: 7, growth: 2.5, step: 1.1, levels: 12, topY: 33, seg: 22,
+    from: 0.35, to: 3.4 },                         /* 西北那座，朝南一面 */
+  { x: 112, z: -30, topR: 7.5, growth: 2.6, step: 1.2, levels: 11, topY: 31, seg: 22,
+    from: -1.6, to: 1.5 },                         /* 东侧那座，朝西一面 */
+  { x: 78, z: 62, topR: 6.5, growth: 2.4, step: 1.05, levels: 10, topY: 21, seg: 20,
+    from: 2.2, to: 5.6 },                          /* 东南那座，朝北一面 */
+  { x: -30, z: 44, topR: 6, growth: 2.3, step: 1.0, levels: 9, topY: 18, seg: 18,
+    from: 3.4, to: 6.4, simple: true },            /* 南面小丘 */
+];
+
+/** 第 level 层在 angle 方向上的半径（带起伏，避免同心圆的机械感） */
+function contourRAt(h, level, angle) {
+  const base = h.topR + level * h.growth;
+  const wob = Math.sin(angle * 3 + level * 0.42 + h.x * 0.03) * (h.growth * 0.62)
+            + Math.sin(angle * 7 - level * 0.31) * (h.growth * 0.30)
+            + Math.sin(angle * 11 + level * 0.17) * (h.growth * 0.14);
+  return base + wob;
+}
+function terraceYAt(h, level) { return h.topY - level * h.step; }
+/* 主山的简写：30-village / 40-farm / 50-life 都用这两个 */
+function contourR(level, angle) { return contourRAt(HILL, level, angle); }
+function terraceY(level) { return terraceYAt(HILL, level); }
+
+/** 任意一点的地表高度。
+ *  「按固定高度摆放」是这个场景最容易犯的错 —— 山顶水池、寨神林、
+ *  竹林、观天台都因此浮在半空过。凡是往地上放东西，都用这个取高度，
+ *  不要拿 PLATEAU_Y 或 terraceY(某个猜的层) 去糊。 */
+function hillSurfaceY(h, x, z) {
+  const ang = Math.atan2(z - h.z, x - h.x);
+  const rad = Math.hypot(x - h.x, z - h.z);
+  if (rad <= h.topR + 1.4) return PLATEAU_Y;              /* 山顶平台 */
+  let lvl = 0;
+  for (let k = 0; k < h.levels; k++) {
+    if (contourRAt(h, k, ang) <= rad) lvl = k;            /* 半径单调，取最后一个不超过它的层 */
+  }
+  const rLast = contourRAt(h, h.levels - 1, ang);
+  if (rad <= rLast) return terraceYAt(h, lvl);
+  /* 最下一层以外是底座外扩的斜面，一直收到地面 */
+  const rFoot = rLast * 1.26;
+  const t = THREE.MathUtils.clamp((rad - rLast) / Math.max(0.001, rFoot - rLast), 0, 1);
+  return terraceYAt(h, h.levels - 1) * (1 - t) + GROUND_Y * t;
+}
+/** 主山版的简写 */
+function groundYAt(x, z) { return hillSurfaceY(HILL, x, z); }
+
+/* ---------- 通用梯田山：山体 + 底座 + 田块 ---------- */
+function buildTerraceHill(h, opts = {}) {
+  const seg = h.seg;
+  const a0 = opts.from != null ? opts.from : 0;
+  const a1 = opts.to != null ? opts.to : TAU;
+  const span = a1 - a0;
+  const bottomY = terraceYAt(h, h.levels - 1);
+
+  /* 山体本体：一层层叠起来的台地实体，保证从任何角度看都不透空 */
+  for (let k = h.levels - 1; k >= 0; k--) {
+    const r = contourRAt(h, k, 0) + 0.6;
+    P.cyl(r, r + h.growth * 0.5, h.step + 0.6, PAL.rockDark, h.x, terraceYAt(h, k) - h.step / 2 - 0.3, h.z, { jitter: false }, 36);
+  }
+  /* 底座：从地面收到最下一层田，把山托住 —— 没有它山会浮在草地上。
+     收分不要太夸张，否则山脚会甩出一圈灰盘。 */
+  const pedH = bottomY - GROUND_Y;
+  if (pedH > 0) {
+    const rOut = contourRAt(h, h.levels, 0) + 0.4;
+    P.cyl(rOut, rOut * 1.26, pedH, 0x6d6f5e, h.x, GROUND_Y + pedH / 2, h.z, { jitter: false }, 36);
+    /* 底座顶圈铺一层草，别让山脚甩出一道灰环 */
+    const topR = rOut * 1.02;
+    for (let i = 0; i < 64; i++) {
+      const a = rand() * TAU;
+      const rr = topR * rnd(1.0, 1.24);
+      P.sph(rnd(1.2, 2.6), pick([PAL.moss, PAL.grassDeep, PAL.grass]), h.x + Math.cos(a) * rr, bottomY - rnd(0.2, 1.4), h.z + Math.sin(a) * rr, { sy: 0.5 }, 7, 5);
+    }
+    /* 山脚草地：把底座那条硬边压住 */
+    for (let i = 0; i < 54; i++) {
+      const a = rand() * TAU;
+      const rr = rOut * rnd(1.0, 1.32);
+      P.sph(rnd(1.0, 2.2), pick([PAL.moss, PAL.grassDeep, PAL.grass, PAL.rock]), h.x + Math.cos(a) * rr, GROUND_Y + rnd(0.2, 1.6), h.z + Math.sin(a) * rr, { sy: 0.5 }, 7, 5);
+    }
+  }
+  /* 山顶平台 */
+  P.cyl(h.topR + 0.4, h.topR + 0.4, 1.2, PAL.rock, h.x, terraceYAt(h, 0) + 0.3, h.z, { jitter: false }, 32);
+
+  /* 没开田的那一面：补灌木、灌丛与碎石。
+     只开一面的山是真实的，但裸露的灰坡在画面里会读成"没做完"。 */
+  if (opts.from != null) {
+    const gap = TAU - span;
+    const n = Math.max(34, Math.round(gap * 22));
+    for (let i = 0; i < n; i++) {
+      const a = a1 + rand() * gap;
+      const lvl = Math.floor(rand() * h.levels);
+      const r = contourRAt(h, lvl, a) - rnd(0.4, 2.6);
+      const y = terraceYAt(h, lvl);
+      const px = h.x + Math.cos(a) * r;
+      const pz = h.z + Math.sin(a) * r;
+      P.sph(rnd(0.7, 1.9), pick([PAL.moss, PAL.leafDeep, PAL.leaf, PAL.rock, PAL.grassDeep]), px, y + rnd(0.2, 1.1), pz, { sy: 0.75 }, 7, 5);
+    }
+  }
+
+  /* 田块：逐段拼出带起伏的曲岸 */
+  for (let k = 0; k < h.levels; k++) {
+    const y = terraceYAt(h, k);
+    const yNext = y - h.step;
+    for (let i = 0; i < seg; i++) {
+      const t0 = a0 + (i / seg) * span;
+      const t1 = a0 + ((i + 1) / seg) * span;
+      const am = (t0 + t1) / 2;
+      const rIn = contourRAt(h, k, am);
+      const rOut = contourRAt(h, k + 1, am);
+      const w = Math.max(1.2, rOut - rIn);
+      const arc = (span / seg) * ((rIn + rOut) / 2) + 0.35;
+      const cx = h.x + Math.cos(am) * (rIn + w / 2);
+      const cz = h.z + Math.sin(am) * (rIn + w / 2);
+      const ry = -am;
+
+      P.box(w, 0.42, arc, PAL.soilRed, cx, y - 0.21, cz, { ry, jitter: true });
+      P.paddy(w * 0.9, arc * 0.92, PAL.water, cx, y + 0.045, cz, { ry });
+      const wx = h.x + Math.cos(am) * rOut;
+      const wz = h.z + Math.sin(am) * rOut;
+      P.box(0.5, h.step + 0.34, arc, PAL.soil, wx, yNext + (h.step + 0.34) / 2 - 0.1, wz, { ry, jitter: true });
+      /* 埂顶草：次山省掉这层，几何量能省一截，远看区别不大 */
+      if (!opts.simple) {
+        P.box(0.56, 0.12, arc, pick([PAL.grass, PAL.moss, PAL.grassDeep]), wx, yNext + h.step + 0.28, wz, { ry, jitter: true });
+      }
+      /* 稻作：靠下的层才种；山顶几层留给菜地与秧田 */
+      if (k >= (opts.cropFrom != null ? opts.cropFrom : 3)) {
+        const clumps = 1 + Math.floor(rand() * 2);
+        for (let c = 0; c < clumps; c++) {
+          const t = (c + 0.5) / clumps;
+          const rc = h.x + Math.cos(am) * (rIn + w * (0.18 + t * 0.64));
+          const zc = h.z + Math.sin(am) * (rIn + w * (0.18 + t * 0.64));
+          P.crop(0.9, rnd(0.5, 0.9), 0.7, PAL.crop, rc, y + 0.3, zc, { ry, jitter: true });
+        }
+      }
+    }
+  }
+}
+
+/* ---------- 铺地：先把地面铺出来，山才不是浮着的 ---------- */
+layer(0.005);
+{
+  /* 山谷底：只铺到河谷以北，南面交给河滩 */
+  P.box(1000, 1.4, 520, PAL.grassDeep, 10, GROUND_Y - 0.7, -160, { jitter: false });
+  /* 地表杂色：草、土、石，避免一整块纯色 */
+  for (let i = 0; i < 480; i++) {
+    const x = rnd(-330, 350);
+    const z = rnd(-380, 70);
+    /* 离主山近的地方偏土色 */
+    const dHill = Math.hypot(x - HILL.x, z - HILL.z);
+    const tone = dHill < 90 && rand() < 0.45
+      ? pick([PAL.soil, PAL.soilDark, PAL.grass, PAL.moss])
+      : pick([PAL.grass, PAL.grassDeep, PAL.moss, 0x86a05c, 0x74905a]);
+    P.box(rnd(2.0, 7.0), 0.16, rnd(1.6, 5.0), tone, x, GROUND_Y + 0.02, z, { ry: rnd(0, TAU), jitter: true });
+  }
+}
+
+/* ---------- 坝子田：谷底平地上的成片水田 ----------
+ * 山上的梯田与谷底的平田是两回事，但一片山谷里两者并存。
+ * 这些田同时把谷底那几块空地填满。 */
+layer(0.065);
+{
+  const plots = [
+    [-152, 58, 34, 22, 0.08], [-108, 70, 30, 20, -0.05], [-64, 62, 28, 18, 0.12],
+    [-6, 74, 32, 20, -0.08], [40, 68, 30, 19, 0.06], [124, 30, 32, 21, -0.1],
+    [148, 54, 30, 20, 0.05], [-192, 34, 28, 18, 0.1], [196, 28, 28, 18, -0.06],
+    [-152, -22, 30, 20, 0.07], [-190, -64, 28, 18, -0.09], [152, -74, 30, 20, 0.11],
+    [-104, -118, 30, 20, -0.04], [58, -132, 32, 20, 0.09], [116, 112, 30, 19, -0.07],
+  ];
+  for (const [px, pz, w, d, ry] of plots) {
+    /* 田埂一圈 */
+    P.box(w + 2.0, 0.62, d + 2.0, PAL.soil, px, GROUND_Y + 0.31, pz, { ry, jitter: false });
+    P.box(w + 0.8, 0.62, d + 0.8, PAL.soilDark, px, GROUND_Y + 0.34, pz, { ry, jitter: false });
+    /* 田面与田水 */
+    P.box(w, 0.4, d, PAL.soilRed, px, GROUND_Y + 0.5, pz, { ry, jitter: false });
+    P.paddy(w * 0.94, d * 0.94, PAL.water, px, GROUND_Y + 0.72, pz, { ry });
+    /* 稻 */
+    const n = Math.round((w * d) / 22);
+    for (let i = 0; i < n; i++) {
+      const lx = rnd(-w * 0.42, w * 0.42);
+      const lz = rnd(-d * 0.42, d * 0.42);
+      const c = Math.cos(ry), sn = Math.sin(ry);
+      P.crop(rnd(0.7, 1.2), rnd(0.4, 0.7), rnd(0.5, 0.9), PAL.crop,
+        px + lx * c + lz * sn, GROUND_Y + 0.94, pz - lx * sn + lz * c,
+        { ry: ry + rnd(-0.4, 0.4), jitter: true });
+    }
+    /* 田角的小树 */
+    if (rand() < 0.6) {
+      const lx = w * 0.56, lz = d * 0.4;
+      const c = Math.cos(ry), sn = Math.sin(ry);
+      P.cyl0(0.2, 0.28, rnd(3, 5), PAL.trunk, px + lx * c + lz * sn, GROUND_Y + 0.6, pz - lx * sn + lz * c, {}, 7);
+      P.sph(rnd(1.6, 2.6), pick([PAL.leaf, PAL.leafHi, PAL.leafDeep]), px + lx * c + lz * sn, GROUND_Y + rnd(4.4, 6.0), pz - lx * sn + lz * c, { sy: 0.8 }, 8, 6);
+    }
+  }
+}
+
+/* ---------- 主山 + 次一级的梯田山 ---------- */
+layer(0.04);
+buildTerraceHill(HILL, { cropFrom: 3 });
+for (const h of HILLS) {
+  buildTerraceHill(h, { from: h.from, to: h.to, cropFrom: 2 });
+}
+
+/* ---------- 北侧林山：山顶的水源林与寨神林所在 ---------- */
+layer(0.03);
+{
+  /* 三段收分：山脚、山腰、山顶各一段，形成山肩而不是直筒 */
+  const segs = [
+    { rb: RIDGE.baseR, rt: RIDGE.baseR * 0.72, y0: RIDGE.baseY, y1: RIDGE.baseY + (RIDGE.h - RIDGE.baseY) * 0.42 },
+    { rb: RIDGE.baseR * 0.72, rt: RIDGE.baseR * 0.46, y0: RIDGE.baseY + (RIDGE.h - RIDGE.baseY) * 0.42, y1: RIDGE.baseY + (RIDGE.h - RIDGE.baseY) * 0.76 },
+    { rb: RIDGE.baseR * 0.46, rt: RIDGE.topR, y0: RIDGE.baseY + (RIDGE.h - RIDGE.baseY) * 0.76, y1: RIDGE.h },
+  ];
+  segs.forEach((s, i) => {
+    P.cyl(s.rt, s.rb, s.y1 - s.y0, i === 0 ? PAL.rockDark : (i === 1 ? 0x6b7264 : 0x767a68), RIDGE.x, (s.y0 + s.y1) / 2, RIDGE.z, { jitter: false }, 30);
+  });
+  /* 坡面植被与岩石，打散纯色 */
+  for (let i = 0; i < 90; i++) {
+    const a = rand() * TAU;
+    const t = rand();
+    const r = RIDGE.baseR * (1 - t * 0.8);
+    const y = RIDGE.baseY + (RIDGE.h - RIDGE.baseY) * t;
+    P.sph(rnd(1.6, 4.2), pick([PAL.rock, PAL.rockDark, PAL.moss, PAL.pine, PAL.leafDeep]), RIDGE.x + Math.cos(a) * r, y, RIDGE.z + Math.sin(a) * r, { sy: 0.55 }, 7, 5);
+  }
+  /* 山顶平台：压在顶上、比山顶略窄，别做成一只能端起来的盘子 */
+  P.cyl(RIDGE.topR - 0.6, RIDGE.topR - 0.6, 1.8, 0x7a7f6b, RIDGE.x, RIDGE.h - 0.5, RIDGE.z, { jitter: false }, 24);
+  /* 山顶小水池：梯田的水源 */
+  P.cyl(6.4, 7.4, 1.2, PAL.rockDark, RIDGE.x, RIDGE.h + 0.9, RIDGE.z, { jitter: false }, 20);
+  P.waterDisc(5.6, PAL.waterShallow, RIDGE.x, RIDGE.h + 1.55, RIDGE.z);
+  /* 池边灌丛：别让山顶秃着 */
+  for (let i = 0; i < 16; i++) {
+    const a = rand() * TAU;
+    const rr = rnd(7.4, 10.4);
+    P.sph(rnd(1.1, 2.2), pick([PAL.moss, PAL.leaf, PAL.leafDeep, PAL.grassDeep]), RIDGE.x + Math.cos(a) * rr, RIDGE.h - rnd(0.2, 1.0), RIDGE.z + Math.sin(a) * rr, { sy: 0.7 }, 7, 5);
+  }
+  /* 山脚碎石 */
+  for (let i = 0; i < 50; i++) {
+    const a = rand() * TAU;
+    const rr = RIDGE.baseR * rnd(1.0, 1.3);
+    P.sph(rnd(1.0, 2.4), pick([PAL.rock, PAL.rockDark, PAL.moss]), RIDGE.x + Math.cos(a) * rr, GROUND_Y + rnd(0.2, 1.6), RIDGE.z + Math.sin(a) * rr, { sy: 0.5 }, 6, 5);
+  }
+}
+/** 林山坡面高度：给种树用（按分段的收分近似） */
+function ridgeY(px, pz) {
+  const d = Math.hypot(px - RIDGE.x, pz - RIDGE.z);
+  if (d >= RIDGE.baseR) return GROUND_Y;
+  const t = 1 - d / RIDGE.baseR;              /* 0 山脚 → 1 山顶 */
+  return RIDGE.baseY + (RIDGE.h - RIDGE.baseY) * Math.pow(t, 0.78);
+}
+
+/* ---------- 水渠：从山顶林子引下来的分水沟 ---------- */
+layer(0.09);
+{
+  const ch = [];
+  for (let t = 0; t <= 1.001; t += 0.02) {
+    const a = -0.9 + t * 1.5;
+    const r = HILL.topR - 2 + t * (HILL.levels * HILL.growth + 4);
+    ch.push([HILL.x + Math.cos(a) * r, terraceY(t * HILL.levels) + 0.5, HILL.z + Math.sin(a) * r]);
+  }
+  for (let i = 0; i < ch.length - 1; i++) {
+    const [x0, y0, z0] = ch[i];
+    const [x1, y1, z1] = ch[i + 1];
+    const dx = x1 - x0, dz = z1 - z0;
+    const len = Math.hypot(dx, dz);
+    const mx = (x0 + x1) / 2, mz = (z0 + z1) / 2;
+    const ry = -Math.atan2(dz, dx);
+    P.box(len + 0.3, 0.3, 0.62, PAL.soilDark, mx, (y0 + y1) / 2 - 0.15, mz, { ry, jitter: false });
+    P.water(len + 0.1, 0.42, PAL.waterShallow, mx, (y0 + y1) / 2 + 0.04, mz, { ry });
+  }
+  for (const t of [0.25, 0.5, 0.75]) {
+    const i = Math.floor(t * (ch.length - 1));
+    const [x, y, z] = ch[i];
+    P.box(0.5, 0.7, 1.4, PAL.woodDark, x, y + 0.3, z, { jitter: false });
+    P.sign('pDivide', 1.5, 0.44, x, y + 1.15, z, { ry: -0.9, delay: 0.4 });
+  }
+  /* 主山的引水渠：从林山下来接到主山水渠起点 */
+  for (let i = 0; i < 26; i++) {
+    const t = i / 25;
+    const x = RIDGE.x + (HILL.x - 0.9 - RIDGE.x) * t;
+    const z = RIDGE.z + (HILL.z - RIDGE.z) * t;
+    const y = ridgeY(x, z) * (1 - t) + (terraceY(0) + 0.5) * t;
+    P.box(4.2, 0.3, 0.6, PAL.soilDark, x, y - 0.15, z, { ry: 0.05, jitter: false });
+    P.water(4.0, 0.4, PAL.waterShallow, x, y + 0.04, z, { ry: 0.05 });
+  }
+}
+
+/* ---------- 秧田与晒谷场：都在山顶平台上，紧挨寨子 ---------- */
+layer(0.12);
+{
+  const sx = 24, sz = -9;
+  P.box(13, 0.4, 8.4, PAL.soilRed, sx, PLATEAU_Y, sz, { ry: 0.16, jitter: false });
+  P.water(12, 7.4, PAL.waterShallow, sx, PLATEAU_Y + 0.23, sz, { ry: 0.16 });
+  for (let i = 0; i < 60; i++) {
+    P.cropSph(rnd(0.16, 0.3), PAL.seedling, sx + rnd(-5.4, 5.4), PLATEAU_Y + 0.4, sz + rnd(-3.4, 3.4), { sy: 0.7 });
+  }
+  P.sign('pSeed', 2.6, 0.72, sx - 7.0, PLATEAU_Y + 1.5, sz - 2.2, { delay: 0.42 });
+
+  const dx = 8, dz = -9;
+  P.cyl(7.4, 7.4, 0.34, PAL.stone, dx, PLATEAU_Y + 0.17, dz, { jitter: true }, 22);
+  for (let i = 0; i < 40; i++) {
+    P.box(rnd(0.5, 1.4), 0.06, rnd(0.4, 1.1), pick([PAL.stone, PAL.stoneDark, 0xb0a89a]), dx + rnd(-6.6, 6.6), PLATEAU_Y + 0.37, dz + rnd(-6.6, 6.6), { ry: rnd(0, TAU), jitter: true });
+  }
+  for (const [gx, gz] of [[dx - 3.6, dz - 2.6], [dx + 3.6, dz + 1.8], [dx + 0.8, dz - 4.4]]) {
+    P.cyl0(0.14, 0.16, 3.2, PAL.bambooDark, gx - 2.2, PLATEAU_Y + 0.34, gz, {}, 6);
+    P.cyl0(0.14, 0.16, 3.2, PAL.bambooDark, gx + 2.2, PLATEAU_Y + 0.34, gz, {}, 6);
+    P.box(4.8, 0.14, 0.14, PAL.bamboo, gx, PLATEAU_Y + 3.4, gz, { jitter: false });
+    for (let i = 0; i < 4; i++) P.cyl0(0.3, 0.38, 0.9, PAL.cropGold, gx - 1.6 + i * 1.1, PLATEAU_Y + 2.4, gz, { jitter: true }, 8);
+  }
+  P.sign('pYard', 3.0, 0.8, dx, PLATEAU_Y + 3.9, dz + 8.0, { delay: 0.44 });
+}
+
+/* ---------- 河谷：山脚的一条河与滩地 ---------- */
+layer(0.14);
+{
+  const riverZ = 118;
+  for (let i = 0; i < 240; i++) {
+    P.sph(rnd(0.3, 0.85), pick([0x8a8578, 0x9c968a, 0x77736a]), rnd(-160, 190), -1.2, riverZ + rnd(-16, 16), { sy: 0.45 }, 6, 4);
+  }
+  P.box(420, 1.2, 30, 0x4d5f5a, 10, -1.9, riverZ, { jitter: false });
+  P.water(420, 26, PAL.water, 10, -0.6, riverZ, { jitter: false });
+  for (let i = 0; i < 110; i++) {
+    P.water(rnd(3, 12), rnd(0.3, 0.9), pick([PAL.waterHi, PAL.waterFoam]), rnd(-160, 190), -0.45, riverZ + rnd(-11, 11), { jitter: true });
+  }
+  for (let i = 0; i < 140; i++) {
+    const x = rnd(-150, 180);
+    P.sph(rnd(0.3, 0.9), pick([PAL.stone, PAL.stoneDark, 0xb0a89a]), x, -0.15, riverZ + (rand() < 0.5 ? -rnd(13, 20) : rnd(13, 20)), { sy: 0.5 }, 6, 4);
+  }
+  for (let i = 0; i < 80; i++) {
+    const x = rnd(-150, 180), z = riverZ + (rand() < 0.5 ? -rnd(13, 18) : rnd(13, 18));
+    P.cyl0(0.06, 0.09, rnd(1.6, 2.8), pick([0x8a9c5a, 0xa8b070]), x, 0, z, { rz: rnd(-0.12, 0.12), jitter: true }, 5);
+  }
+
+  /* 山脚缓坡：从地面逐级降到河滩，别留断崖 */
+  const steps = 6;
+  for (let k = 0; k < steps; k++) {
+    const z0 = 78 + (k / steps) * 32;
+    const z1 = 78 + ((k + 1) / steps) * 32;
+    const topY = GROUND_Y * (1 - (k + 1) / steps) + 0.2 * ((k + 1) / steps);
+    P.box(520, 2.4, (z1 - z0) + 3.0, k % 2 ? PAL.grassDeep : PAL.grass, 10, topY - 1.2, (z0 + z1) / 2, { jitter: false });
+    for (let i = 0; i < 22; i++) {
+      P.box(rnd(1.6, 5.0), 0.16, rnd(1.2, 3.6), pick([PAL.grass, PAL.grassDeep, PAL.moss, PAL.soil]), rnd(-180, 200), topY + 0.06, rnd(z0, z1), { ry: rnd(0, TAU), jitter: true });
+    }
+  }
+}
+
+/* ---------- 远山：一层层收住地平线 ---------- */
+layer(0.01);
+{
+  for (let ring = 0; ring < 3; ring++) {
+    const count = 26 - ring * 4;
+    const rr = 300 + ring * 150;
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * TAU + ring * 0.21;
+      const r = rr + rnd(-50, 50);
+      const h = rnd(36, 84) + ring * 14;
+      const w = rnd(80, 190);
+      const tone = pick([
+        0x6f8a72, 0x5e7a66, 0x7a9480,
+        0x8fa89a, 0x9db3a6,
+        0xa8bcb2, 0xb4c6bd,
+      ]);
+      P.cone(w * 0.5, h, tone, Math.cos(a) * r, h * 0.5 - 18, Math.sin(a) * r + 20, { ry: rnd(0, TAU), jitter: true }, 7);
+    }
+  }
+}
+/* ---------- 30 · 哈尼蘑菇房、寨神林、水源林、竹林 ----------
+ * 蘑菇房是哈尼村寨最有辨识度的形制：夯土墙 + 四坡草顶，
+ * 屋顶出檐很深、坡度陡，远看像一朵蘑菇。这里只取其形，
+ * 不是任何真实民居的复原。
+ */
+
+/* ---------- 蘑菇房 ---------- */
+layer(0.18);
+function mushroomHouse(x, z, ry, s = 1, twoStory = false) {
+  const g = PLATEAU_Y + 0.35;
+  const W = 7.2 * s, D = 6.4 * s;
+  const wallH = (twoStory ? 4.4 : 3.1) * s;
+  /* 石脚 */
+  P.box(W + 0.5, 0.5, D + 0.5, PAL.stone, x, g + 0.25, z, { ry, jitter: true });
+  /* 夯土墙 */
+  P.box(W, wallH, D, PAL.wall, x, g + 0.5 + wallH / 2, z, { ry });
+  /* 墙面横纹：夯土的分层 */
+  for (let i = 0; i < Math.round(wallH / 0.7); i++) {
+    P.box(W + 0.04, 0.07, D + 0.04, PAL.wallDeep, x, g + 0.9 + i * 0.7 * s, z, { ry, jitter: false });
+  }
+  /* 门与窗（门朝正立面 local +Z） */
+  const c = Math.cos(ry), sn = Math.sin(ry);
+  const wx = (lx, lz = 0) => x + lx * c + lz * sn;
+  const wz = (lx, lz = 0) => z - lx * sn + lz * c;
+  P.box(1.5 * s, 2.2 * s, 0.18, PAL.woodDark, wx(0, D / 2 + 0.03), g + 1.6 * s, wz(0, D / 2 + 0.03), { ry, jitter: false });
+  P.box(1.0 * s, 0.9 * s, 0.16, PAL.woodDark, wx(-1.9 * s, D / 2 + 0.02), g + 2.1 * s, wz(-1.9 * s, D / 2 + 0.02), { ry, jitter: false });
+  if (twoStory) {
+    P.box(1.2 * s, 0.9 * s, 0.16, PAL.woodDark, wx(1.6 * s, D / 2 + 0.02), g + 3.4 * s, wz(1.6 * s, D / 2 + 0.02), { ry, jitter: false });
+    /* 二层挑台 */
+    P.box(W + 1.2 * s, 0.16, 1.0, PAL.woodLight, wx(0, D / 2 + 0.5), g + 2.9 * s, wz(0, D / 2 + 0.5), { ry, jitter: false });
+    for (const t of [-2.2, 2.2]) {
+      P.cyl0(0.1 * s, 0.12 * s, 0.9 * s, PAL.woodDark, wx(t * s, D / 2 + 0.95), g + 2.0 * s, wz(t * s, D / 2 + 0.95), {}, 6);
+    }
+  }
+  /* 四坡草顶：出檐很深、坡度陡，是"蘑菇"的关键 */
+  const roofBase = g + 0.5 + wallH;
+  const eave = W * 0.72 * s;               /* 檐口外伸 */
+  const roofH = (twoStory ? 3.4 : 2.9) * s;
+  /* 檐口一圈：把墙体与草顶之间收干净 */
+  P.box(W + eave, 0.26 * s, D + eave, PAL.thatchDark, x, roofBase + 0.13 * s, z, { ry, jitter: false });
+  /* 主体四坡顶 */
+  P.cone((W + eave) * 0.62, roofH, PAL.thatch, x, roofBase + roofH / 2 + 0.2 * s, z, { ry: ry + Math.PI / 4, jitter: false }, 4);
+  /* 顶上的压脊草束 */
+  P.cone(0.5 * s, 0.7 * s, PAL.thatchPale, x, roofBase + roofH + 0.5 * s, z, { ry: ry + Math.PI / 4, jitter: false }, 4);
+  /* 檐下阴影带 */
+  P.box(W + eave * 0.92, 0.12 * s, D + eave * 0.92, 0x6a5535, x, roofBase - 0.02 * s, z, { ry, jitter: false });
+}
+
+/* 寨子：落在山顶平台上，围着晒谷场与秧田排布。
+   房屋位置提到模块级，后面种寨神林时要拿它避开房子 —— 否则树会长在屋顶里。 */
+const HOUSE_SPOTS = [
+  [12, -23, 0.10, 1.0, true],
+  [20, -24, -0.06, 1.05, false],
+  [25, -14, 1.62, 0.95, true],
+  [21, -7, 3.10, 1.0, false],
+  [11, -9, -1.55, 0.92, false],
+  [7, -19, 1.60, 1.0, true],
+  [17, -26, 0.04, 0.95, false],
+];
+/** 离最近一栋房子还有多远（用来给树留位置） */
+function distToNearestHouse(x, z) {
+  let d = Infinity;
+  for (const [hx, hz, , hs] of HOUSE_SPOTS) {
+    d = Math.min(d, Math.hypot(x - hx, z - hz) - hs * 3.4);
+  }
+  /* 两座粮仓也一并躲开 */
+  d = Math.min(d, Math.hypot(x - 3.5, z + 13) - 2.2, Math.hypot(x - 28.5, z + 21) - 2.2);
+  return d;
+}
+daiHouseLoop();
+function daiHouseLoop() {
+  for (const [hx, hz, hry, hs, two] of HOUSE_SPOTS) mushroomHouse(hx, hz, hry, hs, two);
+}
+
+/* ---------- 寨门与栅栏 ---------- */
+layer(0.2);
+{
+  const gx = 17, gz = -3.4;
+  for (const dx of [-2.6, 2.6]) {
+    P.cyl0(0.28, 0.32, 4.4, PAL.woodDark, gx + dx, PLATEAU_Y + 0.35, gz, {}, 10);
+    P.cone(0.5, 0.9, PAL.thatchPale, gx + dx, PLATEAU_Y + 5.2, gz, { jitter: false }, 8);
+  }
+  P.box(5.8, 0.5, 0.5, PAL.woodDark, gx, PLATEAU_Y + 4.5, gz, { jitter: false });
+  P.box(6.2, 0.2, 0.8, PAL.thatch, gx, PLATEAU_Y + 4.85, gz, { rx: 0.05, jitter: false });
+  P.sign('pGate', 3.0, 0.82, gx, PLATEAU_Y + 4.1, gz + 0.34, { delay: 0.5 });
+  /* 寨墙：矮石墙，留出入口 */
+  for (let i = 0; i < 40; i++) {
+    const a = (i / 40) * Math.PI * 2;
+    const r = 13.4;
+    const px = 16 + Math.cos(a) * r, pz = -16 + Math.sin(a) * r;
+    if (Math.abs(px - gx) < 4 && Math.abs(pz - gz) < 3) continue;   /* 寨门处断开 */
+    P.box(2.2, 0.9, 0.6, pick([PAL.stone, PAL.stoneDark]), px, PLATEAU_Y + 0.45, pz, { ry: -a, jitter: true });
+  }
+  /* 寨门内侧的说明牌 */
+  P.sign('notice', 2.4, 1.75, gx - 4.6, PLATEAU_Y + 1.5, gz + 0.5, { ry: -0.5, delay: 0.52 });
+}
+
+/* ---------- 粮仓：架空的小竹楼，防潮防鼠 ---------- */
+layer(0.22);
+function granary(x, z, ry) {
+  const g = PLATEAU_Y + 0.35;
+  for (const [dx, dz] of [[-1.1, -1.0], [1.1, -1.0], [-1.1, 1.0], [1.1, 1.0]]) {
+    P.cyl0(0.16, 0.18, 1.7, PAL.woodDark, x + dx, g, z + dz, {}, 7);
+  }
+  P.box(2.9, 0.24, 2.7, PAL.woodLight, x, g + 1.82, z, { ry, jitter: false });
+  P.box(2.7, 2.0, 2.5, PAL.bamboo, x, g + 2.94, z, { ry });
+  for (let i = 0; i < 5; i++) P.box(2.74, 0.06, 2.54, PAL.bambooDark, x, g + 2.2 + i * 0.38, z, { ry, jitter: false });
+  P.cone(2.5, 1.4, PAL.thatch, x, g + 4.6, z, { ry: ry + Math.PI / 4, jitter: false }, 4);
+  /* 防鼠碟 */
+  for (const [dx, dz] of [[-1.1, -1.0], [1.1, -1.0], [-1.1, 1.0], [1.1, 1.0]]) {
+    P.cyl(0.4, 0.4, 0.08, PAL.woodDark, x + dx, g + 1.6, z + dz, { jitter: false }, 10);
+  }
+}
+granary(3.5, -13, 0.2);
+granary(28.5, -21, -0.3);
+
+/* ---------- 柴垛、水缸、石磨 ---------- */
+layer(0.24);
+for (const [cx, cz] of [[14, -12], [23, -19], [9, -25], [27, -10]]) {
+  for (let i = 0; i < 7; i++) {
+    P.cyl(0.14, 0.14, rnd(1.4, 2.2), pick([PAL.wood, PAL.woodDark, PAL.woodLight]), cx + rnd(-0.5, 0.5), PLATEAU_Y + 0.9, cz + rnd(-0.5, 0.5), { rz: Math.PI / 2, ry: rnd(0, TAU) }, 7);
+  }
+}
+for (const [vx, vz] of [[13.5, -6.5], [19.5, -12.5]]) {
+  P.cyl(0.62, 0.5, 1.0, PAL.ceramic, vx, PLATEAU_Y + 0.85, vz, {}, 14);
+  P.cyl(0.5, 0.5, 0.06, PAL.waterShallow, vx, PLATEAU_Y + 1.33, vz, { jitter: false }, 14);
+}
+P.cyl(0.9, 1.0, 0.35, PAL.stone, 24, PLATEAU_Y + 0.5, -19, { jitter: true }, 16);
+P.cyl(0.22, 0.22, 0.95, PAL.woodDark, 24, PLATEAU_Y + 1.15, -19, { rz: 1.4 }, 8);
+
+/* ---------- 寨神林：寨子上方不许砍伐的神树林 ---------- */
+layer(0.26);
+function tallTree(x, z, y0, h, tone) {
+  P.cyl0(0.34, 0.55, h, PAL.trunk, x, y0, z, {}, 8);
+  const layers = 4;
+  for (let i = 0; i < layers; i++) {
+    const t = i / (layers - 1);
+    P.cone((2.6 - t * 1.5) * (0.9 + rand() * 0.2), (2.2 - t * 0.7), tone, x + rnd(-0.3, 0.3), y0 + h * (0.42 + t * 0.52), z + rnd(-0.3, 0.3), { jitter: true }, 7);
+  }
+}
+function broadTree(x, z, y0, h) {
+  P.cyl0(0.42, 0.7, h, PAL.trunk, x, y0, z, {}, 8);
+  for (let i = 0; i < 4; i++) {
+    const a = rand() * Math.PI * 2, r = rnd(0.4, 2.2);
+    P.sph(rnd(1.8, 3.0), pick([PAL.leaf, PAL.leafHi, PAL.leafDeep, 0x6d9d4e]), x + Math.cos(a) * r, y0 + h + rnd(0.4, 2.6), z + Math.sin(a) * r, { sy: 0.8 }, 8, 6);
+  }
+}
+
+/* 寨神林：寨子北侧一片密林，是哈尼村寨的标致景物。
+   两点关键：一是每棵按脚下实际地表高度落位（之前统一用 PLATEAU_Y，
+   半径到 50 米时那里已经低了十几米，整片林子悬在半空）；
+   二是躲开房子与粮仓，否则树直接长在屋顶里。 */
+for (let i = 0; i < 150; i++) {
+  const a = -Math.PI * 0.5 + rnd(-1.05, 1.05);
+  const r = rnd(11, 30);
+  const tx = 16 + Math.cos(a) * r;
+  const tz = -16 + Math.sin(a) * r - rnd(0, 10);
+  if (tz > -24) continue;                    /* 只长在寨子北面 */
+  if (distToNearestHouse(tx, tz) < 1.5) continue;
+  tallTree(tx, tz, groundYAt(tx, tz) - 0.4, rnd(7, 13), pick([PAL.pine, PAL.leafDeep, 0x3f6640, 0x48704a]));
+  if (rand() < 0.35) {
+    const bx = tx + rnd(-3, 3), bz = tz + rnd(-3, 3);
+    if (distToNearestHouse(bx, bz) > 1.2) broadTree(bx, bz, groundYAt(bx, bz) - 0.3, rnd(5, 9));
+  }
+}
+P.sign('pGrove', 3.0, 0.84, 12, PLATEAU_Y + 2.6, -30, { delay: 0.56 });
+
+/* 水源林：北侧林山上的密林（山顶水池四周） */
+for (let i = 0; i < 150; i++) {
+  const a = rand() * Math.PI * 2;
+  const r = rnd(9, RIDGE.baseR * 0.97);
+  const tx = RIDGE.x + Math.cos(a) * r;
+  const tz = RIDGE.z + Math.sin(a) * r;
+  const y = ridgeY(tx, tz) - 1.2;
+  if (y > RIDGE.h - 4) continue;
+  tallTree(tx, tz, y, rnd(6, 13), pick([PAL.pine, PAL.leafDeep, 0x3f6640, 0x48704a]));
+  if (rand() < 0.3) broadTree(tx + rnd(-3, 3), tz + rnd(-3, 3), y, rnd(5, 9));
+}
+
+/* 竹林与杂树：寨子周边与山脚 */
+layer(0.28);
+/** 寨子里或田上的小件，取脚下地表高度再抬一点点，别陷进田面 */
+function groveY(x, z) {
+  const onPlateau = Math.hypot(x - HILL.x, z - HILL.z) <= HILL.topR + 1.4;
+  return groundYAt(x, z) + (onPlateau ? 0.35 : 0.1);
+}
+function bambooClump(x, z, y0, n = 7) {
+  for (let i = 0; i < n; i++) {
+    const bx = x + rnd(-1.3, 1.3), bz = z + rnd(-1.3, 1.3);
+    const h = rnd(5.5, 9.5);
+    P.cyl0(0.14, 0.19, h, pick([PAL.bambooGreen, PAL.bamboo, 0x9cb060]), bx, y0, bz, { rz: rnd(-0.1, 0.1), rx: rnd(-0.1, 0.1), jitter: true }, 6);
+    for (let k = 0; k < 5; k++) {
+      const a = rand() * Math.PI * 2;
+      P.box(3.2, 0.1, 0.42, pick([PAL.leaf, PAL.leafHi]), bx + Math.cos(a) * 1.5, y0 + rnd(h * 0.55, h * 0.95), bz + Math.sin(a) * 1.5, { ry: -a, rz: -0.35, jitter: true });
+    }
+  }
+}
+bambooClump(2, -8, groveY(2, -8), 6);
+bambooClump(30, -6, groveY(30, -6), 7);
+bambooClump(-6, -18, groveY(-6, -18), 6);
+bambooClump(40, -26, groveY(40, -26), 7);
+bambooClump(46, 2, groveY(46, 2), 6);
+bambooClump(-22, 8, groveY(-22, 8), 7);
+bambooClump(56, -8, groveY(56, -8), 5);
+
+/* 谷底与山坡的散树：避开主山田面、次山的田面和林山，其余地方成片长 */
+for (let i = 0; i < 110; i++) {
+  const tx = rnd(-280, 320);
+  const tz = rnd(-360, 84);
+  if (Math.hypot(tx - HILL.x, tz - HILL.z) < 72) continue;              /* 主山田里不种 */
+  let skip = false;
+  for (const h of HILLS) {
+    if (Math.hypot(tx - h.x, tz - h.z) < contourRAt(h, h.levels, 0) + 8) { skip = true; break; }
+  }
+  if (skip) continue;
+  if (Math.hypot(tx - RIDGE.x, tz - RIDGE.z) < RIDGE.baseR + 10) continue;  /* 林山另算 */
+  const y = GROUND_Y + 0.1;
+  if (rand() < 0.5) broadTree(tx, tz, y, rnd(4, 9));
+  else tallTree(tx, tz, y, rnd(6, 11), pick([PAL.pine, PAL.leafDeep, PAL.leaf]));
+}
+
+/* 田间零星的小树与灌木 */
+for (let i = 0; i < 90; i++) {
+  const a = rand() * Math.PI * 2;
+  const r = rnd(20, 60);
+  const tx = 16 + Math.cos(a) * r;
+  const tz = -16 + Math.sin(a) * r;
+  const y = groundYAt(tx, tz);
+  for (let k = 0; k < 3; k++) {
+    P.sph(rnd(0.5, 1.1), pick([PAL.leaf, PAL.leafHi, PAL.leafDeep]), tx + rnd(-1, 1), y + rnd(0.4, 1.1), tz + rnd(-1, 1), { sy: 0.8 }, 7, 5);
+  }
+}
+/* ---------- 40 · 农事、人物、水碾、祭所 ----------
+ * 人物与器物都是示意：哈尼族尚黑，配银饰；这里只取大形，
+ * 不是服饰或农具的复原。
+ */
+
+/* ---------- 人物 ---------- */
+function haniPerson(x, y, z, ry, opt = {}) {
+  const s = opt.s || 1;
+  const h = 1.62 * s;
+  const cloth = opt.cloth || pick([PAL.dress, PAL.dressAlt, PAL.dressBlue, PAL.dressRed]);
+  /* 筒裙／长裤 */
+  P.cyl(0.19 * s, 0.26 * s, h * 0.5, cloth, x, y + h * 0.25, z, { ry }, 10);
+  /* 银腰带 */
+  P.cyl(0.2 * s, 0.2 * s, 0.06 * s, PAL.silver, x, y + h * 0.48, z, { ry, jitter: false }, 10);
+  /* 上衣 */
+  P.cyl(0.18 * s, 0.2 * s, h * 0.32, opt.top || PAL.dress, x, y + h * 0.66, z, { ry }, 10);
+  /* 胸前银饰 */
+  if (opt.silver !== false) P.box(0.24 * s, 0.1 * s, 0.06, PAL.silver, x + 0.12 * s, y + h * 0.72, z + 0.1 * s, { ry, jitter: false });
+  /* 手臂：弯腰劳作时前伸 */
+  const bend = opt.bend || 0;
+  for (const side of [-1, 1]) {
+    P.cyl0(0.055 * s, 0.06 * s, h * 0.32, PAL.skin, x + side * 0.21 * s, y + h * 0.58 - bend * 0.3, z, { rz: side * -(0.3 + bend * 1.1), ry }, 7);
+  }
+  /* 头与包头 */
+  P.sph(0.14 * s, PAL.skin, x, y + h * 0.88, z, { ry }, 10, 8);
+  P.sph(0.16 * s, opt.head || PAL.dress, x, y + h * 0.93, z - 0.01 * s, { sy: 0.8 }, 10, 7);
+  if (opt.silver !== false) P.torus(0.15 * s, 0.025 * s, PAL.silver, x, y + h * 0.92, z, { rx: Math.PI / 2, jitter: false }, 5, 12);
+  /* 背篓 */
+  if (opt.basket) {
+    P.cyl(0.26 * s, 0.2 * s, 0.5 * s, PAL.bamboo, x, y + h * 0.72, z - 0.3 * s, {}, 10);
+    P.cyl(0.28 * s, 0.28 * s, 0.05 * s, PAL.bambooDark, x, y + h * 0.97, z - 0.3 * s, { jitter: false }, 10);
+  }
+  /* 手里的镰刀或锄头 */
+  if (opt.tool === 'sickle') {
+    P.cyl0(0.03 * s, 0.04 * s, 0.5 * s, PAL.woodDark, x + 0.3 * s, y + h * 0.42, z + 0.2 * s, { rz: 0.9, jitter: false }, 6);
+    P.torus(0.16 * s, 0.03 * s, PAL.silverDark || PAL.metal || PAL.silver, x + 0.5 * s, y + h * 0.72, z + 0.2 * s, { jitter: false }, 5, 10);
+  } else if (opt.tool === 'hoe') {
+    P.cyl0(0.035 * s, 0.045 * s, 1.3 * s, PAL.wood, x + 0.28 * s, y + h * 0.3, z + 0.16 * s, { rz: 0.5, jitter: false }, 6);
+    P.box(0.22 * s, 0.3 * s, 0.06, PAL.metal || PAL.stoneDark, x + 0.62 * s, y + h * 0.5, z + 0.16 * s, { rz: 0.5, jitter: false });
+  }
+}
+
+/* ---------- 水牛 ---------- */
+function buffalo(x, y, z, ry, s = 1) {
+  const body = 0x5a5348, horn = 0xd8d0bc;
+  P.box(2.6 * s, 1.3 * s, 1.4 * s, body, x, y + 1.15 * s, z, { ry });
+  P.box(1.0 * s, 1.0 * s, 1.1 * s, body, x + 1.5 * s, y + 1.35 * s, z, { ry });
+  P.sph(0.42 * s, body, x + 2.0 * s, y + 1.5 * s, z, { sy: 0.85 }, 9, 6);
+  /* 角 */
+  for (const side of [-1, 1]) {
+    P.cyl0(0.07 * s, 0.1 * s, 0.7 * s, horn, x + 2.1 * s, y + 1.7 * s, z + side * 0.35 * s, { rz: -0.7, rx: side * 0.5, jitter: false }, 6);
+  }
+  for (const [dx, dz] of [[-0.9, -0.5], [0.9, -0.5], [-0.9, 0.5], [0.9, 0.5]]) {
+    P.cyl0(0.2 * s, 0.22 * s, 0.9 * s, body, x + dx * s, y, z + dz * s, {}, 8);
+  }
+  P.cyl(0.07 * s, 0.07 * s, 0.8 * s, body, x - 1.4 * s, y + 1.0 * s, z, { rz: 1.2 }, 6);
+}
+
+/* ---------- 水碾：借水力的碾坊 ---------- */
+layer(0.3);
+{
+  const mx = 42, mz = 14;
+  const y = groundYAt(mx, mz) - 0.1;
+  /* 水轮 */
+  P.cyl(3.2, 3.2, 0.5, PAL.wood, mx, y + 3.4, mz, { rz: Math.PI / 2 }, 20);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    P.box(0.28, 2.2, 3.2, PAL.woodDark, mx, y + 3.4 + Math.sin(a) * 2.0, mz + Math.cos(a) * 2.0, { rx: -a, jitter: false });
+  }
+  /* 引水槽 */
+  P.box(0.9, 0.5, 6.0, PAL.woodDark, mx + 1.4, y + 5.2, mz - 5.0, { rx: 0.22, jitter: false });
+  P.water(0.7, 5.6, PAL.waterShallow, mx + 1.4, y + 5.5, mz - 5.0, { rx: 0.22 });
+  /* 碾坊小屋 */
+  P.box(6.0, 3.2, 5.0, PAL.wall, mx - 4.6, y + 1.6, mz, { jitter: false });
+  P.cone(4.4, 2.4, PAL.thatch, mx - 4.6, y + 4.4, mz, { ry: Math.PI / 4, jitter: false }, 4);
+  P.box(1.4, 2.2, 0.16, PAL.woodDark, mx - 2.9, y + 1.4, mz + 2.5, { jitter: false });
+  P.sign('pMill', 2.4, 0.7, mx - 4.6, y + 3.9, mz + 2.6, { delay: 0.6 });
+  /* 水潭 */
+  P.cyl(4.0, 4.4, 0.6, PAL.rockDark, mx + 0.6, y + 0.1, mz, { jitter: true }, 18);
+  P.water(7.0, 7.0, PAL.water, mx + 0.6, y + 0.42, mz);
+  glowPts.push([mx, y + 3.4, mz, 4.0, 0xffffff, 0.12]);
+}
+
+/* ---------- 农事人物：散布在田里 ---------- */
+layer(0.32);
+{
+  const onTerrace = (lvl, ang) => {
+    const r = contourR(lvl, ang) - rand() * 1.6;
+    return [HILL.x + Math.cos(ang) * r, terraceY(lvl) + 0.2, HILL.z + Math.sin(ang) * r];
+  };
+  /* 冬春：弯腰整田／栽插的人 */
+  for (let i = 0; i < 16; i++) {
+    const lvl = 3 + Math.floor(rand() * 6);
+    const ang = rand() * Math.PI * 2;
+    const [px, py, pz] = onTerrace(lvl, ang);
+    haniPerson(px, py, pz, rand() * Math.PI * 2, { bend: 1, tool: rand() < 0.5 ? 'hoe' : null, s: rnd(0.94, 1.04), basket: rand() < 0.4 });
+  }
+  /* 夏季：薅草与看水的人 */
+  for (let i = 0; i < 10; i++) {
+    const lvl = 6 + Math.floor(rand() * 6);
+    const ang = rand() * Math.PI * 2;
+    const [px, py, pz] = onTerrace(lvl, ang);
+    haniPerson(px, py, pz, rand() * Math.PI * 2, { bend: 0.6, tool: 'hoe', s: rnd(0.94, 1.04) });
+  }
+  /* 秋季：收割的人，成组 */
+  for (let g = 0; g < 5; g++) {
+    const lvl = 8 + Math.floor(rand() * 6);
+    const ang = rand() * Math.PI * 2;
+    for (let i = 0; i < 3; i++) {
+      const [px, py, pz] = onTerrace(lvl, ang + i * 0.05);
+      haniPerson(px, py + i * 0.4, pz, rand() * Math.PI * 2, { bend: 1.1, tool: 'sickle', s: rnd(0.94, 1.04), basket: true });
+    }
+  }
+  /* 寨子里与路上的人 */
+  haniPerson(15, PLATEAU_Y + 0.35, -8, 0.4, { basket: true });
+  haniPerson(20.5, PLATEAU_Y + 0.35, -12, -0.8, { tool: 'hoe' });
+  haniPerson(10.5, PLATEAU_Y + 0.35, -15, 1.7, { cloth: PAL.dressRed });
+  haniPerson(24, PLATEAU_Y + 0.35, -18, 2.4, {});
+  haniPerson(13.5, PLATEAU_Y + 0.35, -21, -0.4, { basket: true, silver: true });
+  /* 山顶水池边取水的人（引子所在） */
+  haniPerson(RIDGE.x + 7.2, RIDGE.h + 2.1, RIDGE.z + 2.4, -1.6, { basket: true, cloth: PAL.dressBlue });
+  haniPerson(RIDGE.x - 6.4, RIDGE.h + 2.1, RIDGE.z - 3.0, 1.5, {});
+}
+
+/* 水牛：田间与寨边 */
+layer(0.34);
+{
+  buffalo(-8, groundYAt(-8, -2) - 0.1, -2, 0.6, 1.0);
+  buffalo(4, groundYAt(4, 22) - 0.1, 22, 2.2, 0.95);
+  buffalo(34, groundYAt(34, -34) - 0.1, -34, -0.8, 1.05);
+  buffalo(22, PLATEAU_Y + 0.35, -27, 1.2, 0.9);
+}
+
+/* ---------- 五幕的标记物：每幕一处小景，带木牌 ---------- */
+layer(0.36);
+{
+  /* 引子：山顶水池旁的石堆与木牌 */
+  P.cyl(2.2, 2.6, 0.5, PAL.rockDark, RIDGE.x, RIDGE.h + 1.7, RIDGE.z, { jitter: true }, 14);
+  for (let i = 0; i < 10; i++) {
+    const a = rand() * Math.PI * 2;
+    P.sph(rnd(0.3, 0.6), pick([PAL.stone, PAL.stoneDark]), RIDGE.x + Math.cos(a) * 2.4, RIDGE.h + 2.2, RIDGE.z + Math.sin(a) * 2.4, { sy: 0.7 }, 6, 5);
+  }
+  P.sign('sProem', 2.6, 3.9, RIDGE.x - 5.0, RIDGE.h + 4.2, RIDGE.z - 5.0, { ry: 0.7, delay: 0.62 });
+  glowPts.push([RIDGE.x, RIDGE.h + 2.6, RIDGE.z, 6.0, 0xcfe8f0, 0.16]);
+
+  /* 五幕的木牌：位置按「某层的半径再往外挪一点」，落点其实已经在下层田上，
+     所以高度必须用地表函数取，不能拿原来那层的 terraceY 加常数。 */
+
+  /* 冬季：最上一层的镜面水田边立牌 */
+  const w1a = -2.2, w1r = contourR(1, w1a) + 2.2;
+  const wx1 = HILL.x + Math.cos(w1a) * w1r, wz1 = HILL.z + Math.sin(w1a) * w1r;
+  P.sign('sWinter', 2.4, 3.6, wx1, groundYAt(wx1, wz1) + 1.8, wz1, { ry: -w1a + Math.PI / 2, delay: 0.64 });
+
+  /* 春季：秧田边的牌子（秧田在平台上） */
+  P.sign('sSpring', 2.4, 3.6, 32.5, PLATEAU_Y + 3.4, -5.5, { ry: -0.6, delay: 0.66 });
+
+  /* 夏季：中层田边的牌子 */
+  const w6a = 0.9, w6r = contourR(8, w6a) + 2.4;
+  const wx6 = HILL.x + Math.cos(w6a) * w6r, wz6 = HILL.z + Math.sin(w6a) * w6r;
+  P.sign('sSummer', 2.4, 3.6, wx6, groundYAt(wx6, wz6) + 1.8, wz6, { ry: -w6a + Math.PI / 2, delay: 0.68 });
+
+  /* 秋季：下层田边的牌子 */
+  const w12a = 2.5, w12r = contourR(12, w12a) + 2.6;
+  const wx12 = HILL.x + Math.cos(w12a) * w12r, wz12 = HILL.z + Math.sin(w12a) * w12r;
+  P.sign('sAutumn', 2.4, 3.6, wx12, groundYAt(wx12, wz12) + 1.8, wz12, { ry: -w12a + Math.PI / 2, delay: 0.70 });
+
+  /* 观天处：山脊上的高台，看天定农时。高度取脚下地表，别按猜的层数硬写 */
+  const sx2 = -18, sz2 = -34, sy2 = groundYAt(sx2, sz2);
+  P.cyl(3.0, 3.6, 0.7, PAL.rock, sx2, sy2, sz2, { jitter: true }, 16);
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    P.box(0.4, rnd(1.0, 1.6), 0.4, PAL.stoneDark, sx2 + Math.cos(a) * 2.6, sy2 + 0.9, sz2 + Math.sin(a) * 2.6, { ry: -a, jitter: true });
+  }
+  haniPerson(sx2, sy2 + 0.35, sz2, 0.2, { cloth: PAL.dressIndigo, s: 1.02 });
+  glowPts.push([sx2, sy2 + 1.6, sz2, 4.0, 0xdcecf4, 0.14]);
+
+  /* 祭所：寨墙外的西侧田埂上。
+     第一次摆在寨北、贴着寨神林 —— 任何能看它的机位都在别家屋顶里。
+     第二次挪到寨子西侧空地 (5,-14) —— 正好压在粮仓 (3.5,-13) 上，粮仓把主体挡死了。
+     这次放到寨墙以外、晒谷场与竹林之间，四周没有房屋与粮仓。 */
+  const ax = -3, az = -9, ay = 30.9;
+  P.cyl(2.0, 2.4, 0.8, PAL.stoneDark, ax, ay, az, { jitter: true }, 14);
+  P.cyl(1.4, 1.4, 0.3, PAL.stone, ax, ay + 0.55, az, { jitter: false }, 12);
+  for (let i = 0; i < 7; i++) {
+    const a = rand() * Math.PI * 2;
+    P.sph(rnd(0.18, 0.34), pick([PAL.flower, PAL.flowerGold, PAL.ceramic]), ax + Math.cos(a) * 1.1, ay + 0.8, az + Math.sin(a) * 1.1, {}, 6, 5);
+  }
+  P.cyl(0.28, 0.22, 0.5, PAL.bronze, ax + 0.9, ay + 0.9, az - 0.5, {}, 12);
+  for (let i = 0; i < 4; i++) {
+    P.cyl0(0.04, 0.05, rnd(0.5, 0.9), PAL.ember, ax - 0.4 + i * 0.3, ay + 0.7, az + 0.4, { jitter: false }, 5);
+  }
+  glowPts.push([ax, ay + 1.4, az, 2.6, 0xffb060, 0.35]);
+  /* 旁边留几丛草，别让这块空地太空 */
+  for (let i = 0; i < 10; i++) {
+    const a = rand() * Math.PI * 2;
+    const rr = rnd(3.0, 5.4);
+    P.sph(rnd(0.5, 1.0), pick([PAL.moss, PAL.grass, PAL.grassDeep]), ax + Math.cos(a) * rr, ay + 0.4, az + Math.sin(a) * rr, { sy: 0.7 }, 6, 5);
+  }
+}
+/* ---------- 50 · 合批成网格、光照、五幕运镜、热点、界面 ---------- */
+
+/* 把所有桶变成 mesh */
+finishBucket('solid', toonMat, true);
+finishBucket('fine', toonMat, false);
+finishBucket('crop', cropMat, true);
+finishBucket('water', waterMat, false, { shadow: false, receive: false });
+finishBucket('paddy', paddyMat, false, { shadow: false, receive: false });
+finishBucket('glow', glowMat, false, { shadow: false, receive: false });
+finishBucket('sign', signMat, false, { shadow: false, receive: false });
+finishBucket('glass', glassMat, false, { shadow: false, receive: false });
+
+/* ---------- 光照：山地日光，偏冷的天光 + 暖的地面反射 ---------- */
+const sun = new THREE.DirectionalLight(0xfff4e2, 1.28);
+sun.position.set(-110, 150, 120);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 420;
+sun.shadow.camera.left = -150;
+sun.shadow.camera.right = 150;
+sun.shadow.camera.top = 150;
+sun.shadow.camera.bottom = -150;
+sun.shadow.bias = -0.0006;
+sun.shadow.normalBias = 0.06;
+scene.add(sun);
+scene.add(sun.target);
+
+const hemi = new THREE.HemisphereLight(0xdcecf4, 0x7d8a63, 1.02);
+scene.add(hemi);
+const fill = new THREE.DirectionalLight(0xcfe4f0, 0.3);
+fill.position.set(140, 50, -120);
+scene.add(fill);
+
+/* ---------- 光晕点 ---------- */
+{
+  const geo = new THREE.SphereGeometry(1, 8, 6);
+  for (const [gx, gy, gz, size, color, op] of glowPts) {
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: op, depthWrite: false, fog: true,
+    }));
+    m.position.set(gx, gy, gz);
+    m.scale.setScalar(size);
+    scene.add(m);
+  }
+}
+
+/* ---------- 雾气与云：山区常见的低云 ---------- */
+const MIST = [];
+{
+  const cv = document.createElement('canvas');
+  cv.width = 256; cv.height = 128;
+  const g = cv.getContext('2d');
+  const grd = g.createRadialGradient(128, 64, 0, 128, 64, 120);
+  grd.addColorStop(0, 'rgba(255,255,255,0.55)');
+  grd.addColorStop(0.55, 'rgba(255,255,255,0.22)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 256, 128);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  for (let i = 0; i < 26; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, opacity: rnd(0.22, 0.42), depthWrite: false, fog: true,
+    }));
+    const a = rand() * Math.PI * 2;
+    const r = rnd(70, 230);
+    sp.position.set(16 + Math.cos(a) * r, rnd(6, 30), -16 + Math.sin(a) * r);
+    sp.scale.set(rnd(50, 120), rnd(12, 26), 1);
+    sp.userData = { baseX: sp.position.x, phase: rand() * 6.28, speed: rnd(0.05, 0.14) };
+    scene.add(sp);
+    MIST.push(sp);
+  }
+}
+
+/* ---------- 水雾：梯田上方的薄雾 ---------- */
+const TERRACE_MIST = [];
+{
+  const cv = document.createElement('canvas');
+  cv.width = 128; cv.height = 64;
+  const g = cv.getContext('2d');
+  const grd = g.createRadialGradient(64, 32, 0, 64, 32, 60);
+  grd.addColorStop(0, 'rgba(255,255,255,0.5)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 128, 64);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  for (let i = 0; i < 22; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, opacity: rnd(0.14, 0.3), depthWrite: false, fog: true,
+    }));
+    const a = rand() * Math.PI * 2;
+    const r = rnd(16, 58);
+    const lvl = Math.round((r - HILL.topR) / HILL.growth);
+    sp.position.set(16 + Math.cos(a) * r, terraceY(THREE.MathUtils.clamp(lvl, 0, 15)) + rnd(1.5, 5), -16 + Math.sin(a) * r);
+    sp.scale.set(rnd(16, 34), rnd(5, 10), 1);
+    sp.userData = { baseX: sp.position.x, phase: rand() * 6.28, speed: rnd(0.03, 0.09) };
+    scene.add(sp);
+    TERRACE_MIST.push(sp);
+  }
+}
+
+/* ---------- 落日与天光 ---------- */
+/* 用一块大背景板做天空渐变，比纯色更容易表现山区的层积云 */
+{
+  const cv = document.createElement('canvas');
+  cv.width = 8; cv.height = 256;
+  const g = cv.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 0, 256);
+  grd.addColorStop(0.0, '#8fb6cc');
+  grd.addColorStop(0.42, '#bcd4dc');
+  grd.addColorStop(0.7, '#dfe9e6');
+  grd.addColorStop(1.0, '#c8d6ce');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 8, 256);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(760, 24, 16),
+    new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, fog: false })
+  );
+  scene.add(sky);
+}
+
+/* ================= 五幕运镜 =================
+ * 引子（水源林）→ 冬季（镜面水田）→ 春季（秧田）→ 夏季（浓绿田）→ 秋季（金黄）
+ * 位置与看点各一条 CatmullRom 曲线，按整体进度取样。
+ * 同时按幕推进 U.season，稻田颜色随之一路推演，不需要重建几何。
+ */
+
+const ACTS = [
+  /* 0 · 引子：高过北侧林山，俯瞰整条垂直系统 */
+  { pos: [12, 92, -140], look: [14, 26, -30], fov: 44, season: 0.00 },
+  { pos: [14, 76, -100], look: [16, 30, -26], fov: 44, season: 0.05 },
+  /* 1 · 绕到东侧下降，看最上层的镜面水田（避开寨神林的树冠） */
+  { pos: [48, 60, -56], look: [20, 32, -24], fov: 46, season: 0.12 },
+  { pos: [64, 50, -18], look: [24, 32, -8], fov: 46, season: 0.22 },
+  /* 2 · 春季：掠过东侧田面与寨子 */
+  { pos: [64, 42, 18], look: [26, 28, 2], fov: 48, season: 0.36 },
+  { pos: [52, 38, 46], look: [18, 22, 22], fov: 48, season: 0.48 },
+  /* 3 · 夏季：贴着浓绿的南坡横掠 */
+  { pos: [26, 34, 62], look: [2, 18, 34], fov: 50, season: 0.62 },
+  { pos: [-6, 32, 68], look: [-10, 16, 38], fov: 50, season: 0.74 },
+  /* 4 · 秋季：金黄的下层田，往河谷方向推 */
+  { pos: [-34, 34, 78], look: [-2, 14, 36], fov: 48, season: 0.88 },
+  { pos: [-46, 44, 106], look: [4, 18, 20], fov: 46, season: 0.96 },
+  /* 5 · 拉升定格 */
+  { pos: [-54, 62, 128], look: [10, 20, 4], fov: 44, season: 1.00 },
+  { pos: [-54, 76, 138], look: [12, 20, -2], fov: 44, season: 1.00 },
+];
+const HERO_POS = new THREE.Vector3(-54, 76, 138);
+const HERO_LOOK = new THREE.Vector3(12, 20, -2);
+const HERO_FOV = 40;
+
+const flightPos = new THREE.CatmullRomCurve3(ACTS.map((k) => new THREE.Vector3(...k.pos)), false, 'catmullrom', 0.5);
+const flightLook = new THREE.CatmullRomCurve3(ACTS.map((k) => new THREE.Vector3(...k.look)), false, 'catmullrom', 0.5);
+
+function powLerp(a, b, t) { return a + (b - a) * t; }
+function actFov(t) {
+  const n = ACTS.length - 1;
+  const p = THREE.MathUtils.clamp(t, 0, 1) * n;
+  const i = Math.min(n - 1, Math.floor(p));
+  return powLerp(ACTS[i].fov, ACTS[i + 1].fov, p - i);
+}
+function actSeason(t) {
+  const n = ACTS.length - 1;
+  const p = THREE.MathUtils.clamp(t, 0, 1) * n;
+  const i = Math.min(n - 1, Math.floor(p));
+  return powLerp(ACTS[i].season, ACTS[i + 1].season, p - i);
+}
+
+const OPENING_MS = 16000;
+const HERO_BLEND_START = 0.87;
+
+camera.fov = 44;
+camera.near = 0.1;
+camera.far = 1600;
+camera.updateProjectionMatrix();
+
+/* ---------- 定格后的自由观察 ---------- */
+let heroTheta = 0, heroPhi = 0, heroDist = 1;
+const heroTarget = HERO_LOOK.clone();
+let heroBaseDist = 1;
+let zoomTarget = 1;
+let zoomNow = 1;
+let userMoved = false;
+let focused = null;
+
+function setHeroFromOverview() {
+  const off = HERO_POS.clone().sub(HERO_LOOK);
+  const sph = new THREE.Spherical(off.length(), Math.acos(off.y / off.length()), Math.atan2(off.x, off.z));
+  heroTheta = sph.theta; heroPhi = sph.phi;
+  heroBaseDist = sph.radius;
+  heroTarget.copy(HERO_LOOK);
+  zoomTarget = 1; zoomNow = 1;
+}
+
+/* ---------- 每个热点的专属机位 ---------- */
+/* 每个热点除了机位，还带自己的季节：飞到「冬季」就该看到泡冬水田，
+   而不是停在全景时的秋季。season 与 ACTS 用同一套刻度（0 冬 → 1 秋）。 */
+const SPOT_CAM = {
+  /* 引子：山顶水池。机位在树林之上，从南侧看过去（别钻进树冠里） */
+  proem: { eye: [14, 72, -26], look: [RIDGE.x, RIDGE.h + 1, RIDGE.z], fov: 42, season: 0.04 },
+  /* 冬季：从东南看最上层的镜面水田 —— 不能从西边看，那条视线正穿寨神林 */
+  winter: { eye: [46, 50, 26], look: [18, 33, -6], fov: 44, season: 0.06 },
+  /* 春季：秧田与寨子 */
+  spring: { eye: [40, PLATEAU_Y + 12, 6], look: [24, PLATEAU_Y + 2, -9], fov: 40, season: 0.34 },
+  /* 夏季：浓绿田面，从东南看 */
+  summer: { eye: [62, terraceY(6) + 16, 34], look: [26, terraceY(8), 4], fov: 42, season: 0.66 },
+  /* 秋季：金黄下层田，从南侧看 */
+  autumn: { eye: [-14, terraceY(12) + 16, 62], look: [2, terraceY(13), 24], fov: 42, season: 1.0 },
+  /* 分水口：水渠中段在东侧，机位摆在渠的东边 */
+  water: { eye: [74, 34, -18], look: [57, 25, -22], fov: 38, season: 0.45 },
+  /* 观天处：山脊高台在寨神林西侧，从西南看过去 */
+  sky: { eye: [-30, 32, -8], look: [-18, 25.6, -34], fov: 40, season: 0.12 },
+  /* 祭所：寨神林边缘的石堆，从寨内一侧看 */
+  /* 祭所：寨墙外西侧田埂上的石堆。它立在某一层田面上，脚下那层田的
+     挡墙正好挡在它前面 —— 平视、小俯角都会被这道墙吃掉，只剩一圈光晕露头。
+     所以用一个接近俯视的角度（约 69°），田埂就挡不住了。 */
+  rite: { eye: [-3, 44, -3], look: [-3, 30.9, -9], fov: 40, season: 0.86 },
+};
+const OVERVIEW = { eye: [HERO_POS.x, HERO_POS.y, HERO_POS.z], look: [HERO_LOOK.x, HERO_LOOK.y, HERO_LOOK.z], fov: HERO_FOV, season: 1.0 };
+
+const camTween = {
+  active: false, t: 0, dur: 1.15,
+  fromEye: new THREE.Vector3(), fromLook: new THREE.Vector3(), fromFov: HERO_FOV, fromSeason: 1,
+  toEye: new THREE.Vector3(), toLook: new THREE.Vector3(), toFov: HERO_FOV, toSeason: 1,
+};
+const _fwd = new THREE.Vector3();
+function currentLook() {
+  camera.getWorldDirection(_fwd);
+  return camera.position.clone().addScaledVector(_fwd, camera.position.distanceTo(heroTarget));
+}
+function flyTo(spotId) {
+  const t = spotId ? SPOT_CAM[spotId] : OVERVIEW;
+  if (!t) return;
+  camTween.fromEye.copy(camera.position);
+  camTween.fromLook.copy(currentLook());
+  camTween.fromFov = camera.fov;
+  camTween.fromSeason = U.season.value;
+  camTween.toEye.set(t.eye[0], t.eye[1], t.eye[2]);
+  camTween.toLook.set(t.look[0], t.look[1], t.look[2]);
+  camTween.toFov = t.fov;
+  camTween.toSeason = t.season ?? U.season.value;
+  camTween.t = 0;
+  camTween.active = true;
+  focused = spotId || null;
+  userMoved = false;
+}
+
+/* ---------- 状态机 ---------- */
+let phase = 'opening';
+let startedAt = 0;
+let progress = 0;
+let flightFrozen = false;
+/* 像素采样（见 animate 里那一段） */
+let samplePending = false;
+let SAMPLE_RESULT = null;
+/* 自检时冻结相机：否则主循环每帧 applyHeroCamera 会把摆好的机位冲掉，
+   采样到的其实是全景 —— 这正是第一版自检"看起来有变化"的真正原因。 */
+let cameraFrozen = false;
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function applyOpeningCamera(t) {
+  const blend = smoothstep(HERO_BLEND_START, 1, t);
+  const p = flightPos.getPoint(THREE.MathUtils.clamp(t, 0, 1));
+  const l = flightLook.getPoint(THREE.MathUtils.clamp(t, 0, 1));
+  p.lerp(HERO_POS, blend);
+  l.lerp(HERO_LOOK, blend);
+  camera.position.copy(p);
+  camera.lookAt(l);
+  camera.fov = powLerp(actFov(t), HERO_FOV, blend);
+  camera.updateProjectionMatrix();
+  /* 季节随幕推进 */
+  U.season.value = Math.max(actSeason(t), blend);
+}
+
+function applyHeroCamera(dt) {
+  if (camTween.active) {
+    camTween.t = Math.min(1, camTween.t + (dt || 0.016) / camTween.dur);
+    const e = camTween.t < 0.5
+      ? 4 * camTween.t ** 3
+      : 1 - Math.pow(-2 * camTween.t + 2, 3) / 2;
+    camera.position.lerpVectors(camTween.fromEye, camTween.toEye, e);
+    const look = new THREE.Vector3().lerpVectors(camTween.fromLook, camTween.toLook, e);
+    camera.lookAt(look);
+    const fov = powLerp(camTween.fromFov, camTween.toFov, e);
+    if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    /* 季节跟着镜头一起过渡：飞到「冬季」时田里正在泡冬水 */
+    U.season.value = powLerp(camTween.fromSeason, camTween.toSeason, e);
+    if (camTween.t >= 1) {
+      camTween.active = false;
+      const off = camTween.toEye.clone().sub(camTween.toLook);
+      const sph = new THREE.Spherical(off.length(), Math.acos(off.y / off.length()), Math.atan2(off.x, off.z));
+      heroTheta = sph.theta; heroPhi = sph.phi;
+      heroBaseDist = sph.radius;
+      heroTarget.copy(camTween.toLook);
+      zoomTarget = 1; zoomNow = 1;
+    }
+    return;
+  }
+
+  heroPhi = THREE.MathUtils.clamp(heroPhi, 0.16, Math.PI / 2 - 0.03);
+  const portrait = camera.aspect < 1;
+  const minDist = focused ? 8 : 70;
+  const maxDist = focused ? 110 : 560;
+  const aspectK = portrait
+    ? THREE.MathUtils.clamp(Math.sqrt(1 / Math.max(0.5, camera.aspect)), 1, 1.3)
+    : 1;
+  /* 基准距离与缩放分开存：写成 heroDist = heroDist * zoom 会每帧自乘、指数累积 */
+  zoomNow += (zoomTarget - zoomNow) * Math.min(1, (dt || 0.016) * 9);
+  heroDist = THREE.MathUtils.clamp(heroBaseDist * zoomNow * aspectK, minDist, maxDist);
+  const off = new THREE.Vector3().setFromSpherical(new THREE.Spherical(heroDist, heroPhi, heroTheta));
+  camera.position.copy(heroTarget).add(off);
+  camera.lookAt(heroTarget);
+  if (portrait && !focused) {
+    const up = new THREE.Vector3(0, 1, 0)
+      .addScaledVector(off.clone().normalize(), -off.clone().normalize().y)
+      .normalize();
+    camera.position.addScaledVector(up, -heroDist * 0.1);
+    camera.lookAt(heroTarget);
+  }
+  const wantFov = focused ? (SPOT_CAM[focused]?.fov ?? HERO_FOV) : HERO_FOV;
+  if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
+}
+
+/* ---------- 入场组装 ---------- */
+const intro = { t: 0, done: false };
+
+/* ---------- 热点 ---------- */
+/* 光点的世界坐标：同样按地表高度挂，别让标签悬在离地十几米的空中 */
+const SPOT_ANCHOR = [
+  ['proem', RIDGE.x, RIDGE.h + 3, RIDGE.z, '引子'],
+  ['winter', HILL.x - 22, null, HILL.z - 20, '冬季'],
+  ['spring', 24, PLATEAU_Y + 3, -9, '春季'],
+  ['summer', HILL.x + 34, null, HILL.z + 22, '夏季'],
+  ['autumn', HILL.x - 30, null, HILL.z + 40, '秋季'],
+  ['water', HILL.x - 6, null, HILL.z + 6, '梯田耕作'],
+  ['sky', -18, null, -34, '天文历法'],
+  ['rite', -3, null, -9, '节庆祭典'],
+].map(([id, x, y, z, label]) => ({
+  id, label,
+  p: [x, y != null ? y : groundYAt(x, z) + 3, z],
+}));
+const HOTSPOTS = SPOT_ANCHOR;
+const hotspotEls = new Map();
+{
+  const host = document.getElementById('hotspots');
+  for (const spot of HOTSPOTS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'hotspot ui';
+    b.dataset.id = spot.id;
+    b.innerHTML = '<i></i><span></span>';
+    b.querySelector('span').textContent = spot.label;
+    b.addEventListener('click', () => selectSpot(spot.id));
+    host.appendChild(b);
+    hotspotEls.set(spot.id, b);
+    spot.world = new THREE.Vector3(spot.p[0], spot.p[1], spot.p[2]);
+  }
+}
+function projectHotspots() {
+  const w = window.innerWidth, h = window.innerHeight;
+  const showAll = phase === 'hero';
+  for (const spot of HOTSPOTS) {
+    const el = hotspotEls.get(spot.id);
+    if (!showAll) { el.style.opacity = '0'; el.style.pointerEvents = 'none'; continue; }
+    const v = spot.world.clone().project(camera);
+    const x = (v.x * 0.5 + 0.5) * w;
+    const y = (-v.y * 0.5 + 0.5) * h;
+    const pad = 14;
+    const cx = THREE.MathUtils.clamp(x, pad, w - pad);
+    const cy = THREE.MathUtils.clamp(y, pad, h - pad);
+    const flip = x > w * 0.58;
+    const visible = v.z < 1 && x > -80 && x < w + 80 && y > -60 && y < h + 60;
+    el.style.transform = flip
+      ? `translate(${cx.toFixed(1)}px, ${cy.toFixed(1)}px) translateX(-100%)`
+      : `translate(${cx.toFixed(1)}px, ${cy.toFixed(1)}px)`;
+    el.classList.toggle('is-flip', flip);
+    el.style.opacity = visible ? '1' : '0';
+    el.style.pointerEvents = visible ? 'auto' : 'none';
+    const d = spot.world.distanceTo(camera.position);
+    el.style.setProperty('--hs', THREE.MathUtils.clamp(120 / d, 0.7, 1.25).toFixed(3));
+  }
+}
+
+/* ---------- 文案：只用官方项目页有记载的内容 ---------- */
+const STORY = {
+  proem: {
+    n: '引子', t: '引子',
+    d: '《四季生产调》的第一部分是引子，强调祖先传承下来的四季生产调对哈尼族生存所具有的意义。它流传于红河、元阳、绿春、金平、建水等县的哈尼族聚居区，起源时间的下限不晚于唐代。画面中的山顶水池与林子是梯田水源的示意。',
+  },
+  winter: {
+    n: '冬季', t: '冬季',
+    d: '《四季生产调》按季节顺序讲述梯田耕作的程序与技术要领。冬季是这一序列的开端。画面中的泡冬水田与田埂为示意，并非对该单元唱词内容的复原。',
+  },
+  spring: {
+    n: '春季', t: '春季',
+    d: '春季单元承接冬季，继续讲述该季的耕作程序与技术要领，以及与之相应的自然物候变化规律。画面中的秧田与栽插为示意。',
+  },
+  summer: {
+    n: '夏季', t: '夏季',
+    d: '夏季单元讲述该季的耕作程序与技术要领。梯田的用水与田间管理属于这一序列。画面中的浓绿田面为示意。',
+  },
+  autumn: {
+    n: '秋季', t: '秋季',
+    d: '秋季单元讲述该季的耕作程序与技术要领，是五大单元的最后一节。画面中的金黄稻田与晒谷场为示意。',
+  },
+  water: {
+    n: '梯田耕作', t: '梯田耕作',
+    d: '哈尼族四季生产调被称为山区梯田生产技术及其礼仪禁忌的百科大典，按季节顺序讲述梯田耕作的程序与技术要领。画面中的分水口与水渠是梯田用水方式的示意。',
+  },
+  sky: {
+    n: '天文历法', t: '天文历法',
+    d: '四季生产调在讲述耕作的同时，也讲述与之相应的天文历法知识。画面中的山脊高台是观天定农时的示意场所，不代表具体的观测方法。',
+  },
+  rite: {
+    n: '节庆祭典', t: '节庆祭典',
+    d: '四季生产调还包括节庆祭典知识和人生礼节规范，同时也是哈尼族社会伦理道德规范的集大成之作。画面中的石堆祭所为示意，不代表具体仪式。',
+  },
+};
+const storyEl = document.getElementById('story');
+const briefEl = document.getElementById('brief');
+const showBriefBtn = document.getElementById('show-brief');
+let briefCollapsed = false;
+let selected = null;
+
+function setBrief(visible) {
+  if (!briefEl) return;
+  const show = visible && !briefCollapsed;
+  briefEl.classList.toggle('is-hidden', !show);
+  if (showBriefBtn) showBriefBtn.hidden = !(phase === 'hero' && !focused && briefCollapsed);
+}
+function selectSpot(id) {
+  selected = id;
+  const s = STORY[id];
+  storyEl.innerHTML = `<span class="story-num">${s.n}</span><h2>${s.t}</h2><p>${s.d}</p>`;
+  setBrief(false);
+  const back = document.getElementById('back-overview');
+  if (back) back.hidden = false;
+  for (const [k, el] of hotspotEls) el.classList.toggle('is-active', k === id);
+  storyEl.classList.add('is-in');
+  flyTo(id);
+}
+function showOverview() {
+  selected = null;
+  focused = null;
+  briefCollapsed = false;
+  storyEl.innerHTML = '';
+  storyEl.classList.remove('is-in');
+  setBrief(true);
+  const back = document.getElementById('back-overview');
+  if (back) back.hidden = true;
+  for (const [, el] of hotspotEls) el.classList.remove('is-active');
+  flyTo(null);
+}
+
+/* ---------- 界面切换 ---------- */
+const progressEl = document.getElementById('opening-progress');
+const loading = document.getElementById('boot');
+function setPhase(next) {
+  phase = next;
+  document.body.classList.toggle('is-opening', next === 'opening');
+  document.body.classList.toggle('is-hero', next === 'hero');
+  setBrief(next === 'hero' && !focused);
+}
+function skipOpening() {
+  intro.t = 1; intro.done = true;
+  loading.classList.add('is-gone');
+  setPhase('hero');
+  camTween.active = false;
+  setHeroFromOverview();
+  U.season.value = 1;
+  applyHeroCamera(0);
+  projectHotspots();
+}
+function replay() {
+  camTween.active = false;
+  startedAt = 0;
+  intro.t = 0; intro.done = false;
+  selected = null; focused = null;
+  briefCollapsed = false;
+  setPhase('opening');
+  storyEl.innerHTML = '';
+  applyOpeningCamera(0);
+}
+
+/* ---------- 序幕旁白：五幕 ---------- */
+const OPENING_LINES = [
+  { at: 0.00, kicker: '引子 / 顺着水走', text: '水从山顶的林子下来，一层一层，落进田里。' },
+  { at: 0.18, kicker: '冬季 / 泡田', text: '冬里先把田泡上，水面像一层层镜子。' },
+  { at: 0.34, kicker: '春季 / 栽插', text: '秧田先绿，再一丛一丛挪进大田。' },
+  { at: 0.55, kicker: '夏季 / 长田', text: '水要看着放，草要一遍遍薅。' },
+  { at: 0.74, kicker: '秋季 / 归仓', text: '谷子黄了，晒场上摊开一整片。' },
+  { at: 0.90, kicker: '定格 / 全景', text: '林、寨、田、河，一条线看下来。' },
+];
+const lineKicker = document.getElementById('opening-kicker');
+const lineText = document.getElementById('opening-text');
+let lineIndex = -1;
+function updateOpeningLine(t) {
+  let i = 0;
+  for (let k = 0; k < OPENING_LINES.length; k++) if (t >= OPENING_LINES[k].at) i = k;
+  if (i === lineIndex) return;
+  lineIndex = i;
+  const l = OPENING_LINES[i];
+  lineKicker.textContent = l.kicker;
+  lineText.textContent = l.text;
+  lineKicker.classList.remove('is-in');
+  lineText.classList.remove('is-in');
+  void lineText.offsetWidth;
+  lineKicker.classList.add('is-in');
+  lineText.classList.add('is-in');
+}
+
+/* ---------- 交互 ---------- */
+const keys = new Set();
+let dragging = 0;
+let lastPointer = { x: 0, y: 0 };
+
+function onPointerDown(e) {
+  if (e.target.closest('.ui')) return;
+  dragging = e.button === 2 || e.shiftKey ? 2 : 1;
+  lastPointer = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture?.(e.pointerId);
+}
+function onPointerMove(e) {
+  if (!dragging || phase !== 'hero') return;
+  const dx = e.clientX - lastPointer.x;
+  const dy = e.clientY - lastPointer.y;
+  lastPointer = { x: e.clientX, y: e.clientY };
+  if (dragging === 1) {
+    heroTheta -= dx * 0.005;
+    heroPhi -= dy * 0.004;
+  } else {
+    const scale = camera.position.distanceTo(heroTarget) * 0.0013;
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+    const up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+    heroTarget.addScaledVector(right, -dx * scale);
+    heroTarget.addScaledVector(up, dy * scale);
+  }
+  userMoved = true;
+}
+function onPointerUp(e) { dragging = 0; canvas.releasePointerCapture?.(e.pointerId); }
+/* 滚轮：按 deltaMode 归一化，指数累积；向下滚 = 拉远 */
+function onWheel(e) {
+  if (phase !== 'hero') return;
+  e.preventDefault();
+  const unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? 100 : 1);
+  const dy = e.deltaY * unit;
+  zoomTarget = THREE.MathUtils.clamp(zoomTarget * Math.exp(dy * 0.001), 0.28, 2.8);
+  userMoved = true;
+}
+canvas.addEventListener('pointerdown', onPointerDown);
+canvas.addEventListener('pointermove', onPointerMove);
+canvas.addEventListener('pointerup', onPointerUp);
+canvas.addEventListener('pointercancel', onPointerUp);
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('wheel', onWheel, { passive: false });
+
+let pinchDist = 0;
+const touchDist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+canvas.addEventListener('touchstart', (e) => { if (e.touches.length === 2) pinchDist = touchDist(e.touches); }, { passive: true });
+canvas.addEventListener('touchmove', (e) => {
+  if (phase !== 'hero' || e.touches.length !== 2 || !pinchDist) return;
+  e.preventDefault();
+  const d = touchDist(e.touches);
+  if (d > 0) zoomTarget = THREE.MathUtils.clamp(zoomTarget * (pinchDist / d), 0.28, 2.8);
+  pinchDist = d;
+  userMoved = true;
+}, { passive: false });
+canvas.addEventListener('touchend', () => { pinchDist = 0; });
+
+document.getElementById('skip').addEventListener('click', skipOpening);
+document.getElementById('replay').addEventListener('click', replay);
+{
+  const back = document.getElementById('back-overview');
+  if (back) back.addEventListener('click', showOverview);
+  const bclose = document.getElementById('brief-close');
+  if (bclose) bclose.addEventListener('click', () => { briefCollapsed = true; setBrief(false); });
+  if (showBriefBtn) showBriefBtn.addEventListener('click', () => { briefCollapsed = false; setBrief(true); });
+}
+window.addEventListener('keydown', (e) => {
+  if ((e.key === 'Escape' || e.key === ' ') && phase === 'opening') { e.preventDefault(); skipOpening(); }
+});
+
+/* ---------- 主循环 ---------- */
+let frames = 0;
+function animate() {
+  tickTime();
+  frames++;
+  const dt = timeState.delta;
+  const t = timeState.elapsed;
+  U.time.value = t;
+
+  /* 组装动画 */
+  if (!reduced && !intro.done) {
+    intro.t = Math.min(1, intro.t + dt / 2.4);
+    U.assemble.value = intro.t;
+    if (intro.t >= 1) { intro.done = true; loading.classList.add('is-gone'); }
+  }
+  if (intro.done && U.assemble.value !== 1) U.assemble.value = 1;
+
+  /* 季节推进：稻田颜色跟着幕走（定格后停在秋季） */
+  const tint = seasonCropColor(U.season.value);
+  for (const u of SEASON_UNIFORMS) u.value.copy(tint);
+  /* 田水随季节涨落：冬春是镜面水田，秋收前放干 */
+  const sv = U.season.value;
+  paddyMat.opacity = sv < 0.34
+    ? THREE.MathUtils.lerp(0.92, 0.78, sv / 0.34)            /* 冬 → 春 */
+    : sv < 0.66
+      ? THREE.MathUtils.lerp(0.78, 0.62, (sv - 0.34) / 0.32)  /* 春 → 夏 */
+      : THREE.MathUtils.lerp(0.62, 0.12, (sv - 0.66) / 0.34); /* 夏 → 秋（放干） */
+
+  /* 相机 */
+  if (cameraFrozen) {
+    /* 自检期间不动相机 */
+  } else if (phase === 'opening') {
+    if (!startedAt) startedAt = performance.now();
+    if (!flightFrozen) {
+      progress = reduced ? 1 : THREE.MathUtils.clamp((performance.now() - startedAt) / OPENING_MS, 0, 1);
+    }
+    applyOpeningCamera(progress);
+    updateOpeningLine(progress);
+    if (progressEl) progressEl.style.transform = `scaleX(${progress})`;
+    if (!flightFrozen && progress >= 1) {
+      setPhase('hero');
+      camTween.active = false;
+      setHeroFromOverview();
+    }
+  } else {
+    applyHeroCamera(dt);
+  }
+
+  /* 云雾漂移 */
+  if (!reduced) {
+    for (const sp of MIST) {
+      sp.position.x = sp.userData.baseX + Math.sin(t * sp.userData.speed + sp.userData.phase) * 14;
+    }
+    for (const sp of TERRACE_MIST) {
+      sp.position.x = sp.userData.baseX + Math.sin(t * sp.userData.speed + sp.userData.phase) * 5;
+    }
+  }
+
+  /* 太阳缓慢移动 */
+  const sa = 0.6 + Math.sin(t * 0.05) * 0.2;
+  sun.position.set(-110 + sa * 26, 150, 120 + sa * 18);
+  sun.target.position.set(10, 10, 0);
+
+  projectHotspots();
+  renderer.render(scene, camera);
+  /* 取一帧的像素统计：相机若埋进屋顶或山体，画面会整片同色、
+     亮度跨度趋近 0。这是唯一能自动抓出「点开是一片空白」的探针。 */
+  if (samplePending) {
+    samplePending = false;
+    try {
+      const gl = renderer.getContext();
+      const w = 40, h = 24, n = w * h;
+      const buf = new Uint8Array(n * 4);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      let mn = 255, mx = 0, sum = 0;
+      for (let i = 0; i < n; i++) {
+        const l = buf[i * 4] * 0.299 + buf[i * 4 + 1] * 0.587 + buf[i * 4 + 2] * 0.114;
+        if (l < mn) mn = l;
+        if (l > mx) mx = l;
+        sum += l;
+      }
+      SAMPLE_RESULT = {
+        mean: +(sum / n).toFixed(1),
+        min: +mn.toFixed(1),
+        max: +mx.toFixed(1),
+        spread: +(mx - mn).toFixed(1),
+        blank: (mx - mn) < 12,
+      };
+    } catch (err) {
+      SAMPLE_RESULT = { error: String(err) };
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+/* ---------- 启动 ---------- */
+if (reduced || SKIP_INTRO) {
+  U.assemble.value = 1;
+  intro.t = 1; intro.done = true;
+  loading.classList.add('is-gone');
+  setPhase('hero');
+  setHeroFromOverview();
+  U.season.value = 1;
+  applyHeroCamera(0);
+} else {
+  setPhase('opening');
+  applyOpeningCamera(0);
+}
+projectHotspots();
+renderer.render(scene, camera);
+animate();
+
+/* ---------- 诊断钩子 ---------- */
+window.__TITIAN_READY = true;
+window.__TITIAN_SKIP = skipOpening;
+window.__TITIAN_FLIGHT = (v) => {
+  setPhase('opening');
+  intro.t = 1; intro.done = true;
+  loading.classList.add('is-gone');
+  flightFrozen = true;
+  progress = THREE.MathUtils.clamp(v, 0, 1);
+  applyOpeningCamera(progress);
+  updateOpeningLine(progress);
+  return progress;
+};
+window.__TITIAN_UNFREEZE = () => { flightFrozen = false; startedAt = performance.now() - progress * OPENING_MS; };
+/* 像素采样：请调 __TITIAN_SAMPLE()，下一帧渲染完再取 __TITIAN_SAMPLE_RESULT() */
+/* 自检用：临时挂一块纯色平板（MeshBasicMaterial、关雾、无光照），
+   相机正对它看 —— 画面必然整片同色，spread 应趋近 0。
+   如果这时候还报 blank=false，说明探针本身没在用，各处 spread 全部不可信。
+   （第一版是把相机贴到地面上朝下看，结果 6cm 落在近裁剪面 0.1 之内，
+     看到的是地面背后的东西，照样"有变化"—— 探针没验证过就等于没有。） */
+let BLANK_PLANE = null;
+window.__TITIAN_FORCE_BLANK = () => {
+  camTween.active = false;
+  cameraFrozen = true;
+  if (!BLANK_PLANE) {
+    BLANK_PLANE = new THREE.Mesh(
+      new THREE.PlaneGeometry(80, 80),
+      new THREE.MeshBasicMaterial({ color: 0x8a7a5e, fog: false })
+    );
+    BLANK_PLANE.frustumCulled = false;
+    scene.add(BLANK_PLANE);
+  }
+  BLANK_PLANE.visible = true;
+  BLANK_PLANE.position.set(0, GROUND_Y - 2, 0);
+  BLANK_PLANE.rotation.set(-Math.PI / 2, 0, 0);
+  camera.position.set(0, GROUND_Y + 8, 0);
+  camera.lookAt(0, GROUND_Y - 40, 0);
+  return camera.position.toArray();
+};
+window.__TITIAN_CLEAR_BLANK = () => { if (BLANK_PLANE) BLANK_PLANE.visible = false; cameraFrozen = false; return true; };
+window.__TITIAN_SAMPLE = () => { samplePending = true; SAMPLE_RESULT = null; return true; };
+window.__TITIAN_SAMPLE_RESULT = () => SAMPLE_RESULT;
+window.__TITIAN_TESTPROBE = () => 'probe-ok';
+window.__TITIAN_DIAG = () => ({
+  three: THREE.REVISION,
+  meshes: worldGroups.children.length,
+  hotspots: HOTSPOTS.length,
+  phase,
+  progress: +progress.toFixed(3),
+  season: +U.season.value.toFixed(3),
+  assemble: +U.assemble.value.toFixed(3),
+  camera: camera.position.toArray().map((v) => +v.toFixed(2)),
+  fov: +camera.fov.toFixed(1),
+  focused,
+  tweening: camTween.active,
+  tweenT: +camTween.t.toFixed(3),
+  frames,
+});</script>
+</body>
+</html>

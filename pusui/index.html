@@ -1,0 +1,2850 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#cfe4ea" />
+<title>傣族泼水节 · 镜头穿行</title>
+<meta name="description" content="傣族泼水节（X-8）：一段穿越澜沧江与傣寨的镜头，结尾定格在大景。原创程序化三维场景，教学示意，非节庆现场影像。" />
+<link rel="icon" href="data:," />
+<style>* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #cfe4ea;
+  color: #2f3a3c;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+}
+
+#stage { position: fixed; inset: 0; }
+
+#scene {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: default;
+}
+body.is-hero #scene { cursor: grab; }
+body.is-hero #scene:active { cursor: grabbing; }
+
+/* ---------- 加载层 ---------- */
+#boot {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 14px;
+  text-align: center;
+  background: linear-gradient(180deg, #dceef2 0%, #cfe4ea 60%, #c3dbe2 100%);
+  z-index: 60;
+  transition: opacity .9s ease, visibility .9s ease;
+}
+#boot span {
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(30px, 5vw, 54px);
+  letter-spacing: .5em;
+  color: #2c5c66;
+  text-indent: .5em;
+}
+#boot i { font-style: normal; font-size: 13px; letter-spacing: .3em; color: #6a8a90; }
+#boot.is-gone { opacity: 0; visibility: hidden; }
+#boot.error span { color: #a8332a; }
+#boot pre {
+  max-width: 70vw;
+  margin: 0 auto;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #7a8a8c;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+/* ---------- 通用 ---------- */
+.ui { position: absolute; z-index: 30; }
+/* 两个整屏阶段层：只负责显隐与定位上下文，本身不画东西。
+   必须铺满，否则子元素的 left/right 会按收缩后的宽度算。 */
+.ui-opening, .ui-hero {
+  inset: 0;
+  pointer-events: none;
+}
+.ui-opening, .ui-hero { transition: opacity .6s ease, visibility .6s ease; }
+body.is-opening .ui-hero { opacity: 0; visibility: hidden; pointer-events: none; }
+body.is-hero .ui-opening { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* 阶段层里的每一块自己定位；父层只当坐标系 */
+.ui-opening > *, .ui-hero > * {
+  position: absolute;
+  pointer-events: auto;
+}
+
+/* ---------- 电影感压边 ---------- */
+#stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(ellipse at 50% 46%, transparent 42%, rgba(14, 40, 48, .3) 100%);
+}
+body.is-opening #stage::before,
+body.is-opening #stage::after { content: none; }
+body.is-opening #stage {
+  box-shadow: inset 0 0 0 0 transparent;
+}
+/* 飞行途中用上下黑边强化“镜头”感 */
+body.is-opening #stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 25;
+  background:
+    linear-gradient(180deg, #0b1f26 0%, #0b1f26 7%, transparent 7%,
+      transparent 93%, #0b1f26 93%, #0b1f26 100%);
+  opacity: .82;
+}
+
+/* ---------- 开场界面 ---------- */
+.opening-copy {
+  left: clamp(20px, 4vw, 72px);
+  bottom: clamp(56px, 12vh, 140px);
+  max-width: 360px;
+  /* 文案压在场景上，加一层柔和暗角保证可读 */
+  padding: 16px 22px 16px 18px;
+  border-left: 2px solid rgba(255, 217, 168, .8);
+  background: linear-gradient(90deg, rgba(8, 28, 35, .68), rgba(8, 28, 35, 0));
+  border-radius: 0 4px 4px 0;
+}
+.opening-kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: .34em;
+  color: #ffd9a8;
+  margin-bottom: 10px;
+}
+.opening-kicker.is-in { animation: lineIn .55s ease-out; }
+.opening-copy p {
+  margin: 0;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(19px, 2.3vw, 29px);
+  line-height: 1.6;
+  letter-spacing: .09em;
+  color: #f4fbfc;
+  text-shadow: 0 3px 20px rgba(6, 26, 32, .9);
+}
+.opening-copy p.is-in { animation: lineIn .55s ease-out; }
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.opening-foot {
+  right: clamp(20px, 4vw, 72px);
+  bottom: clamp(56px, 12vh, 140px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11.5px;
+  letter-spacing: .18em;
+  color: #d8e8ec;
+  padding: 8px 10px 8px 16px;
+  border-radius: 30px;
+  background: rgba(8, 28, 35, .55);
+  backdrop-filter: blur(4px);
+}
+.opening-foot button {
+  border: 1px solid rgba(255, 226, 180, .6);
+  background: rgba(10, 34, 42, .5);
+  color: #ffe8c8;
+  border-radius: 30px;
+  padding: 10px 18px;
+  font: inherit;
+  letter-spacing: .12em;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.opening-foot button:hover { background: rgba(196, 90, 40, .8); border-color: #ffd9a8; }
+.opening-foot b { font-weight: 400; }
+.opening-bar {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, .16);
+}
+.opening-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffd9a8, #7fd0d8);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+
+/* ---------- 定格界面 ---------- */
+.masthead {
+  top: clamp(18px, 3.4vh, 40px);
+  left: clamp(18px, 3.4vw, 56px);
+  pointer-events: none;
+}
+.masthead .kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  letter-spacing: .3em;
+  color: #37646e;
+}
+.masthead .kicker i { display: block; width: 26px; height: 1px; background: #7aa6ae; }
+.masthead h1 {
+  margin: 10px 0 6px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: clamp(32px, 4.4vw, 58px);
+  font-weight: 400;
+  letter-spacing: .16em;
+  color: #1f4a54;
+  text-shadow: 0 2px 18px rgba(255, 255, 255, .7);
+}
+.masthead .sub { font-size: 12px; letter-spacing: .22em; color: #4a7480; }
+
+.hero-status {
+  top: clamp(20px, 3.6vh, 44px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px;
+  border-radius: 30px;
+  background: rgba(252, 250, 244, .82);
+  font-size: 11.5px;
+  letter-spacing: .16em;
+  color: #3f6b74;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+.hero-status i {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #2c8ea0;
+  box-shadow: 0 0 0 4px rgba(44, 142, 160, .22);
+  flex: none;
+}
+.hero-actions {
+  top: clamp(18px, 3.4vh, 40px);
+  right: clamp(18px, 3.4vw, 56px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-actions button {
+  border: 1px solid rgba(120, 160, 166, .7);
+  background: rgba(252, 250, 244, .85);
+  color: #1f4a54;
+  border-radius: 30px;
+  padding: 9px 17px;
+  font: inherit;
+  font-size: 12.5px;
+  letter-spacing: .12em;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.hero-actions button:hover { background: #c45a28; border-color: #c45a28; color: #fff6e8; }
+.hero-actions span { font-weight: 400; }
+#back-overview { border-color: rgba(44, 142, 160, .8); }
+#back-overview:hover { background: #2c8ea0; border-color: #2c8ea0; }
+#back-overview[hidden] { display: none; }
+
+/* 底部信息带：整条压暗，避免文字直接压在场景上互相干扰 */
+.hint {
+  top: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px 18px;
+  padding: 30px clamp(18px, 3.4vw, 56px) 13px;
+  font-size: 11.5px;
+  letter-spacing: .12em;
+  color: #dcecef;
+  background: linear-gradient(180deg, transparent, rgba(9, 30, 37, .72));
+  pointer-events: none;
+}
+.hint b { font-weight: 400; color: #ffcf94; }
+
+.note {
+  top: auto;
+  bottom: 46px;
+  left: clamp(18px, 3.4vw, 56px);
+  max-width: min(560px, 60vw);
+  font-size: 11px;
+  letter-spacing: .1em;
+  line-height: 1.7;
+  color: #e2f0f2;
+  pointer-events: none;
+  text-align: left;
+  text-shadow: 0 1px 10px rgba(8, 30, 38, .85);
+}
+.note a { color: #ffe0ae; text-decoration: none; border-bottom: 1px solid rgba(255, 224, 174, .5); }
+
+/* ---------- 热点 ---------- */
+#hotspots { position: absolute; inset: 0; pointer-events: none; z-index: 22; }
+
+.hotspot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f4fbfc;
+  font: inherit;
+  font-size: calc(12.5px * var(--hs, 1));
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transform-origin: 0 0;
+  transition: opacity .4s ease;
+}
+.hotspot i {
+  position: relative;
+  display: block;
+  width: calc(14px * var(--hs, 1));
+  height: calc(14px * var(--hs, 1));
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .94);
+  border: calc(2px * var(--hs, 1)) solid #2c8ea0;
+  box-shadow: 0 2px 10px rgba(20, 60, 70, .5);
+  flex: none;
+}
+.hotspot i::after {
+  content: "";
+  position: absolute;
+  inset: calc(-6px * var(--hs, 1));
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .75);
+  animation: pulse 2.6s ease-out infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(.7); opacity: .9; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+.hotspot i { order: 0; }
+/* 靠画面右侧的热点：标签翻到圆点左边，避免顶出屏幕。
+   翻转后整块的左边界落在圆点上，所以要左移一个身位。 */
+.hotspot.is-flip { flex-direction: row-reverse; }
+.hotspot.is-flip span { margin-left: 0; }
+.hotspot span {
+  padding: 3px 9px;
+  border-radius: 3px;
+  background: rgba(22, 52, 58, .74);
+  backdrop-filter: blur(3px);
+  letter-spacing: .08em;
+  box-shadow: 0 2px 12px rgba(10, 40, 48, .35);
+}
+.hotspot:hover span,
+.hotspot.is-active span { background: rgba(196, 90, 40, .9); }
+.hotspot.is-active i { border-color: #c45a28; background: #ffe8c8; }
+@media (prefers-reduced-motion: reduce) {
+  .hotspot i::after { animation: none; opacity: .35; }
+}
+
+/* ---------- 节日简介卡 ----------
+ * 放在左侧标题下方：左边是江面，比右侧的寨子更空，
+ * 卡片压在这里不挡主要景物。点热点后让位给右侧的节俗卡。 */
+.brief {
+  left: clamp(18px, 3.4vw, 56px);
+  right: auto;
+  top: clamp(166px, 20vh, 202px);
+  bottom: auto;
+  width: min(404px, 32vw);
+  /* 卡片底边要停在底部注释之上：留给标题与注释各一段余量。
+     矮屏（如 1366×768）装不下时内部滚动，不影响其他元素。 */
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding: 18px 20px 16px;
+  background: rgba(252, 250, 244, .94);
+  border: 1px solid rgba(120, 160, 166, .5);
+  border-radius: 4px;
+  box-shadow: 0 14px 42px rgba(20, 60, 70, .24);
+  backdrop-filter: blur(6px);
+  transition: opacity .45s ease, transform .45s ease;
+}
+.brief.is-hidden { opacity: 0; transform: translateX(-14px); pointer-events: none; visibility: hidden; }
+.brief-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(120, 160, 166, .5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .7);
+  color: #4a7480;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.brief-close:hover { background: #2c8ea0; border-color: #2c8ea0; color: #fff; }
+#show-brief { border-color: rgba(168, 117, 44, .7); color: #8a5a1c; }
+#show-brief:hover { background: #a8752c; border-color: #a8752c; color: #fff6e8; }
+#show-brief[hidden] { display: none; }
+.brief-kicker {
+  display: block;
+  font-size: 11px;
+  letter-spacing: .26em;
+  color: #a8752c;
+}
+.brief h2 {
+  margin: 6px 0 5px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: .1em;
+  color: #1f4a54;
+}
+.brief-lede {
+  margin: 0 0 11px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(120, 160, 166, .32);
+  font-size: 12.5px;
+  line-height: 1.78;
+  color: #4a6a70;
+}
+.brief-list { margin: 0; }
+.brief-list dt {
+  margin-top: 11px;
+  font-size: 11px;
+  letter-spacing: .22em;
+  color: #2c8ea0;
+}
+.brief-list dt:first-child { margin-top: 0; }
+.brief-list dd {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.78;
+  color: #3d5358;
+}
+.brief-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.brief-tags span {
+  padding: 2px 9px;
+  border-radius: 30px;
+  background: #e6f1f2;
+  border: 1px solid rgba(44, 142, 160, .3);
+  font-size: 11.5px;
+  letter-spacing: .06em;
+  color: #20596b;
+}
+.brief-foot {
+  margin: 11px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(120, 160, 166, .32);
+  font-size: 11px;
+  line-height: 1.75;
+  color: #6a8489;
+}
+.brief-foot a { color: #20596b; }
+
+@media (max-width: 860px) {
+  .brief {
+    top: auto;
+    /* 与节俗卡同位：底部状态行之上。竖屏内容较长，
+       给足高度、允许内部滚动，别把简介挤成一条缝。 */
+    bottom: 156px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: 58vh;
+    padding: 15px 17px 14px;
+  }
+  .brief h2 { font-size: 21px; margin: 6px 0 5px; }
+  .brief-lede { font-size: 12.5px; margin-bottom: 11px; padding-bottom: 10px; }
+  .brief-list dd { font-size: 12.5px; line-height: 1.8; }
+  .brief-list dt { margin-top: 11px; }
+  .brief-foot { font-size: 11px; }
+}
+
+/* ---------- 节俗卡 ---------- */
+.story {
+  right: clamp(16px, 3vw, 48px);
+  top: clamp(78px, 12vh, 118px);
+  width: min(330px, 38vw);
+  padding: 22px 24px 20px;
+  background: rgba(252, 250, 244, .94);
+  border: 1px solid rgba(120, 160, 166, .5);
+  border-radius: 4px;
+  box-shadow: 0 14px 42px rgba(20, 60, 70, .24);
+  backdrop-filter: blur(6px);
+}
+.story:empty { display: none; }
+.story.is-in { animation: storyIn .45s cubic-bezier(.2, .8, .3, 1); }
+@keyframes storyIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.story-num { display: block; font-size: 11px; letter-spacing: .3em; color: #a8752c; }
+.story h2 {
+  margin: 8px 0 10px;
+  font-family: "STKaiti", "KaiTi", "SimSun", serif;
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: .1em;
+  color: #1f4a54;
+}
+.story p { margin: 0; font-size: 13.5px; line-height: 1.95; color: #3d5358; }
+
+@media (max-width: 860px) {
+  body.is-opening #stage::before { display: none; }
+  /* 竖屏：底部从下到上依次是 提示条 / 状态+重播 / 注释 / 节俗卡，
+     各自留出位置，互不重叠。 */
+  .hint { display: none; }
+  .masthead h1 { font-size: clamp(26px, 7.4vw, 38px); }
+  .masthead .sub { font-size: 11px; }
+  .masthead { top: 14px; left: 16px; }
+
+  .note {
+    bottom: 96px;
+    left: 16px;
+    right: 16px;
+    max-width: none;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+  .hero-status {
+    top: auto;
+    left: 16px;
+    right: auto;
+    transform: none;
+    bottom: 60px;
+    font-size: 10.5px;
+    padding: 6px 12px;
+  }
+  .hero-actions {
+    top: auto;
+    bottom: 54px;
+    right: 16px;
+    left: auto;
+  }
+  .hero-actions button { padding: 7px 13px; font-size: 11px; }
+
+  /* 节俗卡贴在状态行之上 */
+  .story {
+    top: auto;
+    bottom: 156px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: 34vh;
+    overflow-y: auto;
+    padding: 14px 16px 13px;
+  }
+  .story h2 { font-size: 20px; margin: 5px 0 6px; }
+  .story p { font-size: 12.5px; line-height: 1.75; }
+
+  .opening-copy { left: 14px; right: 14px; bottom: 92px; max-width: none; }
+  .opening-foot { left: 14px; right: 14px; bottom: 34px; justify-content: space-between; }
+}</style>
+</head>
+<body class="is-opening">
+<div id="stage">
+  <canvas id="scene"></canvas>
+
+  <!-- 飞行途中的叙事界面 -->
+  <div class="ui ui-opening" id="ui-opening">
+    <div class="opening-copy">
+      <span class="opening-kicker" id="opening-kicker">SCENE 01 / 顺水而行</span>
+      <p id="opening-text">镜头贴着澜沧江水面，向傣寨去。</p>
+    </div>
+    <div class="opening-foot">
+      <span>镜头穿行 · 约 13 秒</span>
+      <button type="button" id="skip">跳过开场 <b aria-hidden="true">→</b></button>
+    </div>
+    <div class="opening-bar" aria-hidden="true"><i id="opening-progress"></i></div>
+  </div>
+
+  <!-- 定格后的大景界面 -->
+  <div class="ui ui-hero" id="ui-hero">
+    <header class="masthead">
+      <div class="kicker"><span>乡野非遗地图 · 民俗专题</span><i></i><span>Ⅹ-8</span></div>
+      <h1>傣族泼水节</h1>
+      <p class="sub">云南西双版纳 · 傣历六月中旬 · 比迈</p>
+    </header>
+
+    <div class="hero-status"><i aria-hidden="true"></i>画面已定格 · 点击光点探索</div>
+
+    <!-- 全景时右侧显示节日简介；点热点后让位给节俗卡 -->
+    <section class="ui brief" id="brief" aria-label="傣族泼水节节日简介">
+      <button type="button" class="brief-close" id="brief-close" aria-label="收起简介">×</button>
+      <span class="brief-kicker">Ⅹ-8 · 民俗 · 2006 年第一批</span>
+      <h2>傣族泼水节</h2>
+      <p class="brief-lede">傣族的新年。傣语称“比迈”，意为新年；又名“浴佛节”。</p>
+
+      <dl class="brief-list">
+        <dt>由来</dt>
+        <dd>起源于印度，曾是婆罗门教的一种宗教仪式，后为佛教所吸收，约在 13 世纪末至 14 世纪初经缅甸传入云南傣族地区；随着“南传上座部”佛教影响增大而流行，现为傣族最主要的民俗节日。</dd>
+
+        <dt>名称</dt>
+        <dd>傣语称“比迈”，意为新年。西双版纳、德宏一带又称“尚罕”“尚键”，源于梵语，意为周转、变更和转移，指太阳在黄道十二宫运转一周、向新的一年过渡。阿昌、德昂、布朗、佤等族也过此节。</dd>
+
+        <dt>节期</dt>
+        <dd>傣历六月中旬，即农历清明前后十天左右，是西双版纳最隆重的传统节日之一。2006 年列入第一批国家级非物质文化遗产名录，申报地区为云南省西双版纳傣族自治州。</dd>
+
+        <dt>习俗</dt>
+        <dd class="brief-tags">
+          <span>浴佛</span><span>泼水</span><span>赶摆</span><span>赛龙舟</span>
+          <span>诵经</span><span>章哈演唱</span><span>孔雀舞</span><span>白象舞</span>
+        </dd>
+      </dl>
+
+      <p class="brief-foot">
+        节日期间，傣族男女老少穿上盛装，挑着清水先到佛寺浴佛，再互相泼水；清水象征吉祥、幸福与健康。
+        <a href="https://www.ihchina.cn/Article/Index/detail?id=14943" target="_blank" rel="noopener noreferrer">中国非遗网 ↗</a>
+      </p>
+    </section>
+
+    <div class="hero-actions">
+      <button type="button" id="show-brief" hidden>节日简介</button>
+      <button type="button" id="back-overview" hidden>回到全景 <span aria-hidden="true">⤢</span></button>
+      <button type="button" id="replay">重播穿行 <span aria-hidden="true">↺</span></button>
+    </div>
+
+    <div class="hint">
+      <span><b>拖动</b> 旋转</span>
+      <span><b>滚轮</b> 缩放</span>
+      <span><b>Shift 拖动</b> 平移</span>
+      <span><b>点击光点</b> 看节俗</span>
+    </div>
+
+    <p class="note">
+      原创程序化三维场景 · 教学示意，非节庆现场影像，也不是建筑或服饰复原<br />
+      内容依据<a href="https://www.ihchina.cn/Article/Index/detail?id=14943" target="_blank" rel="noopener noreferrer">中国非遗网项目页 ↗</a>
+    </p>
+  </div>
+
+  <section class="ui story" id="story" aria-live="polite"></section>
+  <div id="hotspots" aria-label="探索泼水节节俗"></div>
+
+  <div id="boot"><span>泼 水 节</span><i>正在搭起水乡</i></div>
+</div>
+<script>(function () {
+  var panel = document.getElementById('boot');
+  var booted = false;
+  function show(title, detail) {
+    if (booted) return;
+    booted = true;
+    panel.className = 'error';
+    panel.innerHTML = '<span></span><pre></pre>';
+    panel.querySelector('span').textContent = title;
+    panel.querySelector('pre').textContent = detail || '';
+  }
+  window.__PUSUI_FAIL = show;
+  if (location.protocol === 'file:') {
+    show('请通过本地服务器打开', '浏览器会拦截 file:// 下的 ES 模块。\n运行 npm run dev 后访问 http://127.0.0.1:5173/pusui/index.html');
+    return;
+  }
+  if (!(window.WebGLRenderingContext || window.WebGL2RenderingContext)) {
+    show('浏览器没有启用 WebGL', '请打开硬件加速，或换用 Chrome / Edge 最新版。');
+    return;
+  }
+  window.addEventListener('error', function (e) {
+    var t = e && e.target;
+    if (t && t !== window && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+      show('资源加载失败', (t.src || t.href || '') + '\n检查 public/pusui/vendor/three 是否已生成：npm run build:pusui');
+      return;
+    }
+    show('脚本出错', (e.message || '未知错误') + '\n' + String(e.filename || '').split('/').slice(-1)[0] + ':' + (e.lineno || '?'));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    show('脚本出错', String((e.reason && e.reason.message) || e.reason));
+  });
+  setTimeout(function () {
+    if (window.__PUSUI_READY) return;
+    var diag = '';
+    try { if (window.__PUSUI_DIAG) diag = '\n' + JSON.stringify(window.__PUSUI_DIAG()); } catch (err) {}
+    show('画面没有出现（9 秒超时）', '打开控制台看第一条红色报错。' + diag);
+  }, 9000);
+})();</script>
+<script type="module">import * as THREE from './vendor/three/build/three.module.js';
+
+/* 傣族泼水节 · 2.5D 微缩沙盘 —— 三渲二
+ * 全部程序化建模：没有外部模型与贴图，文字用 canvas 现画。
+ * 代码由 build.mjs 按顺序拼接成一个模块：
+ *   00 引导 / 10 工具 / 20 场地 / 30 村寨 / 40 节俗 / 50 动效与交互
+ */
+
+const QS = new URLSearchParams(location.search);
+const SKIP_INTRO = QS.has('skip');
+const SHOT = QS.has('shot');
+
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setSize(window.innerWidth, window.innerHeight, false);
+renderer.setClearColor(0xcfe4ea, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NoToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+
+const scene = new THREE.Scene();
+/* 热带水乡的空气透视：远山淡退到天光里。实景尺度，密度要小。 */
+scene.fog = new THREE.FogExp2(0xd6e9ec, 0.0034);
+
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 900);
+
+/** 全场景共享的 uniform：组装进度、时间、描边宽度 */
+const U = {
+  time: { value: 0 },
+  assemble: { value: 0 },
+  outline: { value: 0.026 },
+  dpr: { value: Math.min(window.devicePixelRatio || 1, 2) },
+};
+
+/** 竖屏或窄屏时把相机拉远，保证长条底座不被裁掉。
+ *  真正的取景在 50-life.js 里按沙盘包围盒算，这里只负责屏幕比例变化时的系数。 */
+let fitK = 1;
+function resizeNow() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  fitK = 1;
+}
+window.addEventListener('resize', resizeNow);
+resizeNow();
+
+/* 自己走时间，避免 THREE.Clock 的弃用提示 */
+const timeState = { elapsed: 0, delta: 0 };
+let lastFrameTime = performance.now();
+function tickTime() {
+  const t = performance.now();
+  timeState.delta = Math.min((t - lastFrameTime) / 1000, 0.05);
+  timeState.elapsed += timeState.delta;
+  lastFrameTime = t;
+}
+
+/* 固定种子随机：每次刷新出来的小件位置都一样，好对比截图 */
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(20261019);
+const rnd = (a = 0, b = 1) => a + (b - a) * rand();
+const pick = (arr) => arr[Math.floor(rand() * arr.length) % arr.length];
+/* ---------- 10 · 配色、材质、招牌图集、合批工具 ---------- */
+
+const PAL = {
+  /* 底座：深柚木托板 + 黄铜包边，和民俗老街同一套收藏模型台语言 */
+  base: 0x4a3a2c, baseTop: 0x2f251c, baseEdge: 0x5b4835, brass: 0xc4a05a,
+
+  /* 水：澜沧江、水井、泼出去的水花 */
+  water: 0x3f8fa6, waterDeep: 0x2c6e86, waterShallow: 0x6bb8c4,
+  waterHi: 0xa8dbe0, waterFoam: 0xe8f6f6, waterDark: 0x24596d,
+
+  /* 砂石地面与路径 */
+  sand: 0xd6c9a4, sandAlt: 0xc7b892, sandDark: 0xb2a37e,
+  path: 0xc2ab84, pathDark: 0xa89272, pathJoint: 0x8e7a5e,
+  soil: 0x9b8a66, moss: 0x6f8a52,
+
+  /* 傣家木构：柚木立柱、竹墙、茅草与瓦 */
+  woodDark: 0x543726, wood: 0x8a5a34, woodLight: 0xb08048, woodPale: 0xd0a56c,
+  bamboo: 0xcfa96a, bambooDark: 0xa07f4a, bambooGreen: 0x8aa05a,
+  thatch: 0xc8ac72, thatchDark: 0xa88c56, thatchPale: 0xdec89e,
+  tile: 0x4f5a68, tileHi: 0x667386, tileEdge: 0x7b8a9e, ridge: 0x3f4854,
+
+  /* 白塔与佛寺 */
+  stucco: 0xf2eadb, stuccoDeep: 0xdcd0bb, gold: 0xd9a83c, goldDeep: 0xb0812a,
+  templeRed: 0xb4342a, templeRedDeep: 0x8c231c, incense: 0x8a8078,
+
+  /* 织物与幡旗 */
+  cloth: 0xe8dcc0, clothRed: 0xc0342a, clothJade: 0x3f8a72, clothGold: 0xd9b04a,
+  clothIndigo: 0x3a5a80, clothPink: 0xd07a92, brocade: 0xc2506a, brocadeAlt: 0x4f9a8a,
+  ribbon: 0xf0e2bc,
+
+  /* 植物 */
+  leaf: 0x4a7a3e, leafHi: 0x6d9d4e, leafDeep: 0x35602f,
+  palm: 0x54803f, banana: 0x5f9448, trunk: 0x6a5038, trunkPale: 0x8a7050,
+  flower: 0xd94f6a, flowerGold: 0xe0b545,
+
+  /* 器物 */
+  bronze: 0xb08a3c, bronzeDark: 0x7e6228, silver: 0xd8dde0, silverDark: 0xa8b0b6,
+  ceramic: 0xe6e0d2, ceramicBlue: 0x5a86a8, ink: 0x2c2a26, paper: 0xf4e8cf,
+  metal: 0x6a7078, metalDark: 0x3e434a, ember: 0xd8622e,
+
+  /* 人物服饰 */
+  skin: 0xd9a882, skinDark: 0xc08a62,
+  dressPink: 0xd86a92, dressJade: 0x46a08a, dressBlue: 0x4a7ab0,
+  dressGold: 0xd8a848, dressWhite: 0xf0eae0, hair: 0x2a2422,
+};
+
+/* 四阶灰度渐变：三渲二的分界（白天整体提亮） */
+function gradientTexture() {
+  const steps = new Uint8Array([150, 202, 236, 255]);
+  const tex = new THREE.DataTexture(steps, steps.length, 1, THREE.RedFormat);
+  tex.minFilter = THREE.NearestFilter;
+  tex.magFilter = THREE.NearestFilter;
+  tex.generateMipmaps = false;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/* 组装动画：所有零件绕自己的「落点」从地面长出来并上浮 */
+const ASSEMBLE_GLSL = `
+vec3 assemblePiece(vec3 p, vec3 ground, float d, float prog) {
+  float t = clamp((prog - d * 2.2) / 0.34, 0.0, 1.0);
+  float e = 1.0 - pow(1.0 - t, 3.0);
+  vec3 q = ground + (p - ground) * mix(0.72, 1.0, e);
+  q.y += (e - 1.0) * 0.85;
+  return q;
+}`;
+
+function withAssemble(mat) {
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uAssemble = U.assemble;
+    shader.vertexShader =
+      'attribute vec3 aPivot;\nattribute float aDelay;\nuniform float uAssemble;\n' +
+      ASSEMBLE_GLSL + '\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>',
+      `#include <begin_vertex>
+      transformed = assemblePiece(transformed, vec3(aPivot.x, 0.0, aPivot.z), aDelay, uAssemble);`
+    );
+  };
+  return mat;
+}
+
+const toonMat = withAssemble(new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: gradientTexture() }));
+const glowMat = withAssemble(new THREE.MeshBasicMaterial({ vertexColors: true, fog: true }));
+const glassMat = withAssemble(new THREE.MeshBasicMaterial({
+  color: 0xdbeefc, transparent: true, opacity: 0.1, depthWrite: false,
+  side: THREE.DoubleSide, fog: true,
+}));
+const signMat = withAssemble(new THREE.MeshBasicMaterial({
+  map: null, vertexColors: true, toneMapped: false, fog: true,
+}));
+const sheenMat = withAssemble(new THREE.MeshBasicMaterial({
+  map: null, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending,
+  depthWrite: false, side: THREE.DoubleSide, fog: true,
+}));
+
+/* 水：半透明叠加，让水下的河床与卵石透出来 */
+const waterMat = withAssemble(new THREE.MeshBasicMaterial({
+  vertexColors: true, transparent: true, opacity: 0.9, fog: true,
+}));
+
+/* 描边：反向外壳，在视空间按法线外扩 */
+const outlineMat = new THREE.ShaderMaterial({
+  uniforms: { uAssemble: U.assemble, uWidth: U.outline, uColor: { value: new THREE.Color(0x33302a) } },
+  vertexShader: `
+    attribute vec3 aPivot;
+    attribute float aDelay;
+    uniform float uAssemble;
+    uniform float uWidth;
+    ${ASSEMBLE_GLSL}
+    void main() {
+      vec3 p = assemblePiece(position, vec3(aPivot.x, 0.0, aPivot.z), aDelay, uAssemble);
+      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      vec3 n = normalize(normalMatrix * normal);
+      mv.xyz += n * uWidth;
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `uniform vec3 uColor; void main() { gl_FragColor = vec4(uColor, 1.0); }`,
+  side: THREE.BackSide,
+});
+
+/* 阴影用的深度材质：必须和主材质有同一套组装变形，否则投影会「提前组装好」 */
+const depthMat = withAssemble(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }));
+/* 半透明的 water 桶投影会很脏，单独给一个只写深度的版本 */
+const depthMatSolid = withAssemble(new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }));
+
+/* ---------- 招牌图集：一块 canvas 画完所有文字，一次绘制 ---------- */
+const ATLAS = (() => {
+  const W = 1024, H = 2048;
+  const cv = document.createElement('canvas');
+  cv.width = W;
+  cv.height = H;
+  const g = cv.getContext('2d');
+  g.clearRect(0, 0, W, H);
+
+  let cursorX = 0, cursorY = 0, rowH = 0;
+  const rects = {};
+  function alloc(name, w, h) {
+    if (cursorX + w > W) { cursorX = 0; cursorY += rowH; rowH = 0; }
+    const r = [cursorX, cursorY, w, h];
+    cursorX += w + 4;
+    rowH = Math.max(rowH, h);
+    rects[name] = [r[0] / W, 1 - (r[1] + h) / H, (r[0] + w) / W, 1 - r[1] / H];
+    return r;
+  }
+  function panel(name, w, h, bg, draw) {
+    const [x, y] = alloc(name, w, h);
+    g.save();
+    g.translate(x, y);
+    g.beginPath(); g.rect(0, 0, w, h); g.clip();
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    draw(g, w, h);
+    g.restore();
+  }
+  const KAI = '"STKaiti","KaiTi","Kaiti SC","SimSun","Microsoft YaHei",serif';
+  const HEI = '"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif';
+  function han(ctx, text, x, y, size, color, font = KAI, spacing = 0) {
+    ctx.font = `${size}px ${font}`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const chars = [...text];
+    const total = chars.length * (size + spacing);
+    chars.forEach((ch, i) => ctx.fillText(ch, x - total / 2 + (size + spacing) * (i + 0.5), y));
+  }
+  function vhan(ctx, text, x, y, size, color, gap = 6) {
+    ctx.font = `${size}px ${KAI}`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    [...text].forEach((ch, i) => ctx.fillText(ch, x, y + i * (size + gap)));
+  }
+
+  /* 横匾：黑漆金字，按字数自动收字号，避免首尾字被裁 */
+  function plaque(name, text, bg = '#2b1e17', fg = '#e8c987') {
+    panel(name, 300, 86, bg, (c, w, h) => {
+      c.strokeStyle = '#c8a75e'; c.lineWidth = 3;
+      c.strokeRect(7, 7, w - 14, h - 14);
+      const t = text.replace(/\s+/g, '');
+      const size = t.length >= 4 ? 38 : 46;
+      han(c, t, w / 2, h / 2 + 2, size, fg, KAI, 6);
+    });
+  }
+  /* 长条匾：字多的场合 */
+  function plaqueWide(name, text, bg = '#2b1e17', fg = '#e8c987') {
+    panel(name, 420, 82, bg, (c, w, h) => {
+      c.strokeStyle = '#c8a75e'; c.lineWidth = 3;
+      c.strokeRect(7, 7, w - 14, h - 14);
+      const t = text.replace(/\s+/g, '');
+      const size = t.length >= 6 ? 30 : 38;
+      han(c, t, w / 2, h / 2 + 2, size, fg, KAI, 5);
+    });
+  }
+  /* 竹棚布幌：竖向字，布底红边 */
+  function banner(name, text, sub) {
+    panel(name, 110, 250, '#f2e4c6', (c, w, h) => {
+      c.fillStyle = '#c23a2c';
+      c.fillRect(0, 0, w, 15);
+      c.fillRect(0, h - 24, w, 24);
+      c.strokeStyle = '#b8332a'; c.lineWidth = 3;
+      c.strokeRect(7, 21, w - 14, h - 50);
+      vhan(c, text, w / 2, 60, 44, '#a52c22', 9);
+      if (sub) {
+        c.font = `13px ${HEI}`; c.fillStyle = '#8a5a3c'; c.textAlign = 'center';
+        c.fillText(sub, w / 2, h - 38);
+      }
+    });
+  }
+  /* 傣锦纹样幡：三角旗与织纹 */
+  function daiFlag(name, text) {
+    panel(name, 120, 200, '#d8a848', (c, w, h) => {
+      c.fillStyle = '#b4342a';
+      c.fillRect(0, 0, w, h * 0.5);
+      c.fillStyle = '#3f8a72'; c.fillRect(0, h * 0.5, w, h * 0.5);
+      for (let i = 0; i < 7; i++) {
+        c.fillStyle = i % 2 ? '#e8c987' : '#f2e4c6';
+        c.fillRect(8, 14 + i * 26, w - 16, 6);
+      }
+      c.fillStyle = '#f6e6c0';
+      c.beginPath(); c.arc(w / 2, h * 0.5, 30, 0, Math.PI * 2); c.fill();
+      han(c, text, w / 2, h * 0.5 + 1, 30, '#8c231c', KAI, 0);
+    });
+  }
+
+  /* ---- 泼水节专用牌子 ---- */
+  plaqueWide('pWater', '傣 族 泼 水 节');
+  plaque('pTemple', '曼 飞 龙');
+  plaque('pBath', '浴 佛 亭');
+  plaque('pMarket', '赶 摆 场');
+  plaque('pBoat', '赛 龙 舟');
+  plaque('pDance', '孔 雀 舞');
+  plaque('pSing', '章 哈 演 唱');
+  plaque('pWell', '水 井');
+  plaque('pHome', '傣 家 竹 楼');
+  plaque('pGate', '泼 水 广 场');
+  plaque('pBai', '白 象 舞');
+  plaque('pSong', '诵 经');
+
+  banner('bFruit', '水果', '时鲜');
+  banner('bXiang', '香茅', '佐料');
+  banner('bJin', '傣锦', '织造');
+  banner('bZhu', '竹器', '篾匠');
+  banner('bCha', '茶', '普洱');
+  banner('bMi', '米线', '早点');
+  banner('bHua', '鲜花', '供佛');
+  banner('bYao', '傣药', '草药');
+  banner('bSan', '纸伞', '桐油');
+  banner('bTao', '陶器', '慢轮');
+
+  daiFlag('fDai', '水');
+  daiFlag('fDai2', '傣');
+  daiFlag('fNew', '比迈');
+
+  /* 底座铭牌 */
+  panel('plate', 460, 92, '#2a211a', (c, w, h) => {
+    c.strokeStyle = '#b08b46'; c.lineWidth = 2; c.strokeRect(6, 6, w - 12, h - 12);
+    han(c, '傣 族 泼 水 节', w / 2, 34, 30, '#d9b777', KAI, 3);
+    c.font = `12px ${HEI}`; c.fillStyle = '#9c7f4e'; c.textAlign = 'center';
+    c.fillText('WATER-SPLASHING  FESTIVAL', w / 2, 66);
+  });
+
+  /* 告示：节日说明 */
+  panel('notice', 260, 190, '#e0d3b4', (c, w, h) => {
+    c.fillStyle = '#33403c'; c.font = `bold 21px ${KAI}`; c.textAlign = 'center';
+    c.fillText('比 迈 · 新 年', w / 2, 32);
+    c.font = `13px ${HEI}`; c.fillStyle = '#5a655e';
+    c.fillText('傣历六月中旬', w / 2, 56);
+    c.strokeStyle = 'rgba(60,72,66,.4)'; c.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      c.beginPath(); c.moveTo(24, 84 + i * 22); c.lineTo(w - 24, 84 + i * 22); c.stroke();
+    }
+  });
+
+  /* 价目 / 摊位小牌 */
+  panel('price', 190, 240, '#d8c49b', (c, w, h) => {
+    c.strokeStyle = '#7a5a30'; c.lineWidth = 3; c.strokeRect(6, 6, w - 12, h - 12);
+    han(c, '摊 位', w / 2, 28, 22, '#3d2a18', KAI, 2);
+    const rows = [['水果', '6'], ['香茅', '4'], ['傣锦', '80'], ['竹篮', '15'], ['纸伞', '35']];
+    rows.forEach(([k, v], i) => {
+      const y = 64 + i * 33;
+      c.font = `19px ${KAI}`; c.fillStyle = '#33240f'; c.textAlign = 'left';
+      c.fillText(k, 20, y);
+      c.textAlign = 'right'; c.fillText(`¥${v}`, w - 20, y);
+      c.strokeStyle = 'rgba(80,55,25,.35)'; c.lineWidth = 1;
+      c.beginPath(); c.moveTo(18, y + 9); c.lineTo(w - 18, y + 9); c.stroke();
+    });
+  });
+
+  /* 贝叶经架上的经页 */
+  panel('sutra', 200, 150, '#efe2c2', (c, w, h) => {
+    c.strokeStyle = '#a8843c'; c.lineWidth = 2; c.strokeRect(8, 8, w - 16, h - 16);
+    c.fillStyle = '#8a6a34';
+    for (let i = 0; i < 6; i++) c.fillRect(26, 34 + i * 18, w - 52, 3);
+    c.fillStyle = '#b4342a';
+    c.beginPath(); c.arc(w / 2, 24, 8, 0, Math.PI * 2); c.fill();
+  });
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  tex.needsUpdate = true;
+  return { tex, rects };
+})();
+signMat.map = ATLAS.tex;
+
+/* ---------- 圆形粒子贴图：PointsMaterial 默认画方块，这里给一张柔边圆点 ---------- */
+function makeDotTexture() {
+  const S = 64;
+  const cv = document.createElement('canvas');
+  cv.width = S;
+  cv.height = S;
+  const g = cv.getContext('2d');
+  const grd = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+  grd.addColorStop(0.0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.45, 'rgba(255,255,255,0.95)');
+  grd.addColorStop(0.75, 'rgba(255,255,255,0.45)');
+  grd.addColorStop(1.0, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, S, S);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const DOT_TEXTURE = makeDotTexture();
+
+/* ---------- 合批：所有静态零件按材质装进几个桶 ---------- */
+const BUCKETS = new Map();
+function bucket(name) {
+  let b = BUCKETS.get(name);
+  if (!b) {
+    b = { pos: [], nor: [], uv: [], col: [], piv: [], del: [] };
+    BUCKETS.set(name, b);
+  }
+  return b;
+}
+let nowDelay = 0;
+function layer(d) { nowDelay = d; }
+
+const _col = new THREE.Color();
+const _m = new THREE.Matrix4();
+const _q = new THREE.Quaternion();
+const _e = new THREE.Euler();
+const _p = new THREE.Vector3();
+const _s = new THREE.Vector3();
+
+function addGeo(geo, hex, o = {}) {
+  const x = o.x || 0, y = o.y || 0, z = o.z || 0;
+  _e.set(o.rx || 0, o.ry || 0, o.rz || 0, 'YXZ');
+  _q.setFromEuler(_e);
+  _p.set(x, y, z);
+  _s.set(o.sx || 1, o.sy || 1, o.sz || 1);
+  _m.compose(_p, _q, _s);
+
+  const g = geo.index ? geo.toNonIndexed() : geo.clone();
+  g.applyMatrix4(_m);
+  g.computeBoundingBox();
+  const bb = g.boundingBox;
+  const thin = Math.min(
+    Math.abs(bb.max.x - bb.min.x),
+    Math.abs(bb.max.y - bb.min.y),
+    Math.abs(bb.max.z - bb.min.z)
+  ) < 0.058;
+  /* 比描边还细的零件（竹签、幡绳、栅条）不描边，否则会被墨线糊掉 */
+  const b = bucket(o.bucket || (thin ? 'fine' : 'solid'));
+  const pa = g.attributes.position.array;
+  const na = g.attributes.normal.array;
+  const ua = g.attributes.uv ? g.attributes.uv.array : null;
+
+  _col.set(hex);
+  if (o.tint) _col.multiply(new THREE.Color(o.tint));
+  const jit = o.jitter === false ? 1 : 0.95 + rand() * 0.08;
+  const cr = _col.r * jit, cg = _col.g * jit, cb = _col.b * jit;
+
+  const pivot = o.pivot ? [o.pivot[0], o.pivot[1], o.pivot[2]] : [x, 0, z];
+  const d = o.delay != null ? o.delay : nowDelay;
+  const uvR = o.uvRect;
+  const n = pa.length / 3;
+  for (let i = 0; i < n; i++) {
+    b.pos.push(pa[i * 3], pa[i * 3 + 1], pa[i * 3 + 2]);
+    b.nor.push(na[i * 3], na[i * 3 + 1], na[i * 3 + 2]);
+    if (ua) {
+      let u = ua[i * 2], v = ua[i * 2 + 1];
+      if (uvR) { u = uvR[0] + u * (uvR[2] - uvR[0]); v = uvR[1] + v * (uvR[3] - uvR[1]); }
+      b.uv.push(u, v);
+    } else {
+      b.uv.push(0, 0);
+    }
+    b.col.push(cr, cg, cb);
+    b.piv.push(pivot[0], pivot[1], pivot[2]);
+    b.del.push(d);
+  }
+  g.dispose();
+}
+
+function toGeometry(b) {
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(b.pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(b.nor, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(b.uv, 2));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(b.col, 3));
+  geo.setAttribute('aPivot', new THREE.Float32BufferAttribute(b.piv, 3));
+  geo.setAttribute('aDelay', new THREE.Float32BufferAttribute(b.del, 1));
+  geo.computeBoundingSphere();
+  return geo;
+}
+
+/* ---------- 常用体块 ---------- */
+const P = {
+  box(w, h, d, c, x, y, z, o) { addGeo(new THREE.BoxGeometry(w, h, d), c, { ...o, x, y, z }); },
+  box0(w, h, d, c, x, y0, z, o) { this.box(w, h, d, c, x, y0 + h / 2, z, o); },
+  cyl(rt, rb, h, c, x, y, z, o, seg = 14) { addGeo(new THREE.CylinderGeometry(rt, rb, h, seg), c, { ...o, x, y, z }); },
+  cyl0(rt, rb, h, c, x, y0, z, o, seg = 14) { this.cyl(rt, rb, h, c, x, y0 + h / 2, z, o, seg); },
+  sph(r, c, x, y, z, o, ws = 12, hs = 8) { addGeo(new THREE.SphereGeometry(r, ws, hs), c, { ...o, x, y, z }); },
+  plane(w, h, c, x, y, z, o) { addGeo(new THREE.PlaneGeometry(w, h), c, { ...o, x, y, z }); },
+  torus(r, tube, c, x, y, z, o, rs = 8, ts = 16) {
+    addGeo(new THREE.TorusGeometry(r, tube, rs, ts), c, { ...o, x, y, z });
+  },
+  cone(rt, h, c, x, y, z, o, seg = 12) { addGeo(new THREE.ConeGeometry(rt, h, seg), c, { ...o, x, y, z }); },
+  tube(pts, r, c, o, seg = 40, rad = 5) {
+    const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(p[0], p[1], p[2])));
+    addGeo(new THREE.TubeGeometry(curve, seg, r, rad, false), c, o || {});
+  },
+  sign(name, w, h, x, y, z, o = {}) {
+    addGeo(new THREE.PlaneGeometry(w, h), o.color || 0xffffff, {
+      ...o, x, y, z, bucket: 'sign', uvRect: ATLAS.rects[name], jitter: false,
+    });
+  },
+  /* 水面板：略高于地面的薄片，半透明 */
+  water(w, h, c, x, y, z, o = {}) {
+    addGeo(new THREE.BoxGeometry(w, 0.04, h), c, { ...o, x, y, z, bucket: 'water', jitter: false });
+  },
+  glowBox(w, h, d, c, x, y, z, o) {
+    addGeo(new THREE.BoxGeometry(w, h, d), c, { ...o, x, y, z, bucket: 'glow', jitter: false });
+  },
+  glowPlane(w, h, c, x, y, z, o) {
+    addGeo(new THREE.PlaneGeometry(w, h), c, { ...o, x, y, z, bucket: 'glow', jitter: false });
+  },
+  glassPlane(w, h, x, y, z, o) {
+    addGeo(new THREE.PlaneGeometry(w, h), 0xdff0ff, { ...o, x, y, z, bucket: 'glass', jitter: false });
+  },
+  glass(w, h, d, x, y, z, o) {
+    addGeo(new THREE.BoxGeometry(w, h, d), 0xdff0ff, { ...o, x, y, z, bucket: 'glass', jitter: false });
+  },
+};
+
+/* 把桶变成 mesh：solid 桶额外生成一层描边 */
+const worldGroups = new THREE.Group();
+scene.add(worldGroups);
+
+/** 需要加光晕 sprites 的位置：[x, y, z, size, color, opacity] */
+const glowPts = [];
+
+function finishBucket(name, mat, outline, opts = {}) {
+  const b = BUCKETS.get(name);
+  if (!b || !b.pos.length) return null;
+  const geo = toGeometry(b);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  mesh.castShadow = opts.shadow !== false;
+  mesh.receiveShadow = opts.receive !== false;
+  if (!QS.has('nodepth')) mesh.customDepthMaterial = opts.depth || depthMat;
+  if (outline) {
+    const out = new THREE.Mesh(geo, outlineMat);
+    out.frustumCulled = false;
+    out.castShadow = false;
+    out.receiveShadow = false;
+    out.renderOrder = -1;
+    mesh.renderOrder = 1;
+    worldGroups.add(out);
+  }
+  worldGroups.add(mesh);
+  BUCKETS.delete(name);
+  return mesh;
+}
+/* ---------- 20 · 场地：澜沧江、江岸、寨子地面与路径 ----------
+ * 实景尺度（单位约等于米）。没有微缩底座：远处用山峦、江面与雾收边。
+ * 坐标系：+X 向东（寨子深处），-X 向西（江面），+Z 向南，-Z 向北。
+ */
+
+const SITE = {
+  riverWest: -120,      /* 江面西界（雾会吃掉远端） */
+  riverEast: -22,       /* 江岸线 */
+  villageWest: -20,
+  villageEast: 78,
+  northEdge: -46,
+  southEdge: 44,
+  bankY: 1.6,           /* 江岸比水面高 */
+};
+
+/* ---------- 江岸土坎与河床 ---------- */
+layer(0.04);
+{
+  /* 河床：够深够暗。只铺在江面范围内，颜色与水接近，
+     万一水面没盖住也不会露出突兀的灰地。 */
+  P.box(1400, 3.0, 1400, 0x2f5f6e, -420, -1.6, 0, { jitter: false });
+  /* 近岸浅水底：只在岸线附近铺，避免整片江看起来是泥 */
+  for (let i = 0; i < 240; i++) {
+    const x = rnd(-40, SITE.riverEast);
+    const z = rnd(-56, 56);
+    P.sph(rnd(0.25, 0.7), pick([0x5a6f66, 0x6a7d72, 0x4e635c]), x, -0.1, z, { sy: 0.4 }, 6, 4);
+  }
+  /* 沙洲 */
+  P.box(14, 1.0, 8, PAL.sandAlt, -78, 0.4, -34, { ry: 0.22, jitter: false });
+  for (let i = 0; i < 60; i++) {
+    P.sph(rnd(0.3, 0.7), pick([0x9c968a, 0xaea89a, PAL.sand]), -78 + rnd(-6, 6), 0.85, -34 + rnd(-3, 3), { sy: 0.5 }, 6, 4);
+  }
+  /* 江心沙洲上的芦苇 */
+  for (let i = 0; i < 40; i++) {
+    const rx = -78 + rnd(-6, 6), rz = -34 + rnd(-3.4, 3.4);
+    P.cyl0(0.05, 0.07, rnd(1.6, 2.6), pick([0x8a9c5a, 0xa8b070, 0x7d9450]), rx, 0.9, rz, { rz: rnd(-0.12, 0.12), jitter: true }, 5);
+  }
+}
+
+/* ---------- 江水 ---------- */
+layer(0.06);
+{
+  /* 江面：只在江岸线以西铺水，绝不能让水面盖到寨子里。
+     南北与东西都要远到出雾，镜头贴水飞时不会看到水面尽头。 */
+  P.water(900, 1000, PAL.waterDeep, -470, 1.2, 0, { jitter: false });
+  P.water(800, 1000, PAL.water, -450, 1.4, 0, { jitter: false });
+  /* 水岸不是一条直线：沿 Z 用正弦推移的浅水带，让岸线自然 */
+  for (let z = -230; z < 230; z += 3.4) {
+    const wob = Math.sin(z * 0.045) * 4.2 + Math.sin(z * 0.017 + 1.3) * 7.0;
+    const bankX = SITE.riverEast + wob;
+    P.water(16, 3.6, PAL.waterShallow, bankX - 7, 1.55, z, { jitter: false });
+    /* 岸线泡沫跟着岸走 */
+    for (let k = 0; k < 3; k++) {
+      P.water(rnd(0.8, 1.8), 1.0, PAL.waterFoam, bankX - rnd(0.3, 2.0), 1.62, z + rnd(-1.4, 1.4), { jitter: true });
+    }
+  }
+  /* 波纹：铺在近处江面上 */
+  for (let i = 0; i < 400; i++) {
+    const z = rnd(-220, 220);
+    const wob = Math.sin(z * 0.045) * 4.2 + Math.sin(z * 0.017 + 1.3) * 7.0;
+    const x = rnd(-190, SITE.riverEast + wob - 2.5);
+    P.water(rnd(2.4, 9.0), rnd(0.25, 0.7), pick([PAL.waterHi, PAL.waterFoam, 0x8fd0d8]), x, 1.62, z, { jitter: true });
+  }
+  /* 岸线泡沫 */
+  for (let z = -60; z < 60; z += 1.1) {
+    P.water(rnd(0.7, 1.5), 0.7, PAL.waterFoam, SITE.riverEast - rnd(0.3, 1.4), 1.6, z, { jitter: true });
+  }
+  /* 岸线泡沫已随曲岸逐段铺过，这里不再画直的土坎 */
+}
+
+/* ---------- 寨子地面 ---------- */
+layer(0.08);
+{
+  /* 主台地：东侧从江岸土坎开始，向西不要侵入江面；
+     南北与东侧要大，避免出雾前看到台地边缘。 */
+  P.box(300, 1.6, 420, PAL.soil, 130, 0.8, 0, { jitter: false });
+  /* 岸线：用一排错落的土块把台地西沿做成自然的曲岸，
+     否则会看到一条刀切一样的直边。 */
+  for (let z = -210; z < 210; z += 3.2) {
+    const wob = Math.sin(z * 0.045) * 4.2 + Math.sin(z * 0.017 + 1.3) * 7.0;
+    const bankX = SITE.riverEast + wob;
+    /* 岸体：从水里长上来，接住台地 */
+    P.box(9.0, 1.7, 3.6, pick([PAL.soil, PAL.sandDark, 0x8a7a58]), bankX + 4.4, 0.85, z, { jitter: true });
+    /* 岸边草地 */
+    P.box(8.0, 0.3, 3.4, pick([PAL.moss, PAL.leafDeep, 0x7d9450]), bankX + 4.6, 1.75, z, { jitter: true });
+    /* 沙嘴：伸进水里的浅滩 */
+    if (rand() < 0.5) {
+      P.box(rnd(2.0, 5.0), 0.34, rnd(1.6, 3.2), PAL.sand, bankX - rnd(1.0, 3.5), 1.5, z + rnd(-1.2, 1.2), { ry: rnd(-0.3, 0.3), jitter: true });
+    }
+  }
+  /* 台地外圈：几层更大的绿坡，把边收进雾里 */
+  for (let i = 0; i < 4; i++) {
+    const w = 340 + i * 110, d = 460 + i * 100;
+    P.box(w, 0.7, d, pick([0x6f8a6a, 0x66805f, 0x7a9470, 0x5e7a58]), 130 + i * 20, 0.05 - i * 0.28, 0, { jitter: false });
+  }
+  /* 铺地：沙子只铺在寨子范围内，越远越绿 */
+  for (let i = 0; i < 1400; i++) {
+    const x = rnd(-70, 110);
+    const z = rnd(-70, 70);
+    /* 离寨子中心越远，越倾向草色 */
+    const d = Math.hypot(x - 28, z) / 90;
+    const tone = rand() < d * 0.85
+      ? pick([PAL.leafDeep, PAL.moss, 0x7d9450, 0x86a05c])
+      : pick([PAL.sand, PAL.sandAlt, PAL.sandDark, PAL.path, PAL.moss]);
+    P.box(rnd(1.2, 4.2), 0.14, rnd(1.0, 3.2), tone, x, 1.66, z, { ry: rnd(0, 3.14), jitter: true });
+  }
+  /* 树林：远处成片，把地平线压实。只种在寨子外圈，
+     西侧靠江一带留空，不然树冠会把江面挡住。 */
+  for (let i = 0; i < 200; i++) {
+    const a = rand() * Math.PI * 2;
+    /* 内圈从 96 起，避免在近景挤成一团 */
+    const rr = rnd(96, 210);
+    const tx = 28 + Math.cos(a) * rr, tz = Math.sin(a) * rr * 0.9;
+    /* 江面在 x < -22，这里不进江 */
+    if (tx < -14) continue;
+    const th = rnd(6, 13);
+    P.cyl0(rnd(0.2, 0.4), rnd(0.3, 0.55), th, PAL.trunk, tx, 0.35, tz, { jitter: true }, 6);
+    for (let k = 0; k < 3; k++) {
+      P.sph(rnd(2.2, 4.4), pick([PAL.leaf, PAL.leafDeep, 0x54803f, 0x6d9d4e]), tx + rnd(-1.6, 1.6), 0.35 + th * rnd(0.75, 1.0), tz + rnd(-1.6, 1.6), { sy: 0.8 }, 7, 5);
+    }
+  }
+  /* 近处灌木，衔接寨子与草地 */
+  for (let i = 0; i < 90; i++) {
+    const a = rand() * Math.PI * 2;
+    const rr = rnd(52, 80);
+    const bx = 28 + Math.cos(a) * rr, bz = Math.sin(a) * rr * 0.8;
+    for (let k = 0; k < 3; k++) {
+      P.sph(rnd(1.4, 2.6), pick([PAL.leaf, PAL.leafHi, PAL.leafDeep]), bx + rnd(-1.8, 1.8), 0.9, bz + rnd(-1.8, 1.8), { sy: 0.75 }, 7, 5);
+    }
+  }
+}
+
+/* ---------- 主路与支路 ---------- */
+layer(0.1);
+{
+  /* 主路：东西向，从码头通到寨子深处 */
+  for (let x = SITE.villageWest; x < SITE.villageEast; x += 1.3) {
+    const z = 3.0 + Math.sin(x * 0.035) * 3.6;
+    P.box(1.24, 0.2, 6.4, pick([PAL.path, PAL.pathDark, PAL.sand]), x, 1.78, z, { ry: 0.14 * Math.cos(x * 0.035), jitter: true });
+  }
+  for (let x = SITE.villageWest; x < SITE.villageEast; x += 3.0) {
+    const z = 3.0 + Math.sin(x * 0.035) * 3.6;
+    P.box(0.2, 0.05, 6.0, PAL.pathJoint, x, 1.86, z, { jitter: false });
+  }
+  /* 北支路：往佛寺 */
+  for (let z = -36; z < 1.6; z += 1.3) {
+    P.box(4.0, 0.2, 1.24, pick([PAL.path, PAL.pathDark]), 50, 1.78, z, { jitter: true });
+  }
+  /* 南支路：往竹楼 */
+  for (let z = 5.0; z < 42; z += 1.3) {
+    P.box(4.0, 0.2, 1.24, pick([PAL.path, PAL.pathDark]), -6, 1.78, z, { jitter: true });
+  }
+  /* 广场到码头的小径 */
+  for (let x = -19; x < -6; x += 1.3) {
+    P.box(1.24, 0.2, 3.6, pick([PAL.path, PAL.sandDark]), x, 1.78, 11.5, { jitter: true });
+  }
+}
+
+/* ---------- 码头：竹木栈桥伸进江里 ---------- */
+layer(0.12);
+{
+  const dockZ = 11.0;
+  /* 桥面：从岸边往江里铺 */
+  for (let i = 0; i < 34; i++) {
+    P.box(1.06, 0.24, 6.2, pick([PAL.wood, PAL.woodLight, PAL.woodDark]), -19.4 - i * 1.32, 2.3, dockZ, { jitter: true });
+  }
+  /* 桥桩：一对对插到水里 */
+  for (let i = 0; i < 17; i++) {
+    const px = -19.4 - i * 2.64;
+    for (const pz of [dockZ - 2.6, dockZ + 2.6]) {
+      P.cyl0(0.28, 0.34, 3.2, PAL.woodDark, px, 0.4, pz, {}, 8);
+      P.cyl(0.42, 0.42, 0.2, PAL.waterFoam, px, 1.55, pz, { jitter: false }, 10);
+    }
+    /* 横撑 */
+    P.box(0.2, 0.2, 5.4, PAL.woodDark, px, 1.0, dockZ, { jitter: false });
+  }
+  /* 栏杆 */
+  for (const pz of [dockZ - 2.7, dockZ + 2.7]) {
+    P.box(44, 0.18, 0.18, PAL.woodLight, -41, 3.5, pz, { jitter: false });
+    P.box(44, 0.14, 0.14, PAL.woodLight, -41, 3.05, pz, { jitter: false });
+    for (let i = 0; i < 16; i++) {
+      P.cyl0(0.09, 0.1, 1.15, PAL.woodDark, -19.4 - i * 2.9, 2.45, pz, {}, 6);
+    }
+  }
+  /* 桥头系船桩 */
+  for (const [hx, hz] of [[-21.5, 8.0], [-21.5, 14.0]]) {
+    P.cyl0(0.34, 0.38, 2.6, PAL.woodDark, hx, 1.4, hz, {}, 10);
+    P.cyl(0.7, 0.7, 0.24, 0xd8c9a0, hx, 3.9, hz, { rx: Math.PI / 2, jitter: false }, 12);
+  }
+}
+
+/* ---------- 远景山峦：把地平线收住，避免看到空底 ---------- */
+layer(0.02);
+{
+  for (let i = 0; i < 26; i++) {
+    const a = (i / 26) * Math.PI * 2;
+    const rr = rnd(165, 260);
+    const mx = Math.cos(a) * rr, mz = Math.sin(a) * rr;
+    const h = rnd(18, 44), w = rnd(50, 120);
+    P.cone(w * 0.5, h, pick([0x6f8a80, 0x62807a, 0x7a938a, 0x59736e]), mx, h * 0.5 - 4, mz, { ry: rnd(0, 3.14), jitter: true }, 7);
+  }
+  /* 更远的一圈，颜色几乎融进雾里 */
+  for (let i = 0; i < 20; i++) {
+    const a = (i / 20) * Math.PI * 2 + 0.15;
+    const rr = rnd(280, 360);
+    const h = rnd(30, 62);
+    P.cone(rnd(60, 120), h, pick([0x9ab0ac, 0xa8bab4, 0x8fa8a4]), Math.cos(a) * rr, h * 0.5 - 8, Math.sin(a) * rr, { ry: rnd(0, 3.14), jitter: true }, 7);
+  }
+}
+/* ---------- 30 · 曼飞龙白塔、佛寺、傣家竹楼、热带植被 ----------
+ * 实景尺度：一栋竹楼约 9×7 米，白塔通高约 20 米。
+ */
+
+/* ---------- 曼飞龙式白塔 ---------- */
+layer(0.16);
+function whiteStupa(x, z, s = 1) {
+  const base = 1.7;   /* 落在寨子地面上 */
+  P.box(11 * s, 1.2 * s, 11 * s, PAL.stuccoDeep, x, base + 0.6 * s, z, { jitter: false });
+  P.box(9.2 * s, 1.05 * s, 9.2 * s, PAL.stucco, x, base + 1.72 * s, z, { jitter: false });
+  P.box(7.4 * s, 0.95 * s, 7.4 * s, PAL.stucco, x, base + 2.7 * s, z, { jitter: false });
+  /* 四角小塔 */
+  for (const [dx, dz] of [[-4.2, -4.2], [4.2, -4.2], [-4.2, 4.2], [4.2, 4.2]]) {
+    P.cyl0(0.8 * s, 0.9 * s, 2.2 * s, PAL.stucco, x + dx * s, base + 1.2 * s, z + dz * s, { jitter: false }, 10);
+    P.sph(0.85 * s, PAL.stucco, x + dx * s, base + 3.7 * s, z + dz * s, { sy: 1.05 }, 10, 7);
+    P.cone(0.48 * s, 1.7 * s, PAL.gold, x + dx * s, base + 5.3 * s, z + dz * s, { jitter: false }, 8);
+  }
+  /* 覆钵 */
+  P.cyl(3.1 * s, 3.7 * s, 1.4 * s, PAL.stucco, x, base + 3.9 * s, z, { jitter: false }, 16);
+  P.sph(3.1 * s, PAL.stucco, x, base + 5.5 * s, z, { sy: 1.28 }, 16, 11);
+  P.torus(3.1 * s, 0.14 * s, PAL.stuccoDeep, x, base + 5.7 * s, z, { rx: Math.PI / 2, jitter: false }, 6, 18);
+  P.torus(2.5 * s, 0.14 * s, PAL.stuccoDeep, x, base + 7.4 * s, z, { rx: Math.PI / 2, jitter: false }, 6, 18);
+  /* 相轮 */
+  let ry = base + 8.1 * s;
+  for (let i = 0; i < 8; i++) {
+    const r = (2.7 - i * 0.29) * s;
+    P.cyl(r, r * 0.92, 0.2 * s, PAL.gold, x, ry, z, { jitter: false }, 14);
+    ry += 0.38 * s;
+  }
+  P.cyl(0.26 * s, 0.8 * s, 1.4 * s, PAL.goldDeep, x, ry + 0.4 * s, z, {}, 10);
+  P.cone(0.26 * s, 2.3 * s, PAL.gold, x, ry + 2.2 * s, z, { jitter: false }, 8);
+  P.sph(0.34 * s, PAL.gold, x, ry + 3.6 * s, z, {}, 8, 6);
+  /* 垂铃 */
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const rr = 2.6 * s;
+    P.cyl0(0.08 * s, 0.13 * s, 0.9 * s, PAL.bronze, x + Math.cos(a) * rr, ry - 1.7 * s, z + Math.sin(a) * rr, { jitter: false }, 6);
+    P.sph(0.2 * s, PAL.bronzeDark, x + Math.cos(a) * rr, ry - 1.95 * s, z + Math.sin(a) * rr, { sy: 1.2 }, 7, 5);
+  }
+  glowPts.push([x, ry + 3.6 * s, z, 3.0 * s, 0xffe4a0, 0.36]);
+}
+whiteStupa(50, -28, 1.0);
+
+/* ---------- 佛寺 ---------- */
+layer(0.18);
+{
+  const tx = 50, tz = -28, g = 1.7;
+  const wallH = 2.6;
+  P.box(34, wallH * 2, 0.9, PAL.stucco, tx, g + wallH, -43, { jitter: false });
+  P.box(0.9, wallH * 2, 24, PAL.stucco, tx - 17, g + wallH, -31, { jitter: false });
+  P.box(0.9, wallH * 2, 24, PAL.stucco, tx + 17, g + wallH, -31, { jitter: false });
+  P.box(13, wallH * 2, 0.9, PAL.stucco, tx - 10.5, g + wallH, -18, { jitter: false });
+  P.box(13, wallH * 2, 0.9, PAL.stucco, tx + 10.5, g + wallH, -18, { jitter: false });
+  for (const [wx, wz, ww, wd] of [[tx, -43, 34.5, 1.3], [tx - 17, -31, 1.3, 24.5], [tx + 17, -31, 1.3, 24.5]]) {
+    P.box(ww, 0.3, wd, PAL.stuccoDeep, wx, g + wallH * 2 + 0.15, wz, { jitter: false });
+  }
+  for (let i = 0; i < 9; i++) P.box(1.0, 0.46, 1.0, PAL.stuccoDeep, tx - 15 + i * 3.8, g + wallH * 2 + 0.46, -43, { jitter: false });
+
+  /* 寺门 */
+  const gx = tx, gz = -18;
+  P.box(9.0, 0.7, 4.4, PAL.stuccoDeep, gx, g + 0.35, gz, { jitter: false });
+  P.box(7.4, 0.56, 3.4, PAL.stucco, gx, g + 0.98, gz, { jitter: false });
+  for (const dx of [-3.2, 3.2]) {
+    P.cyl0(0.42, 0.48, 8.4, PAL.templeRed, gx + dx, g + 1.2, gz, {}, 10);
+    P.cyl0(0.26, 0.3, 0.9, PAL.gold, gx + dx, g + 9.6, gz, {}, 8);
+  }
+  P.box(8.2, 0.9, 1.1, PAL.woodDark, gx, g + 9.9, gz, { jitter: false });
+  P.box(11.4, 0.5, 5.4, PAL.templeRedDeep, gx, g + 10.4, gz, { jitter: false });
+  P.box(10.2, 0.4, 4.8, PAL.tile, gx, g + 10.85, gz, { rx: 0.06, jitter: false });
+  P.box(6.8, 1.4, 3.1, PAL.templeRed, gx, g + 11.8, gz, { jitter: false });
+  P.box(8.5, 0.42, 4.2, PAL.templeRedDeep, gx, g + 12.6, gz, { jitter: false });
+  P.box(7.6, 0.36, 3.8, PAL.tile, gx, g + 13.0, gz, { rx: 0.06, jitter: false });
+  P.cone(2.3, 2.6, PAL.gold, gx, g + 14.4, gz, { jitter: false }, 8);
+  P.sign('pTemple', 7.0, 2.0, gx, g + 9.3, gz + 0.75, { delay: 0.3 });
+  /* 石狮 */
+  for (const dx of [-5.4, 5.4]) {
+    P.box(1.7, 0.85, 2.0, PAL.stuccoDeep, gx + dx, g + 1.12, gz + 0.9);
+    P.box(1.3, 1.15, 1.4, 0xcfc4ac, gx + dx, g + 2.12, gz + 0.9);
+    P.sph(0.74, 0xcfc4ac, gx + dx, g + 2.95, gz + 0.9, { sy: 1.05 }, 8, 6);
+  }
+
+  /* 菩提树 */
+  function bodhi(bx, bz, h) {
+    P.cyl0(0.95, 1.45, h, PAL.trunk, bx, g, bz, {}, 10);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      P.cyl0(0.25, 0.56, h * 0.5, PAL.trunk, bx + Math.cos(a) * 1.4, g + h * 0.62, bz + Math.sin(a) * 1.4, { rz: Math.cos(a) * 0.5, rx: -Math.sin(a) * 0.5 }, 6);
+    }
+    for (let i = 0; i < 18; i++) {
+      const a = rand() * Math.PI * 2, rr = rnd(0.8, 6.6);
+      P.sph(rnd(1.9, 3.4), pick([PAL.leaf, PAL.leafHi, PAL.leafDeep, 0x7fa858]), bx + Math.cos(a) * rr, g + h + rnd(0.8, 5.2), bz + Math.sin(a) * rr, { sy: 0.72 }, 9, 6);
+    }
+  }
+  bodhi(tx - 11.5, -36, 9.0);
+  bodhi(tx + 12.0, -36.5, 8.2);
+
+  /* 贝叶经架 */
+  const sx = tx - 9.0, sz = -24;
+  P.box(4.0, 0.4, 2.4, PAL.wood, sx, g + 2.0, sz, { jitter: false });
+  for (const [dx, dz] of [[-1.6, -0.9], [1.6, -0.9], [-1.6, 0.9], [1.6, 0.9]]) {
+    P.cyl0(0.16, 0.19, 1.85, PAL.woodDark, sx + dx, g, sz + dz, {}, 7);
+  }
+  P.sign('sutra', 2.8, 2.05, sx, g + 2.42, sz, { rx: -Math.PI / 2 + 0.35, delay: 0.34 });
+
+  /* 香炉与供台 */
+  P.box(2.9, 1.85, 2.9, PAL.bronzeDark, tx + 8.5, g + 0.92, -25);
+  P.box(3.4, 0.32, 3.4, PAL.bronze, tx + 8.5, g + 2.0, -25, { jitter: false });
+  for (let i = 0; i < 6; i++) {
+    P.cyl0(0.05, 0.08, rnd(1.0, 1.7), PAL.ember, tx + 8.5 + rnd(-0.7, 0.7), g + 2.1, -25 + rnd(-0.7, 0.7), { jitter: false }, 5);
+  }
+  glowPts.push([tx + 8.5, g + 3.4, -25, 1.6, 0xffb060, 0.45]);
+}
+
+/* ---------- 浴佛亭 ---------- */
+layer(0.2);
+{
+  const bx = 50, bz = -6, g = 1.7;
+  P.box(9.5, 0.7, 8.4, PAL.stuccoDeep, bx, g + 0.35, bz, { jitter: false });
+  P.box(8.4, 0.62, 7.4, PAL.stucco, bx, g + 1.0, bz, { jitter: false });
+  for (const [dx, dz] of [[-3.4, -2.9], [3.4, -2.9], [-3.4, 2.9], [3.4, 2.9]]) {
+    P.cyl0(0.28, 0.34, 7.0, PAL.goldDeep, bx + dx, g + 1.3, bz + dz, {}, 8);
+  }
+  P.box(9.5, 0.56, 8.4, PAL.templeRedDeep, bx, g + 8.5, bz, { jitter: false });
+  P.cone(6.6, 2.8, PAL.tile, bx, g + 10.2, bz, { jitter: false }, 4);
+  P.cone(5.5, 2.0, PAL.tileHi, bx, g + 12.2, bz, { jitter: false }, 4);
+  P.cone(0.74, 1.7, PAL.gold, bx, g + 13.8, bz, { jitter: false }, 8);
+  P.sign('pBath', 5.2, 1.6, bx, g + 7.5, bz + 3.0, { delay: 0.36 });
+
+  /* 立佛 */
+  const fx = bx, fz = bz - 0.9;
+  P.box(4.0, 0.8, 2.4, PAL.goldDeep, fx, g + 1.7, fz);
+  P.cyl(0.9, 1.2, 0.44, PAL.gold, fx, g + 2.3, fz, {}, 12);
+  P.cyl(0.8, 1.2, 4.2, PAL.gold, fx, g + 4.6, fz, { sy: 1 }, 12);
+  P.sph(1.15, PAL.gold, fx, g + 6.7, fz, { sy: 0.7 }, 12, 8);
+  P.sph(0.76, PAL.gold, fx, g + 7.6, fz, {}, 12, 9);
+  P.cone(0.38, 0.95, PAL.goldDeep, fx, g + 8.5, fz, {}, 8);
+  P.torus(1.95, 0.19, PAL.gold, fx, g + 6.8, fz - 0.8, { jitter: false }, 6, 20);
+  glowPts.push([fx, g + 6.9, fz, 4.0, 0xffd890, 0.36]);
+
+  /* 接水铜盆 */
+  P.cyl(1.7, 1.9, 1.15, PAL.bronze, fx + 2.5, g + 2.0, fz + 4.0, {}, 16);
+  P.cyl(1.54, 1.54, 0.16, PAL.waterShallow, fx + 2.5, g + 2.6, fz + 4.0, { jitter: false }, 16);
+  for (let i = 0; i < 7; i++) {
+    const a = rand() * Math.PI * 2;
+    P.sph(0.19, pick([PAL.flower, PAL.flowerGold, 0xf0eae0]), fx + 2.5 + Math.cos(a) * 0.85, g + 2.75, fz + 4.0 + Math.sin(a) * 0.85, {}, 6, 5);
+  }
+  P.cyl0(0.12, 0.14, 1.4, PAL.bronzeDark, fx + 3.7, g + 2.3, fz + 3.2, { rz: 0.5, jitter: false }, 7);
+
+  /* 石阶 */
+  for (let i = 0; i < 3; i++) {
+    P.box(8.4 - i * 0.3, 0.42, 1.1, PAL.stucco, bx, g + 0.2 + i * 0.42, bz + 4.2 + i * 1.1, { jitter: false });
+  }
+}
+
+/* ---------- 傣家竹楼：干栏式 ---------- */
+layer(0.22);
+function daiHouse(x, z, ry, s = 1, tall = false) {
+  const g = 1.7;
+  const W = 9.2 * s, D = 7.2 * s, floorY = g + 3.2 * s;
+  const H = tall ? 5.0 * s : 4.3 * s;
+  const c = Math.cos(ry), sn = Math.sin(ry);
+  /* 房屋局部坐标 -> 世界坐标。局部 +X 沿屋长，局部 +Z 朝正立面；
+     ry 是绕 Y 轴的旋转，所以局部 +X 在世界里是 (c, -sn)，局部 +Z 是 (sn, c)。
+     屋顶两坡的倾斜角 rx 是在局部系里给的（YXZ 次序，先 X 后 Y），
+     因此坡面的位置也必须用同一套换算 —— 之前位置写在世界系里、
+     倾角写在局部系里，ry≈180° 的屋子坡向就反了，屋脊比檐口还低。 */
+  const wx = (lx, lz = 0) => x + lx * c + lz * sn;
+  const wz = (lx, lz = 0) => z - lx * sn + lz * c;
+
+  /* 架空立柱 */
+  for (let i = 0; i < 6; i++) {
+    for (const lz of [-D / 2 + 0.8, D / 2 - 0.8]) {
+      const lx = -W / 2 + 1.0 + i * ((W - 2.0) / 5);
+      P.cyl0(0.26 * s, 0.3 * s, floorY - g, PAL.woodDark, wx(lx, lz), g, wz(lx, lz), {}, 7);
+    }
+  }
+  /* 楼板 */
+  P.box(W, 0.36 * s, D, PAL.wood, x, floorY + 0.18 * s, z, { ry, jitter: false });
+  /* 墙身 */
+  P.box(W - 0.4, H, D - 0.4, PAL.bamboo, x, floorY + 0.36 * s + H / 2, z, { ry });
+  for (let i = 0; i < 8; i++) {
+    P.box(W - 0.32, 0.1, D - 0.32, PAL.bambooDark, x, floorY + 0.8 + i * (H / 8), z, { ry, jitter: false });
+  }
+  /* 门在正立面，窗在侧面 */
+  P.box(1.8 * s, 3.0 * s, 0.2, PAL.woodDark, wx(0, D / 2 + 0.04), floorY + 1.8 * s, wz(0, D / 2 + 0.04), { ry, jitter: false });
+  P.box(1.4 * s, 1.2 * s, 0.16, PAL.woodDark, wx(-2.6 * s, 0), floorY + 2.6 * s, wz(-2.6 * s, 0), { ry, jitter: false });
+  /* 楼梯：自 +X 端起，往正立面方向逐级下落 */
+  for (let i = 0; i < 9; i++) {
+    const lx = W / 2 - 0.4;
+    const lz = i * 0.56;
+    P.box(1.4 * s, 0.18 * s, 0.6 * s, PAL.woodLight, wx(lx, lz), floorY - i * 0.36 * s, wz(lx, lz), { ry, jitter: false });
+  }
+  /* 晒台：在 -X 一侧、略偏正立面 */
+  const blx = -(W / 2 + 2.0), blz = 1.2;
+  P.box(4.4 * s, 0.24 * s, 3.2 * s, PAL.woodLight, wx(blx, blz), floorY + 0.12 * s, wz(blx, blz), { ry, jitter: false });
+  for (const t of [-1.9, 0.7]) {
+    P.cyl0(0.1 * s, 0.12 * s, 1.5 * s, PAL.woodDark, wx(blx + t, blz), floorY, wz(blx + t, blz), {}, 6);
+  }
+  P.box(4.4 * s, 0.12 * s, 0.14 * s, PAL.woodDark, wx(blx, blz + 1.6 * s), floorY + 1.5 * s, wz(blx, blz + 1.6 * s), { ry, jitter: false });
+
+  /* 陡坡重檐屋顶 */
+  const eaveY = floorY + 0.36 * s + H;
+  const overhang = 1.8 * s;
+  const roofD = D + overhang * 2;
+  const roofW = W + 1.0 * s;
+  const roofH = tall ? 4.2 * s : 3.5 * s;
+  const halfD = roofD / 2;
+  const slope = Math.atan2(roofH, halfD);
+  const panelLen = Math.hypot(halfD, roofH);
+  /* 檐口横梁 */
+  for (const side of [-1, 1]) {
+    P.box(roofW, 0.28 * s, 0.32 * s, PAL.woodDark, wx(0, side * halfD), eaveY + 0.14 * s, wz(0, side * halfD), { ry, jitter: false });
+  }
+  /* 两坡：位置在局部系，倾角也在局部系，坡向才和屋子朝向一致。
+     window.__ROOF_FALSIFY 是回归测试用的开关（tools/pusui/check-roof.mjs）：
+     打开它会退回旧的「位置在世界系、倾角在局部系」写法，用来验证
+     A/B 截图确实能拍出反屋顶，否则测过了也说明不了问题。 */
+  for (const side of [-1, 1]) {
+    const px = window.__ROOF_FALSIFY ? x : wx(0, side * halfD / 2);
+    const pz = window.__ROOF_FALSIFY ? z + side * halfD / 2 : wz(0, side * halfD / 2);
+    P.box(roofW, 0.26 * s, panelLen, side < 0 ? PAL.thatch : PAL.thatchDark,
+      px, eaveY + roofH / 2, pz, { ry, rx: side * slope, jitter: false });
+    for (let k = 1; k < 4; k++) {
+      const t = k / 4;
+      P.box(roofW - 0.2 * s, 0.1 * s, 0.14 * s, PAL.thatchPale,
+        wx(0, side * halfD * (1 - t)), eaveY + roofH * t + 0.1 * s, wz(0, side * halfD * (1 - t)),
+        { ry, rx: side * slope, jitter: false });
+    }
+  }
+  /* 屋脊压顶 */
+  P.box(roofW + 0.2 * s, 0.4 * s, 0.6 * s, PAL.thatchPale, x, eaveY + roofH + 0.12 * s, z, { ry, jitter: false });
+  P.box(roofW + 0.2 * s, 0.18 * s, 0.84 * s, PAL.thatchDark, x, eaveY + roofH - 0.1 * s, z, { ry, jitter: false });
+  /* 脊端翘角 */
+  for (const side of [-1, 1]) {
+    const lx = side * (roofW / 2 + 0.32 * s);
+    const ex = wx(lx, 0), ez = wz(lx, 0);
+    P.box(1.24 * s, 0.26 * s, 0.4 * s, PAL.thatchPale, ex, eaveY + roofH + 0.6 * s, ez, { ry, rz: side * 0.62, jitter: false });
+    P.cone(0.2 * s, 0.6 * s, PAL.thatchPale, wx(side * (roofW / 2 + 0.92 * s), 0), eaveY + roofH + 0.88 * s, wz(side * (roofW / 2 + 0.92 * s), 0), { ry, rz: side * 0.9, jitter: false }, 6);
+  }
+  /* 重檐上层：气窗小顶 */
+  if (tall) {
+    const upH = H * 0.42;
+    const upY = eaveY + roofH * 0.55;
+    P.box(W * 0.46, upH, D * 0.34, PAL.bambooDark, x, upY + upH / 2, z, { ry });
+    const uw = W * 0.58, ud = D * 0.5, uh = 1.7 * s;
+    const uslope = Math.atan2(uh, ud / 2);
+    const ulen = Math.hypot(ud / 2, uh);
+    for (const side of [-1, 1]) {
+      P.box(uw, 0.22 * s, ulen, side < 0 ? PAL.thatch : PAL.thatchDark,
+        wx(0, side * ud / 4), upY + upH + uh / 2, wz(0, side * ud / 4), { ry, rx: side * uslope, jitter: false });
+    }
+    P.box(uw + 0.16 * s, 0.3 * s, 0.48 * s, PAL.thatchPale, x, upY + upH + uh + 0.08 * s, z, { ry, jitter: false });
+  }
+}
+
+/* 竹楼群：南北两岸分布 */
+daiHouse(-6, 30, 0.06, 1.0, true);
+daiHouse(8, 33, -0.05, 1.05, false);
+daiHouse(22, 35, 0.1, 0.95, true);
+daiHouse(-17, 36, 0.02, 0.9, false);
+daiHouse(38, 34, -0.08, 1.0, false);
+daiHouse(58, 31, 0.05, 0.92, true);
+daiHouse(14, -18, Math.PI + 0.05, 0.98, false);
+daiHouse(30, -20, Math.PI - 0.04, 1.02, true);
+daiHouse(66, -16, Math.PI + 0.02, 0.9, false);
+daiHouse(-6, -26, Math.PI + 0.03, 0.95, false);
+
+/* 谷物晾晒架 */
+layer(0.24);
+for (const [gx, gz] of [[-14, 12], [8, 13], [34, 11], [60, 14]]) {
+  P.cyl0(0.14, 0.16, 3.4, PAL.bambooDark, gx - 2.6, 1.7, gz, {}, 6);
+  P.cyl0(0.14, 0.16, 3.4, PAL.bambooDark, gx + 2.6, 1.7, gz, {}, 6);
+  P.box(5.6, 0.14, 0.14, PAL.bamboo, gx, 4.9, gz, { jitter: false });
+  for (let i = 0; i < 5; i++) {
+    P.cyl0(0.34, 0.42, 1.1, PAL.gold, gx - 2.2 + i * 1.1, 3.8, gz, { rz: 0.05, jitter: false }, 8);
+  }
+}
+
+/* ---------- 热带植被 ---------- */
+layer(0.26);
+function coconut(x, z, h, lean = 0) {
+  const g = 1.7;
+  const topX = x + lean * h * 0.35;
+  const segs = 5;
+  for (let i = 0; i < segs; i++) {
+    const t = i / segs, t2 = (i + 1) / segs;
+    const y0 = g + t * h, y1 = g + t2 * h;
+    const x0 = x + lean * (y0 - g) * 0.35, x1 = x + lean * (y1 - g) * 0.35;
+    P.cyl(0.2 + (1 - t2) * 0.2, 0.2 + (1 - t) * 0.2, h / segs + 0.04, PAL.trunkPale, (x0 + x1) / 2, (y0 + y1) / 2, z, { rz: -lean * 0.35 }, 7);
+  }
+  for (let i = 1; i < 6; i++) {
+    const y = g + (i / 6) * h;
+    P.cyl(0.3, 0.3, 0.07, PAL.trunk, x + lean * (y - g) * 0.35, y, z, {}, 8);
+  }
+  for (let i = 0; i < 9; i++) {
+    const a = (i / 9) * Math.PI * 2 + 0.3;
+    const dx = Math.cos(a), dz = Math.sin(a);
+    P.box(6.0, 0.12, 0.7, pick([PAL.palm, PAL.leaf, PAL.leafHi]), topX + dx * 2.9, g + h + 0.65, z + dz * 2.9, { ry: -a, rz: -0.42, jitter: true });
+    P.box(3.4, 0.11, 0.5, PAL.leafDeep, topX + dx * 5.3, g + h + 0.1, z + dz * 5.3, { ry: -a, rz: -0.68, jitter: true });
+  }
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2;
+    P.sph(0.32, 0x6a5a34, topX + Math.cos(a) * 0.46, g + h + 0.14, z + Math.sin(a) * 0.46, {}, 7, 5);
+  }
+}
+function banana(x, z, ry) {
+  const g = 1.7;
+  for (let i = 0; i < 7; i++) {
+    const a = (i / 7) * Math.PI * 2;
+    P.cyl0(0.16, 0.22, rnd(3.0, 4.6), PAL.bambooGreen, x + Math.cos(a) * 0.5, g, z + Math.sin(a) * 0.5, { rz: Math.cos(a) * 0.18, rx: -Math.sin(a) * 0.18, jitter: false }, 6);
+  }
+  for (let i = 0; i < 11; i++) {
+    const a = (i / 11) * Math.PI * 2 + ry;
+    const dx = Math.cos(a), dz = Math.sin(a);
+    P.box(4.6, 0.16, 1.6, pick([PAL.banana, PAL.leafHi, PAL.leaf]), x + dx * 2.1, g + rnd(3.4, 5.0), z + dz * 2.1, { ry: -a, rz: -0.5, jitter: true });
+  }
+}
+function bambooClump(x, z, n = 7) {
+  const g = 1.7;
+  for (let i = 0; i < n; i++) {
+    const bx = x + rnd(-1.4, 1.4), bz = z + rnd(-1.4, 1.4);
+    const h = rnd(6.0, 10.0);
+    P.cyl0(0.15, 0.2, h, pick([PAL.bambooGreen, PAL.bamboo, 0x9cb060]), bx, g, bz, { rz: rnd(-0.1, 0.1), rx: rnd(-0.1, 0.1), jitter: true }, 6);
+    for (let k = 0; k < 5; k++) {
+      const a = rand() * Math.PI * 2;
+      P.box(3.4, 0.11, 0.44, pick([PAL.leaf, PAL.leafHi]), bx + Math.cos(a) * 1.6, g + rnd(h * 0.55, h * 0.95), bz + Math.sin(a) * 1.6, { ry: -a, rz: -0.35, jitter: true });
+    }
+  }
+}
+function shrub(x, z, r) {
+  const g = 1.7;
+  for (let i = 0; i < 4; i++) {
+    P.sph(r * rnd(0.7, 1.1), pick([PAL.leaf, PAL.leafHi, PAL.leafDeep]), x + rnd(-r * 0.5, r * 0.5), g + rnd(0.6, 1.6), z + rnd(-r * 0.5, r * 0.5), { sy: 0.75 }, 8, 5);
+  }
+}
+
+coconut(-19, 24, 10.0, 0.5);
+coconut(-12, -28, 9.0, -0.35);
+coconut(4, 38, 10.6, 0.3);
+coconut(26, -32, 9.6, -0.45);
+coconut(46, 22, 9.2, 0.4);
+coconut(70, -30, 8.6, -0.3);
+coconut(-2, -38, 9.4, 0.35);
+coconut(38, -40, 8.8, -0.4);
+banana(-17, 20, 0.4);
+banana(-8, 18, 1.2);
+banana(16, 20, 0.7);
+banana(40, 22, 1.5);
+banana(52, 36, 0.2);
+banana(2, -34, 0.9);
+banana(20, -34, 1.8);
+banana(62, -28, 0.5);
+bambooClump(-22, -10, 8);
+bambooClump(-4, 40, 7);
+bambooClump(30, 40, 6);
+bambooClump(72, 6, 7);
+bambooClump(44, -42, 6);
+bambooClump(-16, 40, 7);
+bambooClump(74, -20, 6);
+for (const [sx, sz, sr] of [[-20, 6, 1.6], [12, 5, 1.4], [42, 6, 1.5], [56, -3, 1.4], [-14, -6, 1.3], [6, 16, 1.4], [24, 5, 1.3], [66, 20, 1.4]]) shrub(sx, sz, sr);
+
+/* 花丛 */
+layer(0.28);
+for (let i = 0; i < 240; i++) {
+  const x = rnd(SITE.villageWest + 2, SITE.villageEast - 2);
+  const z = rnd(SITE.northEdge + 2, SITE.southEdge - 2);
+  P.box(0.2, rnd(0.5, 1.1), 0.2, PAL.leafDeep, x, 2.2, z, { jitter: false });
+  P.sph(rnd(0.18, 0.34), pick([PAL.flower, PAL.flowerGold, 0xf0eae0, PAL.clothPink]), x, rnd(2.6, 3.3), z, { sy: 0.8 }, 6, 5);
+}
+/* ---------- 40 · 泼水广场、赶摆场、赛龙舟、孔雀舞与章哈 ----------
+ * 实景尺度。广场在码头东侧（x≈4, z≈5），是镜头的终点。
+ */
+
+const GY = 1.7;   /* 寨子地面高度 */
+
+/* ---------- 人物：傣家男女，节日盛装 ---------- */
+function daiPerson(x, z, ry, opt = {}) {
+  const dress = opt.dress || pick([PAL.dressPink, PAL.dressJade, PAL.dressBlue, PAL.dressGold, PAL.dressWhite]);
+  const s = opt.s || 1;
+  const h = 1.66 * s;
+  const y0 = opt.y0 != null ? opt.y0 : GY;
+  P.cyl(0.18 * s, 0.26 * s, h * 0.52, dress, x, y0 + h * 0.26, z, { ry }, 10);
+  P.cyl(0.19 * s, 0.19 * s, 0.07 * s, PAL.silver, x, y0 + h * 0.5, z, { ry, jitter: false }, 10);
+  P.cyl(0.17 * s, 0.19 * s, h * 0.3, opt.top || PAL.dressWhite, x, y0 + h * 0.68, z, { ry }, 10);
+  const armA = opt.armA != null ? opt.armA : 0.3;
+  for (const side of [-1, 1]) {
+    P.cyl0(0.055 * s, 0.06 * s, h * 0.34, PAL.skin, x + side * 0.21 * s, y0 + h * 0.62, z, { rz: side * -armA, ry }, 7);
+  }
+  P.sph(0.14 * s, PAL.skin, x, y0 + h * 0.9, z, { ry }, 10, 8);
+  P.sph(0.155 * s, PAL.hair, x, y0 + h * 0.945, z - 0.02 * s, { sy: 0.85 }, 10, 7);
+  P.sph(0.115 * s, PAL.hair, x - 0.03 * s, y0 + h * 1.02, z + 0.13 * s, { sy: 0.8 }, 8, 6);
+  if (opt.flower !== false) P.sph(0.08 * s, pick([PAL.flower, PAL.flowerGold, 0xf0eae0]), x + 0.115 * s, y0 + h * 1.0, z + 0.06 * s, {}, 6, 5);
+  if (opt.bowl) {
+    P.cyl(0.115 * s, 0.095 * s, 0.15 * s, PAL.silver, x + 0.29 * s, y0 + h * 0.6, z + 0.17 * s, {}, 10);
+    P.cyl(0.1 * s, 0.1 * s, 0.045 * s, PAL.waterHi, x + 0.29 * s, y0 + h * 0.675, z + 0.17 * s, { jitter: false }, 10);
+  }
+  if (opt.pole) {
+    P.cyl(0.038 * s, 0.038 * s, 2.3 * s, PAL.bamboo, x, y0 + h * 0.98, z, { rz: Math.PI / 2, ry }, 6);
+    for (const side of [-1, 1]) {
+      P.cyl0(0.022 * s, 0.022 * s, 0.42 * s, 0xa8895c, x + side * 0.9 * s, y0 + h * 0.72, z, { jitter: false }, 5);
+      P.cyl(0.18 * s, 0.15 * s, 0.26 * s, PAL.bambooDark, x + side * 0.9 * s, y0 + h * 0.6, z, {}, 10);
+      P.cyl(0.165 * s, 0.165 * s, 0.045 * s, PAL.waterShallow, x + side * 0.9 * s, y0 + h * 0.715, z, { jitter: false }, 10);
+    }
+  }
+}
+
+/* ---------- 泼水广场：中央水台 ---------- */
+layer(0.3);
+const PLAZA = { x: 4, z: 5 };
+{
+  const px = PLAZA.x, pz = PLAZA.z;
+  P.cyl(16, 16, 0.24, PAL.sandAlt, px, GY + 0.12, pz, { jitter: false }, 28);
+  P.cyl(12.5, 12.5, 0.16, PAL.sand, px, GY + 0.26, pz, { jitter: false }, 28);
+  P.cyl(8.5, 8.5, 0.16, PAL.path, px, GY + 0.34, pz, { jitter: false }, 28);
+  /* 水池 */
+  P.cyl(5.6, 6.1, 0.85, PAL.stuccoDeep, px, GY + 0.82, pz, { jitter: false }, 24);
+  P.cyl(5.1, 5.1, 0.3, PAL.waterShallow, px, GY + 1.28, pz, { jitter: false }, 24);
+  P.cyl(4.2, 4.2, 0.12, PAL.water, px, GY + 1.38, pz, { jitter: false }, 24);
+  for (let i = 0; i < 18; i++) {
+    const a = (i / 18) * Math.PI * 2;
+    P.box(0.85, 0.34, 0.85, PAL.stucco, px + Math.cos(a) * 5.9, GY + 1.28, pz + Math.sin(a) * 5.9, { ry: -a, jitter: false });
+  }
+  /* 台上银钵与水罐 */
+  P.cyl(0.85, 0.7, 0.9, PAL.silver, px - 1.7, GY + 1.8, pz - 1.0, {}, 14);
+  P.cyl(0.65, 0.55, 0.75, PAL.silverDark, px - 1.7, GY + 2.6, pz - 1.0, {}, 14);
+  P.cyl(0.75, 0.6, 1.0, PAL.ceramicBlue, px + 2.0, GY + 1.85, pz + 1.2, {}, 14);
+  P.cyl(0.5, 0.4, 0.55, PAL.ceramic, px + 3.6, GY + 1.62, pz - 1.5, {}, 12);
+  /* 中央小佛塔 */
+  P.cyl(1.0, 1.2, 0.75, PAL.goldDeep, px, GY + 1.7, pz, { jitter: false }, 12);
+  P.sph(0.95, PAL.gold, px, GY + 2.6, pz, { sy: 1.2 }, 12, 8);
+  P.cone(0.4, 1.2, PAL.gold, px, GY + 3.8, pz, { jitter: false }, 8);
+  glowPts.push([px, GY + 2.7, pz, 4.2, 0xfff0c0, 0.28]);
+
+  /* 泼出去的水花弧线 */
+  for (let i = 0; i < 70; i++) {
+    const a = rand() * Math.PI * 2;
+    const r0 = rnd(5.4, 7.0);
+    const r1 = rnd(8.5, 12.5);
+    const height = rnd(1.4, 3.8);
+    const arc = [];
+    for (let k = 0; k <= 4; k++) {
+      const t = k / 4;
+      const rr = r0 + (r1 - r0) * t;
+      arc.push([px + Math.cos(a) * rr, GY + 1.5 + Math.sin(t * Math.PI) * height, pz + Math.sin(a) * rr]);
+    }
+    P.tube(arc, rnd(0.09, 0.17), pick([PAL.waterHi, PAL.waterFoam, 0xd0eef0]), { jitter: true }, 10, 5);
+  }
+  /* 空中水珠 */
+  for (let i = 0; i < 300; i++) {
+    const a = rand() * Math.PI * 2;
+    const rr = rnd(5.4, 13.5);
+    P.sph(rnd(0.16, 0.36), pick([PAL.waterFoam, PAL.waterHi, 0xffffff]), px + Math.cos(a) * rr, GY + rnd(1.2, 5.5), pz + Math.sin(a) * rr, {}, 6, 5);
+  }
+  /* 落地水花 */
+  for (let i = 0; i < 170; i++) {
+    const a = rand() * Math.PI * 2;
+    const rr = rnd(6.0, 14.5);
+    P.water(rnd(0.7, 1.9), rnd(0.6, 1.4), pick([PAL.waterShallow, PAL.waterHi]), px + Math.cos(a) * rr, GY + 0.42, pz + Math.sin(a) * rr, { jitter: true });
+  }
+  /* 广场匾额门架 */
+  P.sign('pWater', 11.0, 3.1, px, GY + 7.2, pz - 15.5, { delay: 0.42 });
+  for (const dx of [-5.2, 5.2]) P.cyl0(0.34, 0.4, 7.0, PAL.woodDark, px + dx, GY, pz - 15.5, {}, 8);
+  P.box(12.4, 0.6, 0.7, PAL.woodDark, px, GY + 7.6, pz - 15.5, { jitter: false });
+}
+
+/* 广场周围泼水的人群 */
+layer(0.32);
+{
+  const px = PLAZA.x, pz = PLAZA.z;
+  for (let i = 0; i < 26; i++) {
+    const a = (i / 26) * Math.PI * 2 + 0.22;
+    const rr = rnd(9.5, 13.5);
+    daiPerson(px + Math.cos(a) * rr, pz + Math.sin(a) * rr, -a + Math.PI / 2, {
+      bowl: i % 3 === 0, armA: i % 2 ? 1.25 : 0.35, s: rnd(0.94, 1.06),
+    });
+  }
+  for (let i = 0; i < 12; i++) {
+    const a = rand() * Math.PI * 2;
+    daiPerson(px + Math.cos(a) * rnd(15, 20), pz + Math.sin(a) * rnd(15, 20), rnd(0, 6.28), { s: rnd(0.92, 1.05) });
+  }
+  daiPerson(-14, 12, 1.6, { pole: true, dress: PAL.dressBlue });
+  daiPerson(-9, 13.5, 1.5, { pole: true, dress: PAL.dressJade, s: 0.96 });
+  daiPerson(-2, 15, 1.4, { pole: true, dress: PAL.dressPink, s: 1.02 });
+}
+
+/* ---------- 赶摆场：竹棚摊位 ---------- */
+layer(0.34);
+function stall(x, z, ry, banner) {
+  const W = 5.2, D = 3.4, H = 4.6, g = GY;
+  const c = Math.cos(ry), sn = Math.sin(ry);
+  for (const [dx, dz] of [[-W / 2, -D / 2], [W / 2, -D / 2], [-W / 2, D / 2], [W / 2, D / 2]]) {
+    P.cyl0(0.15, 0.17, H, PAL.bamboo, x + dx * c - dz * sn, g, z + dx * sn + dz * c, {}, 7);
+  }
+  P.box(W + 1.4, 0.22, D + 1.2, PAL.thatch, x, g + H + 0.11, z, { ry, rx: -0.16, jitter: false });
+  P.box(W + 1.0, 0.22, D + 0.8, PAL.thatchDark, x, g + H + 0.44, z, { ry, rx: 0.16, jitter: false });
+  P.box(W + 1.5, 0.16, 0.26, PAL.thatchPale, x, g + H + 0.66, z, { ry, jitter: false });
+  P.box(W - 0.2, 0.26, D - 0.4, PAL.wood, x, g + 1.9, z, { ry, jitter: false });
+  P.box(W - 0.2, 1.1, 0.2, PAL.bamboo, x + (D / 2 - 0.1) * sn, g + 1.2, z + (D / 2 - 0.1) * c, { ry, jitter: false });
+  for (let i = 0; i < 8; i++) {
+    const t = -W / 2 + 0.6 + i * ((W - 1.2) / 7);
+    P.sph(rnd(0.18, 0.32), pick([PAL.flower, PAL.flowerGold, 0xd9a24a, 0x6f9d55, 0xc2506a]), x + t * c, g + 2.18, z + t * sn, {}, 7, 5);
+  }
+  P.sign(banner, 1.15, 2.6, x - (W / 2 + 0.9) * c, g + 3.1, z - (W / 2 + 0.9) * sn, { ry: ry + Math.PI / 2, delay: 0.5 });
+  P.cyl0(0.08, 0.09, 2.4, PAL.bambooDark, x - (W / 2 + 0.9) * c, g + H - 0.2, z - (W / 2 + 0.9) * sn, {}, 5);
+}
+stall(-14, 26, 0.05, 'bFruit');
+stall(-6, 27, 0.0, 'bXiang');
+stall(2, 27.5, -0.04, 'bJin');
+stall(10, 27.5, 0.02, 'bZhu');
+stall(18, 27, 0.05, 'bCha');
+stall(26, 26.5, -0.02, 'bMi');
+stall(42, 27, 0.04, 'bHua');
+stall(50, 26.5, -0.03, 'bYao');
+stall(58, 26, 0.02, 'bSan');
+stall(66, 25, 0.0, 'bTao');
+stall(-18, -8, Math.PI + 0.04, 'bFruit');
+stall(22, -10, Math.PI - 0.03, 'bJin');
+
+/* 赶摆场入口牌坊与幡旗 */
+layer(0.36);
+{
+  const mx = 34, mz = 26;
+  for (const dx of [-4.6, 4.6]) {
+    P.cyl0(0.36, 0.42, 8.0, PAL.woodDark, mx + dx, GY, mz, {}, 10);
+    P.box(1.1, 0.55, 1.1, PAL.wood, mx + dx, GY + 0.28, mz, { jitter: false });
+    P.cone(0.7, 1.4, PAL.gold, mx + dx, GY + 8.7, mz, { jitter: false }, 8);
+  }
+  P.box(12.4, 0.62, 0.7, PAL.woodDark, mx, GY + 7.9, mz, { jitter: false });
+  P.box(13.0, 0.32, 1.15, PAL.tile, mx, GY + 8.4, mz, { rx: 0.05, jitter: false });
+  P.sign('pMarket', 7.2, 2.0, mx, GY + 7.2, mz + 0.45, { delay: 0.54 });
+  for (let i = 0; i < 10; i++) {
+    const fx = -20 + i * 9.8;
+    P.cyl0(0.11, 0.13, 7.0, PAL.bambooDark, fx, GY, 20.5, { rz: rnd(-0.04, 0.04), jitter: false }, 6);
+    P.sign(i % 3 === 0 ? 'fDai' : (i % 3 === 1 ? 'fDai2' : 'fNew'), 1.5, 2.5, fx + 0.82, GY + 5.4, 20.5, { ry: 0.12 * (i % 2 ? 1 : -1), delay: 0.56 + i * 0.01 });
+  }
+  /* 拴线桌 */
+  const tx = -4, tz = -6;
+  P.box(4.2, 0.32, 2.3, PAL.wood, tx, GY + 1.55, tz, { jitter: false });
+  for (const [dx, dz] of [[-1.7, -0.8], [1.7, -0.8], [-1.7, 0.8], [1.7, 0.8]]) {
+    P.cyl0(0.14, 0.16, 1.4, PAL.woodDark, tx + dx, GY, tz + dz, {}, 6);
+  }
+  for (let i = 0; i < 7; i++) {
+    P.tube([[tx - 1.4 + i * 0.48, GY + 1.75, tz - 0.5], [tx - 1.3 + i * 0.48, GY + 1.8, tz + 0.2], [tx - 1.2 + i * 0.48, GY + 1.75, tz + 0.7]], 0.045, 0xf4f0e6, { jitter: false }, 8, 4);
+  }
+  P.cyl(0.45, 0.36, 0.7, PAL.ceramic, tx + 1.3, GY + 2.05, tz - 0.5, {}, 12);
+  for (let i = 0; i < 8; i++) {
+    P.sph(0.18, pick([PAL.flower, PAL.flowerGold, 0xf0eae0]), tx - 1.4 + i * 0.4, GY + 1.85, tz + 0.4, {}, 6, 5);
+  }
+  daiPerson(tx - 3.4, tz + 2.0, 0.4, { dress: PAL.dressGold, armA: 0.9 });
+  daiPerson(tx + 3.4, tz + 2.2, -0.5, { dress: PAL.dressJade, armA: 0.8 });
+}
+
+/* ---------- 赛龙舟 ---------- */
+function dragonBoat(x, z, ry, s = 1) {
+  const y0 = 1.9;
+  const L = 15.0 * s, W = 2.0 * s;
+  const c = Math.cos(ry), sn = Math.sin(ry);
+  for (let i = 0; i < 11; i++) {
+    const t = i / 10;
+    const w = W * (0.35 + Math.sin(t * Math.PI) * 0.75);
+    const lx = -L / 2 + t * L;
+    P.box(L / 11 + 0.14, 1.05 * s, w, pick([PAL.wood, PAL.woodLight, PAL.templeRed]), x + lx * c, y0 + 0.1, z + lx * sn, { ry, jitter: true });
+    P.box(L / 11 + 0.14, 0.28 * s, w + 0.2, PAL.templeRedDeep, x + lx * c, y0 + 0.72, z + lx * sn, { ry, jitter: false });
+  }
+  const hx = x + (L / 2) * c, hz = z + (L / 2) * sn;
+  P.cyl0(0.55 * s, 0.7 * s, 1.6 * s, PAL.templeRed, hx, y0 + 0.7, hz, { ry }, 10);
+  P.box(1.7 * s, 0.8 * s, 1.15 * s, PAL.gold, hx + 0.48 * c, y0 + 1.95 * s, hz + 0.48 * sn, { ry });
+  P.cone(0.38 * s, 1.1 * s, PAL.goldDeep, hx + 1.05 * c, y0 + 2.4 * s, hz + 1.05 * sn, { ry, rz: -1.1 }, 7);
+  for (const side of [-1, 1]) {
+    P.cone(0.24 * s, 0.72 * s, PAL.gold, hx + 0.24 * c + side * 0.48 * sn, y0 + 2.65 * s, hz + 0.24 * sn - side * 0.48 * c, { rz: side * 0.4, jitter: false }, 6);
+  }
+  P.sph(0.22 * s, PAL.ink, hx + 0.85 * c + 0.38 * sn, y0 + 2.3 * s, hz + 0.85 * sn - 0.38 * c, {}, 6, 5);
+  P.sph(0.22 * s, PAL.ink, hx + 0.85 * c - 0.38 * sn, y0 + 2.3 * s, hz + 0.85 * sn + 0.38 * c, {}, 6, 5);
+  const tx = x - (L / 2) * c, tz = z - (L / 2) * sn;
+  P.box(1.2 * s, 1.4 * s, 0.95 * s, PAL.gold, tx - 0.25 * c, y0 + 1.75 * s, tz - 0.25 * sn, { ry, rz: 0.5 });
+  P.cone(0.52 * s, 1.2 * s, PAL.templeRed, tx - 0.7 * c, y0 + 2.6 * s, tz - 0.7 * sn, { ry, rz: 0.9 }, 7);
+  /* 桨手 */
+  for (let i = 0; i < 7; i++) {
+    for (const side of [-1, 1]) {
+      const lx = -L * 0.3 + i * (L * 0.1);
+      const px = x + lx * c + side * 0.8 * sn;
+      const pz = z + lx * sn - side * 0.8 * c;
+      P.cyl(0.24 * s, 0.31 * s, 1.2 * s, pick([PAL.dressWhite, PAL.dressGold, PAL.dressJade]), px, y0 + 1.45 * s, pz, { ry }, 8);
+      P.sph(0.25 * s, PAL.skin, px, y0 + 2.25 * s, pz, {}, 8, 6);
+      P.sph(0.21 * s, PAL.hair, px, y0 + 2.34 * s, pz, { sy: 0.8 }, 8, 5);
+      P.cyl0(0.09 * s, 0.11 * s, 3.1 * s, PAL.woodLight, px + side * 0.45 * s, y0 + 0.2, pz, { rz: side * 1.15, ry }, 6);
+      P.box(0.38 * s, 1.2 * s, 0.12 * s, PAL.wood, px + side * 2.0 * s, y0 + 0.5 * s, pz, { rz: side * 1.15, ry, jitter: false });
+    }
+  }
+  /* 鼓 */
+  P.cyl(0.7 * s, 0.8 * s, 1.2 * s, PAL.templeRed, x - L * 0.36 * c, y0 + 1.15 * s, z - L * 0.36 * sn, { ry }, 12);
+  P.cyl(0.74 * s, 0.74 * s, 0.14 * s, 0xf0e0c0, x - L * 0.36 * c, y0 + 1.8 * s, z - L * 0.36 * sn, { ry, jitter: false }, 12);
+  for (const side of [-1, 1]) P.cyl0(0.1 * s, 0.12 * s, 0.9 * s, PAL.woodDark, x - L * 0.36 * c + side * 0.6 * sn, y0 + 0.15, z - L * 0.36 * sn - side * 0.6 * c, {}, 6);
+  P.cyl0(0.1 * s, 0.12 * s, 3.4 * s, PAL.bambooDark, x - L * 0.1 * c, y0 + 1.0, z - L * 0.1 * sn, {}, 6);
+  P.sign('fNew', 1.15 * s, 1.7 * s, x - L * 0.1 * c + 0.65 * s, y0 + 4.0 * s, z - L * 0.1 * sn, { ry: ry + Math.PI / 2, delay: 0.6 });
+}
+layer(0.38);
+dragonBoat(-56, -30, Math.PI * 0.5 + 0.04, 1.0);
+dragonBoat(-62, 4, Math.PI * 0.5 - 0.03, 0.94);
+dragonBoat(-54, 32, Math.PI * 0.5 + 0.06, 0.88);
+
+/* 江边观赛的人与小舟 */
+layer(0.4);
+{
+  for (let i = 0; i < 14; i++) {
+    daiPerson(-19.5 + rnd(-1.6, 1.6), -34 + i * 5.0 + rnd(-1.4, 1.4), rnd(3.4, 4.2), { s: rnd(0.9, 1.02), dress: pick([PAL.dressPink, PAL.dressJade, PAL.dressBlue, PAL.dressGold]) });
+  }
+  for (const [bx, bz, br] of [[-30, -12, 0.15], [-28, 24, -0.2], [-34, 40, 0.1]]) {
+    P.box(5.4, 0.7, 1.7, PAL.wood, bx, 1.9, bz, { ry: br, jitter: false });
+    P.box(5.6, 0.24, 1.9, PAL.woodLight, bx, 2.35, bz, { ry: br, jitter: false });
+    P.cyl0(0.1, 0.12, 2.7, PAL.bamboo, bx + 1.2, 2.4, bz, { rz: 0.7, ry: br, jitter: false }, 6);
+  }
+}
+
+/* ---------- 孔雀舞与章哈舞台 ---------- */
+layer(0.42);
+{
+  const sx = 30, sz = 12, g = GY;
+  P.box(12.5, 0.85, 7.5, PAL.stuccoDeep, sx, g + 0.42, sz, { jitter: false });
+  P.box(11.5, 0.4, 6.8, PAL.wood, sx, g + 1.05, sz, { jitter: false });
+  P.box(12.0, 6.0, 0.3, PAL.bamboo, sx, g + 4.2, sz - 3.4, { jitter: false });
+  for (let i = 0; i < 6; i++) P.box(0.15, 5.8, 0.4, PAL.bambooDark, sx - 5.2 + i * 2.1, g + 4.25, sz - 3.2, { jitter: false });
+  for (const [dx, dz] of [[-5.8, -3.2], [5.8, -3.2], [-5.8, 3.2], [5.8, 3.2]]) {
+    P.cyl0(0.22, 0.27, 7.5, PAL.woodDark, sx + dx, g + 1.2, sz + dz, {}, 8);
+  }
+  P.box(13.5, 0.4, 8.5, PAL.thatch, sx, g + 8.9, sz, { rx: -0.1, jitter: false });
+  P.box(14.0, 0.2, 0.4, PAL.thatchPale, sx, g + 9.25, sz, { jitter: false });
+  P.sign('pDance', 5.0, 1.55, sx, g + 7.9, sz + 3.7, { delay: 0.64 });
+
+  /* 孔雀舞者 */
+  const dx0 = sx + 2.2, dz0 = sz + 0.2;
+  daiPerson(dx0, dz0, 0.2, { dress: PAL.dressPink, armA: 1.35, s: 1.04, flower: false, y0: g + 1.25 });
+  P.sph(0.25, PAL.gold, dx0, g + 2.85, dz0, {}, 7, 5);
+  P.cone(0.18, 0.65, PAL.clothJade, dx0 - 0.05, g + 3.3, dz0, { jitter: false }, 6);
+  for (let i = 0; i < 3; i++) P.sph(0.11, PAL.clothJade, dx0 + 0.05, g + 3.6 + i * 0.13, dz0, {}, 6, 4);
+  /* 尾屏 */
+  for (let ring = 0; ring < 3; ring++) {
+    const rr = 1.8 + ring * 1.1;
+    const n = 9 + ring * 3;
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI * (0.18 + (i / (n - 1)) * 0.64);
+      const fx = dx0 - 0.5 - Math.cos(a) * rr * 0.5;
+      const fy = g + 1.9 + Math.sin(a) * rr * 0.62;
+      const fz = dz0 - 1.2 - Math.sin(a) * rr * 0.55;
+      P.box(0.6, 3.8 + ring * 0.5, 0.18, pick([PAL.clothJade, PAL.brocadeAlt, PAL.leafHi]), fx, fy, fz, { ry: 0.5, rz: Math.PI * 0.5 - a * 0.5, jitter: true });
+      P.sph(0.23, PAL.gold, fx - Math.cos(a) * 1.2, fy + 1.5, fz - Math.sin(a) * 1.0, { sy: 0.85 }, 7, 5);
+    }
+  }
+  glowPts.push([dx0 - 1.0, g + 2.6, dz0 - 1.2, 5.0, 0x8fd8c0, 0.24]);
+
+  /* 章哈演唱者 + 象脚鼓 + 铓锣 */
+  const gx = sx - 2.6, gz = sz - 0.5;
+  P.box(2.0, 0.25, 1.5, PAL.wood, gx, g + 1.6, gz, { jitter: false });
+  P.cyl(0.5, 0.65, 1.2, PAL.woodDark, gx, g + 0.9, gz, {}, 10);
+  daiPerson(gx, gz - 0.15, 0.1, { dress: PAL.dressGold, s: 1.0, armA: 0.8, y0: g + 1.25 });
+  P.box(1.25, 0.9, 0.12, PAL.paper, gx + 0.85, g + 2.9, gz + 0.5, { ry: 0.5, rz: 0.3, jitter: false });
+  P.cyl(0.45, 0.75, 2.8, PAL.woodLight, gx - 2.5, g + 2.6, gz + 1.2, {}, 12);
+  P.cyl(0.5, 0.5, 0.2, 0xf0e0c0, gx - 2.5, g + 4.05, gz + 1.2, { jitter: false }, 12);
+  P.box(2.3, 0.15, 1.3, PAL.wood, gx - 2.5, g + 1.22, gz + 1.2, { jitter: false });
+  P.cyl0(0.15, 0.17, 3.0, PAL.woodDark, gx - 4.2, g + 1.2, gz + 0.3, {}, 6);
+  P.cyl(0.85, 0.85, 0.12, PAL.bronze, gx - 4.2, g + 4.35, gz + 0.3, { rx: 0.3, jitter: false }, 14);
+  P.box(0.25, 1.25, 0.25, PAL.bronzeDark, gx - 3.7, g + 3.5, gz + 0.5, { jitter: false });
+  glowPts.push([gx - 4.2, g + 4.3, gz + 0.3, 1.8, 0xffe0a0, 0.26]);
+
+  for (let i = 0; i < 9; i++) {
+    daiPerson(sx - 6.0 + i * 1.6 + rnd(-0.4, 0.4), sz + 5.5 + rnd(-0.6, 0.6), Math.PI + rnd(-0.3, 0.3), { s: rnd(0.92, 1.05) });
+  }
+}
+
+/* ---------- 白象舞 ---------- */
+layer(0.44);
+{
+  const ex = 16, ez = -4, g = GY;
+  P.box(5.0, 3.1, 3.0, PAL.dressWhite, ex, g + 1.65, ez, { ry: 0.25, jitter: false });
+  P.box(2.3, 2.3, 2.5, PAL.dressWhite, ex + 2.8, g + 2.3, ez + 0.5, { ry: 0.25, jitter: false });
+  P.sph(0.75, PAL.dressWhite, ex + 3.8, g + 2.8, ez + 0.75, { sy: 0.9 }, 9, 6);
+  for (const side of [-1, 1]) {
+    P.box(1.25, 0.8, 0.4, PAL.dressWhite, ex + 3.55, g + 2.9, ez + 0.75 + side * 0.7, { ry: 0.25, rz: -0.5, jitter: false });
+  }
+  P.tube([[ex + 4.8, g + 2.7, ez + 0.75], [ex + 5.4, g + 2.1, ez + 0.75], [ex + 5.5, g + 1.3, ez + 0.9], [ex + 5.0, g + 0.8, ez + 1.0]], 0.32, PAL.dressWhite, { jitter: false }, 12, 6);
+  for (const side of [-1, 1]) P.cone(0.15, 1.25, 0xf6f2e8, ex + 4.7, g + 2.3, ez + 0.75 + side * 0.35, { rz: -0.9 }, 6);
+  for (const [dx, dz] of [[-1.8, -1.1], [1.8, -1.1], [-1.8, 1.1], [1.8, 1.1]]) {
+    P.cyl0(0.48, 0.53, 2.2, PAL.dressWhite, ex + dx, g, ez + dz, {}, 8);
+  }
+  P.cyl(0.15, 0.15, 1.7, PAL.dressWhite, ex - 2.5, g + 2.8, ez, { rz: 1.1 }, 6);
+  P.box(5.2, 1.25, 3.3, PAL.brocade, ex, g + 3.85, ez, { ry: 0.25, jitter: false });
+  P.box(2.5, 1.05, 2.8, PAL.brocadeAlt, ex + 2.8, g + 4.15, ez + 0.5, { ry: 0.25, jitter: false });
+  for (let i = 0; i < 12; i++) {
+    P.sph(0.18, PAL.gold, ex - 2.3 + i * 0.42, g + 3.2, ez + 1.65, {}, 6, 5);
+  }
+  P.sign('pBai', 4.0, 1.3, ex + 3.0, g + 5.4, ez + 0.5, { ry: 0.25, delay: 0.68 });
+  daiPerson(ex + 7.4, ez + 1.8, -1.4, { dress: PAL.dressJade, armA: 1.0 });
+}
+
+/* ---------- 水井 ---------- */
+layer(0.46);
+function villageWell(x, z) {
+  const g = GY;
+  P.cyl(2.3, 2.5, 1.4, PAL.stuccoDeep, x, g + 0.7, z, { jitter: false }, 18);
+  P.cyl(2.0, 2.0, 0.35, PAL.waterShallow, x, g + 1.45, z, { jitter: false }, 18);
+  P.cyl(1.6, 1.6, 0.14, 0x2b4a55, x, g + 1.65, z, { jitter: false }, 18);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    P.box(0.7, 0.55, 0.55, PAL.stucco, x + Math.cos(a) * 2.55, g + 1.7, z + Math.sin(a) * 2.55, { ry: -a, jitter: false });
+  }
+  for (const side of [-1, 1]) P.cyl0(0.19, 0.22, 4.6, PAL.woodDark, x + side * 2.45, g + 1.4, z, {}, 7);
+  P.box(5.7, 0.24, 0.24, PAL.woodDark, x, g + 6.0, z, { jitter: false });
+  P.cyl(0.24, 0.24, 2.4, PAL.wood, x, g + 4.9, z, { rz: Math.PI / 2 }, 8);
+  P.cyl0(0.06, 0.06, 1.6, 0xa8895c, x, g + 3.6, z, { jitter: false }, 5);
+  P.cyl(0.4, 0.35, 0.6, PAL.woodLight, x, g + 2.9, z, {}, 10);
+  P.sign('pWell', 2.1, 0.85, x, g + 6.6, z, { rx: -0.4, delay: 0.7 });
+}
+villageWell(2, 16);
+villageWell(44, 16);
+
+layer(0.48);
+daiPerson(-0.6, 18.0, -1.2, { dress: PAL.dressBlue, armA: 0.9 });
+daiPerson(41.4, 18.4, 1.3, { dress: PAL.dressPink, armA: 0.85 });
+/* ---------- 50 · 合批成网格、光照、相机飞行、入场与动效 ---------- */
+
+/* 把所有桶变成 mesh */
+finishBucket('solid', toonMat, true);
+finishBucket('fine', toonMat, false);
+finishBucket('water', waterMat, false, { shadow: false, receive: false });
+finishBucket('glow', glowMat, false, { shadow: false, receive: false });
+finishBucket('sign', signMat, false, { shadow: false, receive: false });
+finishBucket('glass', glassMat, false, { shadow: false, receive: false });
+
+/* ---------- 光照：白天，太阳偏西南 ---------- */
+const sun = new THREE.DirectionalLight(0xfff2dd, 1.32);
+sun.position.set(-60, 90, 70);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 260;
+sun.shadow.camera.left = -90;
+sun.shadow.camera.right = 90;
+sun.shadow.camera.top = 90;
+sun.shadow.camera.bottom = -90;
+sun.shadow.bias = -0.0006;
+sun.shadow.normalBias = 0.05;
+scene.add(sun);
+scene.add(sun.target);
+
+scene.add(new THREE.HemisphereLight(0xdff0f4, 0x8a7c5c, 1.05));
+const fill = new THREE.DirectionalLight(0xcfe8f0, 0.32);
+fill.position.set(80, 30, -70);
+scene.add(fill);
+
+/* ---------- 水花粒子 ---------- */
+const SPLASH_COUNT = 900;
+const splashGeo = new THREE.BufferGeometry();
+const splashPos = new Float32Array(SPLASH_COUNT * 3);
+const splashSeed = new Float32Array(SPLASH_COUNT * 3);
+const splashColor = new Float32Array(SPLASH_COUNT * 3);
+{
+  const cx = PLAZA.x, cz = PLAZA.z;
+  const c = new THREE.Color();
+  for (let i = 0; i < SPLASH_COUNT; i++) {
+    const a = rand() * Math.PI * 2;
+    const r = rnd(5.4, 16.5);
+    const up = rnd(1.2, 6.0);
+    splashSeed[i * 3] = cx + Math.cos(a) * r;
+    splashSeed[i * 3 + 1] = up;
+    splashSeed[i * 3 + 2] = cz + Math.sin(a) * r;
+    splashPos[i * 3] = splashSeed[i * 3];
+    splashPos[i * 3 + 1] = GY + 1.5;
+    splashPos[i * 3 + 2] = splashSeed[i * 3 + 2];
+    c.set(pick([0xffffff, PAL.waterFoam, PAL.waterHi, 0xd0eef0]));
+    splashColor[i * 3] = c.r;
+    splashColor[i * 3 + 1] = c.g;
+    splashColor[i * 3 + 2] = c.b;
+  }
+  splashGeo.setAttribute('position', new THREE.BufferAttribute(splashPos, 3));
+  splashGeo.setAttribute('color', new THREE.BufferAttribute(splashColor, 3));
+}
+const splashMat = new THREE.PointsMaterial({
+  size: 0.5, map: DOT_TEXTURE, vertexColors: true, transparent: true, opacity: 0.95,
+  depthWrite: false, sizeAttenuation: true, fog: true, alphaTest: 0.02,
+});
+const splashPoints = new THREE.Points(splashGeo, splashMat);
+splashPoints.frustumCulled = false;
+scene.add(splashPoints);
+
+/* ---------- 江面涟漪 ---------- */
+const RIPPLES = [];
+for (let i = 0; i < 40; i++) {
+  const g = new THREE.RingGeometry(0.8, 1.15, 20);
+  const m = new THREE.MeshBasicMaterial({
+    color: 0xd8f0f0, transparent: true, opacity: 0.4, side: THREE.DoubleSide,
+    depthWrite: false, fog: true,
+  });
+  const ring = new THREE.Mesh(g, m);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(rnd(-100, -24), 1.62, rnd(-60, 60));
+  ring.userData.phase = rand();
+  ring.userData.scale0 = rnd(0.7, 2.2);
+  scene.add(ring);
+  RIPPLES.push(ring);
+}
+
+/* ================= 相机飞行 =================
+ * 一条路径串起六段镜头：江面掠水 → 码头 → 竹楼间 → 赶摆场 → 广场水花 → 拉升定格。
+ * 位置与看点各自是一条 CatmullRom 曲线，按整体进度取样。
+ */
+
+/* 航点：[位置, 看点]。y 已含地面高度（寨子地面 ≈1.7） */
+const FLIGHT = [
+  /* 0 · 江面低掠：贴着水面，朝寨子飞 */
+  { pos: [-114, 3.4, 20], look: [-46, 3.2, 10], fov: 42 },
+  { pos: [-84, 4.2, 17], look: [-30, 3.4, 11], fov: 44 },
+  /* 1 · 接近码头，略微抬起 */
+  { pos: [-52, 8.5, 13.5], look: [-18, 4.0, 11], fov: 46 },
+  { pos: [-34, 10.0, 12.5], look: [-8, 5.0, 11], fov: 48 },
+  /* 2 · 进入寨子，在竹楼之间穿行 */
+  { pos: [-20, 12.5, 13], look: [4, 6.0, 10], fov: 50 },
+  { pos: [-8, 15.0, 14], look: [10, 6.5, 10], fov: 52 },
+  /* 3 · 掠过赶摆场与舞台 */
+  { pos: [4, 17.5, 17], look: [22, 7.0, 12], fov: 52 },
+  { pos: [16, 19.0, 19], look: [30, 7.5, 13], fov: 52 },
+  /* 4 · 俯看泼水广场的水花 */
+  { pos: [26, 20.0, 18], look: [6, 5.0, 6], fov: 50 },
+  { pos: [30, 22.0, 14], look: [4, 4.5, 5], fov: 48 },
+  /* 5 · 拉升定格到大景：最后要退到能看全寨子的高度与距离 */
+  { pos: [58, 46, 36], look: [10, 8, 6], fov: 46 },
+  { pos: [86, 58, 66], look: [2, 10, 6], fov: 44 },
+];
+/* 英雄机位：从东南偏高的位置俯瞰，江面在左、寨子在右，
+   高度足够看到屋顶与广场水花，又不至于变成垂直俯视。 */
+const HERO_POS = new THREE.Vector3(112, 62, 104);
+const HERO_LOOK = new THREE.Vector3(-4, 10, 6);
+const HERO_FOV = 40;
+
+const flightPos = new THREE.CatmullRomCurve3(FLIGHT.map((k) => new THREE.Vector3(...k.pos)), false, 'catmullrom', 0.5);
+const flightLook = new THREE.CatmullRomCurve3(FLIGHT.map((k) => new THREE.Vector3(...k.look)), false, 'catmullrom', 0.5);
+
+/** 分段 fov：按进度在航点之间线性插值 */
+function flightFov(t) {
+  const n = FLIGHT.length - 1;
+  const p = THREE.MathUtils.clamp(t, 0, 1) * n;
+  const i = Math.min(n - 1, Math.floor(p));
+  return THREE.MathUtils.lerp(FLIGHT[i].fov, FLIGHT[i + 1].fov, p - i);
+}
+
+/* 开场时长（毫秒）。末尾 12% 用于从飞行末点平滑收到英雄机位。 */
+const OPENING_MS = 13000;
+const HERO_BLEND_START = 0.86;
+
+/* 相机来自 00-boot，这里只管怎么走 */
+camera.fov = 42;
+camera.near = 0.1;
+camera.far = 900;
+camera.updateProjectionMatrix();
+
+/* ---------- 定格后的自由观察 ---------- */
+const hero = {
+  theta: Math.atan2(HERO_POS.x - HERO_LOOK.x, HERO_POS.z - HERO_LOOK.z),
+  phi: Math.acos(THREE.MathUtils.clamp((HERO_POS.y - HERO_LOOK.y) / HERO_POS.clone().sub(HERO_LOOK).length(), -1, 1)),
+  dist: HERO_POS.clone().sub(HERO_LOOK).length(),
+  target: HERO_LOOK.clone(),
+};
+let heroTheta = hero.theta, heroPhi = hero.phi, heroDist = hero.dist;
+const heroTarget = hero.target.clone();
+/* 基准距离（落位时确定，不随缩放变化）与缩放倍率分开存。
+   zoomTarget 是滚轮/捏合的目标值，zoomNow 每帧缓动逼近它。 */
+let heroBaseDist = hero.dist;
+let zoomTarget = 1;
+let zoomNow = 1;
+
+/** 把定格机位写成 spherical，便于鼠标操作 */
+function heroSpherical() {
+  const off = HERO_POS.clone().sub(HERO_LOOK);
+  return new THREE.Spherical(off.length(), Math.acos(off.y / off.length()), Math.atan2(off.x, off.z));
+}
+const hs = heroSpherical();
+heroTheta = hs.theta; heroPhi = hs.phi; heroDist = hs.radius;
+
+/* ---------- 状态机 ---------- */
+let phase = 'opening';       /* opening | hero */
+let startedAt = 0;
+let progress = 0;
+let run = 0;
+let flightFrozen = false;    /* 检查用：冻结飞行进度 */
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function applyOpeningCamera(t) {
+  /* 前段沿曲线飞，末段插值到英雄机位，避免到点突变 */
+  const blend = smoothstep(HERO_BLEND_START, 1, t);
+  const p = flightPos.getPoint(THREE.MathUtils.clamp(t, 0, 1));
+  const l = flightLook.getPoint(THREE.MathUtils.clamp(t, 0, 1));
+  p.lerp(HERO_POS, blend);
+  l.lerp(HERO_LOOK, blend);
+  camera.position.copy(p);
+  camera.lookAt(l);
+  camera.fov = THREE.MathUtils.lerp(flightFov(t), HERO_FOV, blend);
+  camera.updateProjectionMatrix();
+}
+
+function applyHeroCamera(dt) {
+  /* 正在飞向某个热点：补间期间完全由补间控制相机 */
+  if (camTween.active) {
+    camTween.t = Math.min(1, camTween.t + (dt || 0.016) / camTween.dur);
+    /* 缓入缓出，起步与停止都不生硬 */
+    const e = camTween.t < 0.5
+      ? 4 * camTween.t ** 3
+      : 1 - Math.pow(-2 * camTween.t + 2, 3) / 2;
+    camera.position.lerpVectors(camTween.fromEye, camTween.toEye, e);
+    const look = new THREE.Vector3().lerpVectors(camTween.fromLook, camTween.toLook, e);
+    camera.lookAt(look);
+    const fov = THREE.MathUtils.lerp(camTween.fromFov, camTween.toFov, e);
+    if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    if (camTween.t >= 1) {
+      camTween.active = false;
+      /* 落位后同步环绕参数，用户接着拖动就是从这里继续 */
+      const off = camTween.toEye.clone().sub(camTween.toLook);
+      const sph = new THREE.Spherical(off.length(), Math.acos(off.y / off.length()), Math.atan2(off.x, off.z));
+      heroTheta = sph.theta; heroPhi = sph.phi;
+      heroBaseDist = sph.radius;
+      heroTarget.copy(camTween.toLook);
+      zoomTarget = 1; zoomNow = 1;
+    }
+    return;
+  }
+
+  heroPhi = THREE.MathUtils.clamp(heroPhi, 0.18, Math.PI / 2 - 0.03);
+  /* 竖屏视野窄：只做温和的退远与抬高，避免把全景推成一个小点。
+     底部 UI 占了约三分之一高度，所以取景整体上移。 */
+  const portrait = camera.aspect < 1;
+  /* 热点特写时相机离主体很近（约 25–35），不能按全景的下限夹，
+     否则落位后会被拉回远处，特写立刻失效。 */
+  const minDist = focused ? 8 : 60;
+  const maxDist = focused ? 90 : 340;
+  const aspectK = portrait
+    ? THREE.MathUtils.clamp(Math.sqrt(1 / Math.max(0.5, camera.aspect)), 1, 1.3)
+    : 1;
+  /* 关键：基准距离与缩放分开存。以前写成 heroDist = heroDist * userZoom，
+     等于每帧再乘一次，倍数会指数级累积，稍微滚一下就撞到上下限。 */
+  zoomNow += (zoomTarget - zoomNow) * Math.min(1, (dt || 0.016) * 9);
+  heroDist = THREE.MathUtils.clamp(heroBaseDist * zoomNow * aspectK, minDist, maxDist);
+  const off = new THREE.Vector3().setFromSpherical(new THREE.Spherical(heroDist, heroPhi, heroTheta));
+  camera.position.copy(heroTarget).add(off);
+  camera.lookAt(heroTarget);
+  /* 竖屏只在全景时抬高取景；特写本来就对着主体，再抬就偏了 */
+  if (portrait && !focused) {
+    /* 沿相机自身的「上」方向平移相机 ≈ 画面里模型下移，
+       但这里要让模型上移，所以方向取反。 */
+    const up = new THREE.Vector3(0, 1, 0)
+      .addScaledVector(off.clone().normalize(), -off.clone().normalize().y)
+      .normalize();
+    camera.position.addScaledVector(up, -heroDist * 0.1);
+    camera.lookAt(heroTarget);
+  }
+  /* 特写时不要强改 fov：落位时已经是该热点的 fov */
+  const wantFov = focused ? (SPOT_CAM[focused]?.fov ?? HERO_FOV) : HERO_FOV;
+  if (Math.abs(camera.fov - wantFov) > 0.05) { camera.fov = wantFov; camera.updateProjectionMatrix(); }
+}
+
+function smoothstep(e0, e1, v) {
+  const t = THREE.MathUtils.clamp((v - e0) / (e1 - e0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
+
+/* ---------- 入场组装 ---------- */
+const intro = { t: 0, done: false };
+
+/* ---------- 节俗热点：三维世界坐标逐帧投影 ---------- */
+const HOTSPOTS = [
+  { id: 'splash', p: [4, 6.5, 5], label: '泼水祝福' },
+  { id: 'market', p: [34, 11.0, 26], label: '赶摆相聚' },
+  { id: 'boat', p: [-56, 5.5, -30], label: '江上赛龙舟' },
+  { id: 'temple', p: [50, 26.0, -28], label: '浴佛与诵经' },
+  { id: 'bath', p: [50, 17.0, -6], label: '浴佛亭' },
+  { id: 'dance', p: [30, 15.0, 12], label: '孔雀舞与章哈' },
+  { id: 'well', p: [2, 9.5, 16], label: '寨中水井' },
+  { id: 'house', p: [-6, 14.0, 30], label: '傣家竹楼' },
+];
+const hotspotEls = new Map();
+{
+  const host = document.getElementById('hotspots');
+  for (const spot of HOTSPOTS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'hotspot ui';
+    b.dataset.id = spot.id;
+    b.innerHTML = '<i></i><span></span>';
+    b.querySelector('span').textContent = spot.label;
+    b.addEventListener('click', () => selectSpot(spot.id));
+    host.appendChild(b);
+    hotspotEls.set(spot.id, b);
+    spot.world = new THREE.Vector3(spot.p[0], spot.p[1], spot.p[2]);
+  }
+}
+function projectHotspots() {
+  const w = window.innerWidth, h = window.innerHeight;
+  /* 只在定格后显示热点，飞行途中不干扰画面 */
+  const showAll = phase === 'hero';
+  for (const spot of HOTSPOTS) {
+    const el = hotspotEls.get(spot.id);
+    if (!showAll) { el.style.opacity = '0'; el.style.pointerEvents = 'none'; continue; }
+    const v = spot.world.clone().project(camera);
+    const x = (v.x * 0.5 + 0.5) * w;
+    const y = (-v.y * 0.5 + 0.5) * h;
+    /* 窄屏上标签会顶出画面，按边距夹住，并让靠右的标签改为向左展开 */
+    const pad = 14;
+    const cx = THREE.MathUtils.clamp(x, pad, w - pad);
+    const cy = THREE.MathUtils.clamp(y, pad, h - pad);
+    const flip = x > w * 0.58;
+    const visible = v.z < 1 && x > -80 && x < w + 80 && y > -60 && y < h + 60;
+    /* 翻转时整块要往左让出标签宽度，用 translateX(-100%) 配合圆点定位 */
+    el.style.transform = flip
+      ? `translate(${cx.toFixed(1)}px, ${cy.toFixed(1)}px) translateX(-100%)`
+      : `translate(${cx.toFixed(1)}px, ${cy.toFixed(1)}px)`;
+    el.classList.toggle('is-flip', flip);
+    el.style.opacity = visible ? '1' : '0';
+    el.style.pointerEvents = visible ? 'auto' : 'none';
+    const d = spot.world.distanceTo(camera.position);
+    el.style.setProperty('--hs', THREE.MathUtils.clamp(60 / d, 0.7, 1.25).toFixed(3));
+  }
+}
+
+const STORY = {
+  splash: { n: '01', t: '泼水祝福', d: '节日期间，傣族男女老少穿上节日盛装，挑着清水，先到佛寺浴佛，然后互相泼水。泼出的清水象征着吉祥、幸福与健康，年轻人还把手里明亮晶莹的水珠象征甜蜜的爱情。' },
+  market: { n: '02', t: '赶摆相聚', d: '赶摆是泼水节期间的经贸交流与相聚活动，人们在节日中设摊、交易、走亲访友，把地方物产与节庆连在一起。' },
+  boat: { n: '03', t: '江上赛龙舟', d: '赛龙舟是官方项目资料列出的节日活动之一。傣族傍水而居，江面竞渡是泼水节里最热闹的水上场面。' },
+  temple: { n: '04', t: '浴佛与诵经', d: '泼水节又名“浴佛节”，傣语称“比迈”，意为新年。节日里先到佛寺浴佛、诵经，再开始互相泼水，水与敬佛的礼俗连在一起。' },
+  bath: { n: '05', t: '浴佛亭', d: '浴佛是泼水节的核心礼俗之一：以清水沐浴佛像，再以同样的清水彼此祝福。这一习俗与“南传上座部”佛教在傣族地区的传播相关。' },
+  dance: { n: '06', t: '孔雀舞与章哈', d: '章哈演唱和孔雀舞、白象舞表演是泼水节的艺术表演项目。泼水节因此成为展现傣族水文化、音乐舞蹈文化与服饰文化的综合舞台。' },
+  well: { n: '07', t: '寨中水井', d: '水是泼水节的中心。寨中水井是取水的地方，节日用的清水由此挑到佛寺与广场，水井因此是节俗链条的起点。' },
+  house: { n: '08', t: '傣家竹楼', d: '干栏式竹楼是傣族典型的居住形式：底层架空立柱、上层住人、陡坡重檐屋顶适应湿热多雨的气候。画面中的形制为教学示意。' },
+};
+
+/* ---------- 每个热点的专属机位 ----------
+ * 点到哪就飞到哪：eye 是相机位置，look 是看点，fov 收紧一点以突出主体。
+ * 各按题材取景——水井俯看井口，白塔从侧下方仰看塔身，广场从高处收全水池。 */
+const SPOT_CAM = {
+  /* 广场：从东南高处收全水池与人群，避开南侧竹楼屋脊 */
+  splash: { eye: [24, 22, 34], look: [4, 3.5, 5], fov: 40 },
+  /* 赶摆场：沿摊位长轴斜看，牌坊在左 */
+  market: { eye: [18, 16, 50], look: [34, 5.5, 26], fov: 42 },
+  /* 龙舟：从岸上斜看江面船队 */
+  boat: { eye: [-24, 11, -18], look: [-56, 3.5, -30], fov: 42 },
+  /* 白塔：从东北侧退远一点，把整座塔（基座到相轮）收进画面。
+     寺门在 (50,-18)，塔在 (50,-28)，机位绕到塔的东北避开遮挡。 */
+  temple: { eye: [80, 24, -2], look: [50, 13, -28], fov: 42 },
+  /* 浴佛亭：正对亭内立佛，略低以见佛身与背光 */
+  bath: { eye: [38, 9.5, 4], look: [50, 9, -6], fov: 40 },
+  /* 孔雀舞：舞台正面偏右，收进尾屏 */
+  dance: { eye: [18, 14, 28], look: [31, 8.5, 12], fov: 40 },
+  /* 水井：从南侧近看井口、辘轳与取水的人。井在 z=16、广场在 z=5，
+     机位放在井的南面并压近，广场只作为背景虚化在远处。 */
+  well: { eye: [10, 12, 27], look: [2, 5.5, 16], fov: 34 },
+  /* 竹楼：看北侧那栋（ry≈180°，坡向最容易出错的一类），
+     从东南高处避开舞台与树，能看清架空立柱、晒台与重檐 */
+  house: { eye: [46, 20, 2], look: [30, 9, -20], fov: 40 },
+};
+/* 全景机位：从任一热点都能飞回来 */
+const OVERVIEW = { eye: [HERO_POS.x, HERO_POS.y, HERO_POS.z], look: [HERO_LOOK.x, HERO_LOOK.y, HERO_LOOK.z], fov: HERO_FOV };
+
+/* 相机补间：把当前机位平滑推到目标机位 */
+const camTween = {
+  active: false,
+  t: 0,
+  dur: 1.15,
+  fromEye: new THREE.Vector3(),
+  fromLook: new THREE.Vector3(),
+  fromFov: HERO_FOV,
+  toEye: new THREE.Vector3(),
+  toLook: new THREE.Vector3(),
+  toFov: HERO_FOV,
+};
+function flyTo(spotId) {
+  const target = spotId ? SPOT_CAM[spotId] : OVERVIEW;
+  if (!target) return;
+  camTween.fromEye.copy(camera.position);
+  camTween.fromLook.copy(currentLook());
+  camTween.fromFov = camera.fov;
+  camTween.toEye.set(target.eye[0], target.eye[1], target.eye[2]);
+  camTween.toLook.set(target.look[0], target.look[1], target.look[2]);
+  camTween.toFov = target.fov;
+  camTween.t = 0;
+  camTween.active = true;
+  focused = spotId || null;
+  /* 到点后允许用户继续拖动微调 */
+  userMoved = false;
+}
+/** 当前镜头看向哪 —— 用相机朝向反推，避免另存一份状态 */
+const _fwd = new THREE.Vector3();
+function currentLook() {
+  camera.getWorldDirection(_fwd);
+  return camera.position.clone().addScaledVector(_fwd, camera.position.distanceTo(heroTarget));
+}
+let focused = null;
+
+const storyEl = document.getElementById('story');
+const briefEl = document.getElementById('brief');
+const showBriefBtn = document.getElementById('show-brief');
+/** 用户手动收起过简介卡（竖屏尤其需要，不然卡片几乎盖住画面） */
+let briefCollapsed = false;
+/** 全景时显示节日简介，点热点后让位给节俗卡 */
+function setBrief(visible) {
+  if (!briefEl) return;
+  const show = visible && !briefCollapsed;
+  briefEl.classList.toggle('is-hidden', !show);
+  /* 只在「已定格、没选热点、且被收起」时给一个重新展开的入口 */
+  if (showBriefBtn) showBriefBtn.hidden = !(phase === 'hero' && !focused && briefCollapsed);
+}
+let selected = null;
+function selectSpot(id) {
+  selected = id;
+  const s = STORY[id];
+  storyEl.innerHTML = `<span class="story-num">${s.n} / 08</span><h2>${s.t}</h2><p>${s.d}</p>`;
+  setBrief(false);
+  const back = document.getElementById('back-overview');
+  if (back) back.hidden = false;
+  for (const [k, el] of hotspotEls) el.classList.toggle('is-active', k === id);
+  storyEl.classList.add('is-in');
+  flyTo(id);
+}
+function showOverview() {
+  selected = null;
+  focused = null;
+  /* 回到全景是明确的「看总览」动作，把收起状态一并复位 */
+  briefCollapsed = false;
+  storyEl.innerHTML = '';
+  storyEl.classList.remove('is-in');
+  setBrief(true);
+  const back = document.getElementById('back-overview');
+  if (back) back.hidden = true;
+  for (const [, el] of hotspotEls) el.classList.remove('is-active');
+  flyTo(null);
+}
+
+/* 开场旁白：按飞行进度换词，让画面与文案对上 */
+const OPENING_LINES = [
+  { at: 0.00, kicker: 'SCENE 01 / 顺水而行', text: '镜头贴着澜沧江水面，向傣寨去。' },
+  { at: 0.22, kicker: 'SCENE 02 / 泊岸', text: '木栈桥从岸边伸进江里，是寨子与水的接口。' },
+  { at: 0.40, kicker: 'SCENE 03 / 进寨', text: '竹楼架空而立，屋顶的坡度是为雨水留的。' },
+  { at: 0.58, kicker: 'SCENE 04 / 赶摆', text: '摊位沿街摆开，节日也是相聚与交换的日子。' },
+  { at: 0.74, kicker: 'SCENE 05 / 泼水', text: '清水泼出去，是吉祥、幸福与健康的祝愿。' },
+  { at: 0.88, kicker: 'SCENE 06 / 定格', text: '镜头退开，把整座水乡收进一幅全景。' },
+];
+const lineKicker = document.getElementById('opening-kicker');
+const lineText = document.getElementById('opening-text');
+let lineIndex = -1;
+function updateOpeningLine(t) {
+  let i = 0;
+  for (let k = 0; k < OPENING_LINES.length; k++) if (t >= OPENING_LINES[k].at) i = k;
+  if (i === lineIndex) return;
+  lineIndex = i;
+  const l = OPENING_LINES[i];
+  lineKicker.textContent = l.kicker;
+  lineText.textContent = l.text;
+  lineKicker.classList.remove('is-in');
+  lineText.classList.remove('is-in');
+  void lineText.offsetWidth;
+  lineKicker.classList.add('is-in');
+  lineText.classList.add('is-in');
+}
+
+/* ---------- 界面切换 ---------- */
+const uiOpening = document.getElementById('ui-opening');
+const uiHero = document.getElementById('ui-hero');
+const progressEl = document.getElementById('opening-progress');
+const loading = document.getElementById('boot');
+
+const stage = document.getElementById('stage');
+function setPhase(next) {
+  phase = next;
+  document.body.classList.toggle('is-opening', next === 'opening');
+  document.body.classList.toggle('is-hero', next === 'hero');
+  /* 简介卡只在定格且没选中热点时出现：飞行途中不抢画面 */
+  setBrief(next === 'hero' && !focused);
+}
+function skipOpening() {
+  intro.t = 1;
+  intro.done = true;
+  loading.classList.add('is-gone');
+  setPhase('hero');
+  /* 落位在全景：热点由用户点，不自动飞走 */
+  camTween.active = false;
+  const off = HERO_POS.clone().sub(HERO_LOOK);
+  const sph = new THREE.Spherical(off.length(), Math.acos(off.y / off.length()), Math.atan2(off.x, off.z));
+  heroTheta = sph.theta; heroPhi = sph.phi;
+  heroBaseDist = sph.radius;
+  heroTarget.copy(HERO_LOOK);
+  zoomTarget = 1; zoomNow = 1;
+  applyHeroCamera(0);
+  projectHotspots();
+}
+function replay() {
+  run++;
+  startedAt = 0;
+  intro.t = 0;
+  intro.done = false;
+  selected = null;
+  setPhase('opening');
+  storyEl.innerHTML = '';
+  applyOpeningCamera(0);
+}
+
+/* ---------- 鼠标：定格后绕景观察 ---------- */
+const keys = new Set();
+let dragging = 0;
+let lastPointer = { x: 0, y: 0 };
+let userMoved = false;
+
+function onPointerDown(e) {
+  if (e.target.closest('.ui')) return;
+  dragging = e.button === 2 || e.shiftKey ? 2 : 1;
+  lastPointer = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture?.(e.pointerId);
+}
+function onPointerMove(e) {
+  if (!dragging || phase !== 'hero') return;
+  const dx = e.clientX - lastPointer.x;
+  const dy = e.clientY - lastPointer.y;
+  lastPointer = { x: e.clientX, y: e.clientY };
+  if (dragging === 1) {
+    heroTheta -= dx * 0.005;
+    heroPhi -= dy * 0.004;
+  } else {
+    const scale = heroDist * 0.0013;
+    const right = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 0);
+    const up = new THREE.Vector3().setFromMatrixColumn(camera.matrix, 1);
+    heroTarget.addScaledVector(right, -dx * scale);
+    heroTarget.addScaledVector(up, dy * scale);
+  }
+  userMoved = true;
+}
+function onPointerUp(e) {
+  dragging = 0;
+  canvas.releasePointerCapture?.(e.pointerId);
+}
+/* 滚轮 / 触控板缩放：把不同设备的 delta 归一化后累积到目标倍率，
+   再由每帧缓动逼近。指数形式让「放大」和「缩小」手感对称。
+   方向按通用习惯：向下滚（deltaY > 0）= 拉远，向上滚 = 推近。 */
+function onWheel(e) {
+  if (phase !== 'hero') return;
+  e.preventDefault();
+  /* deltaMode: 0=像素（触控板），1=行（滚轮），2=页 */
+  const unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? 100 : 1);
+  const dy = e.deltaY * unit;
+  /* 一格滚轮（约 100px）改变约 11%，触控板连续事件则很细腻 */
+  zoomTarget = THREE.MathUtils.clamp(zoomTarget * Math.exp(dy * 0.001), 0.28, 2.8);
+  userMoved = true;
+}
+canvas.addEventListener('pointerdown', onPointerDown);
+canvas.addEventListener('pointermove', onPointerMove);
+canvas.addEventListener('pointerup', onPointerUp);
+canvas.addEventListener('pointercancel', onPointerUp);
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('wheel', onWheel, { passive: false });
+
+/* 双指捏合缩放（移动端） */
+let pinchDist = 0;
+function touchDist(t) {
+  return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+}
+canvas.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2) pinchDist = touchDist(e.touches);
+}, { passive: true });
+canvas.addEventListener('touchmove', (e) => {
+  if (phase !== 'hero' || e.touches.length !== 2 || !pinchDist) return;
+  e.preventDefault();
+  const d = touchDist(e.touches);
+  if (d > 0) zoomTarget = THREE.MathUtils.clamp(zoomTarget * (pinchDist / d), 0.28, 2.8);
+  pinchDist = d;
+  userMoved = true;
+}, { passive: false });
+canvas.addEventListener('touchend', () => { pinchDist = 0; });
+document.getElementById('skip').addEventListener('click', skipOpening);
+document.getElementById('replay').addEventListener('click', replay);
+{
+  const back = document.getElementById('back-overview');
+  if (back) back.addEventListener('click', showOverview);
+  const bclose = document.getElementById('brief-close');
+  if (bclose) bclose.addEventListener('click', () => {
+    briefCollapsed = true;
+    setBrief(false);
+  });
+  if (showBriefBtn) showBriefBtn.addEventListener('click', () => {
+    briefCollapsed = false;
+    setBrief(true);
+  });
+}
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && phase === 'opening') skipOpening();
+  if (e.key === ' ') { e.preventDefault(); if (phase === 'opening') skipOpening(); }
+});
+
+/* ---------- 主循环 ---------- */
+let frames = 0;
+function animate() {
+  tickTime();
+  frames++;
+  const dt = timeState.delta;
+  const t = timeState.elapsed;
+  U.time.value = t;
+
+  /* 组装动画（2.2s） */
+  if (!reduced && !intro.done) {
+    intro.t = Math.min(1, intro.t + dt / 2.2);
+    U.assemble.value = intro.t;
+    if (intro.t >= 1) { intro.done = true; loading.classList.add('is-gone'); }
+  }
+
+  /* 相机 */
+  if (phase === 'opening') {
+    if (!startedAt) startedAt = performance.now();
+    if (!flightFrozen) {
+      progress = reduced ? 1 : THREE.MathUtils.clamp((performance.now() - startedAt) / OPENING_MS, 0, 1);
+    }
+    applyOpeningCamera(progress);
+    updateOpeningLine(progress);
+    if (progressEl) progressEl.style.transform = `scaleX(${progress})`;
+    if (!flightFrozen && progress >= 1) {
+      setPhase('hero');
+      /* 飞行结束落在全景机位，不自动飞向某个热点 */
+      camTween.active = false;
+      const off0 = HERO_POS.clone().sub(HERO_LOOK);
+      const sph0 = new THREE.Spherical(off0.length(), Math.acos(off0.y / off0.length()), Math.atan2(off0.x, off0.z));
+      heroTheta = sph0.theta; heroPhi = sph0.phi;
+      heroBaseDist = sph0.radius;
+      heroTarget.copy(HERO_LOOK);
+      zoomTarget = 1; zoomNow = 1;
+    }
+  } else {
+    applyHeroCamera(dt);
+  }
+
+  /* 水花 */
+  if (!reduced) {
+    const pos = splashGeo.attributes.position.array;
+    for (let i = 0; i < SPLASH_COUNT; i++) {
+      const ph = i * 0.37 + t * 1.1;
+      const life = Math.sin(ph) * 0.5 + 0.5;
+      pos[i * 3] = splashSeed[i * 3] + Math.sin(ph * 0.7) * 0.42;
+      pos[i * 3 + 1] = GY + 0.9 + splashSeed[i * 3 + 1] * life;
+      pos[i * 3 + 2] = splashSeed[i * 3 + 2] + Math.cos(ph * 0.6) * 0.42;
+    }
+    splashGeo.attributes.position.needsUpdate = true;
+    splashMat.opacity = 0.9;
+  }
+
+  /* 涟漪 */
+  for (const ring of RIPPLES) {
+    const ph = (ring.userData.phase + t * 0.28) % 1;
+    const s = ring.userData.scale0 * (0.5 + ph * 2.6);
+    ring.scale.set(s, s, s);
+    ring.material.opacity = reduced ? 0.2 : (1 - ph) * 0.4;
+  }
+
+  /* 太阳缓慢移动 */
+  const sa = 0.6 + Math.sin(t * 0.06) * 0.25;
+  sun.position.set(-60 + sa * 14, 90, 70 + sa * 10);
+  sun.target.position.set(10, 0, 5);
+
+  projectHotspots();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+
+/* ---------- 启动 ---------- */
+if (reduced || SKIP_INTRO) {
+  U.assemble.value = 1;
+  intro.t = 1;
+  intro.done = true;
+  loading.classList.add('is-gone');
+  setPhase('hero');
+  /* 直接落位在全景，等用户点热点 */
+  const off = HERO_POS.clone().sub(HERO_LOOK);
+  const sph = new THREE.Spherical(off.length(), Math.acos(off.y / off.length()), Math.atan2(off.x, off.z));
+  heroTheta = sph.theta; heroPhi = sph.phi;
+  heroBaseDist = sph.radius;
+  heroTarget.copy(HERO_LOOK);
+  zoomTarget = 1; zoomNow = 1;
+  applyHeroCamera(0);
+} else {
+  setPhase('opening');
+  applyOpeningCamera(0);
+}
+projectHotspots();
+renderer.render(scene, camera);
+animate();
+
+window.__PUSUI_READY = true;
+window.__PUSUI_SKIP = skipOpening;
+/* 给离线检查用：把飞行冻结在指定进度，便于逐点截图 */
+window.__PUSUI_FLIGHT = (t) => {
+  setPhase('opening');
+  intro.t = 1; intro.done = true;
+  loading.classList.add('is-gone');
+  flightFrozen = true;
+  progress = THREE.MathUtils.clamp(t, 0, 1);
+  applyOpeningCamera(progress);
+  return progress;
+};
+window.__PUSUI_UNFREEZE = () => { flightFrozen = false; startedAt = performance.now() - progress * OPENING_MS; };
+window.__PUSUI_DIAG = () => ({
+  three: THREE.REVISION,
+  meshes: worldGroups.children.length,
+  hotspots: HOTSPOTS.length,
+  phase,
+  progress: +progress.toFixed(3),
+  assemble: +U.assemble.value.toFixed(3),
+  camera: camera.position.toArray().map((v) => +v.toFixed(2)),
+  fov: +camera.fov.toFixed(1),
+  focused,
+  tweening: camTween.active,
+  tweenT: +camTween.t.toFixed(3),
+  frames,
+});</script>
+</body>
+</html>
